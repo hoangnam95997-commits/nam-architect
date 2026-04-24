@@ -2,27 +2,31 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - PRO CAD</title>
+    <title>NAM ARCH - CAD PROGRESS</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { margin: 0; font-family: 'Segoe UI', sans-serif; }
         #map { height: 100vh; width: 100vw; }
-        .ui { position: absolute; top: 20px; left: 50px; z-index: 1000; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 250px; }
-        button { width: 100%; padding: 15px; background: #e74c3c; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; font-size: 14px; }
-        .desc { font-size: 11px; color: #555; margin-bottom: 15px; line-height: 1.5; }
+        .ui { position: absolute; top: 20px; left: 50px; z-index: 1000; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 260px; }
+        button { width: 100%; padding: 15px; background: #e74c3c; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        /* Style cho thanh Progress */
+        .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 15px 0; display: none; }
+        .progress-bar { width: 0%; height: 10px; background-color: #27ae60; border-radius: 10px; transition: width 0.3s; }
+        #percent { font-size: 12px; font-weight: bold; text-align: center; display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
     <div class="ui">
-        <h2 style="margin:0 0 10px; color:#c0392b;">NAM CAD PRO v3</h2>
-        <div class="desc">
-            • Tự động tạo <b>lòng đường</b> (Offset)<br>
-            • Tăng độ đậm <b>đường bao</b><br>
-            • Lọc trùng và chồng chéo nét
+        <h2 style="margin:0 0 10px; color:#c0392b;">NAM CAD ULTIMATE</h2>
+        <button id="exportBtn" onclick="exportWithProgress()">XUẤT CAD CAO CẤP</button>
+        
+        <div id="loader" class="progress-container">
+            <span id="percent">0%</span>
+            <div id="bar" class="progress-bar"></div>
         </div>
-        <button onclick="exportProCAD()">XUẤT CAD CAO CẤP</button>
-        <div id="stt" style="margin-top:10px; font-size:12px; font-weight:bold; text-align:center;"></div>
+        
+        <div id="stt" style="margin-top:10px; font-size:12px; text-align:center; color:#555;">Sẵn sàng quét dữ liệu</div>
     </div>
     <div id="map"></div>
 
@@ -30,28 +34,44 @@
         var map = L.map('map').setView([10.7933, 106.6800], 17);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
 
-        async function exportProCAD() {
+        async function exportWithProgress() {
+            const btn = document.getElementById('exportBtn');
+            const loader = document.getElementById('loader');
+            const bar = document.getElementById('bar');
+            const percent = document.getElementById('percent');
             const stt = document.getElementById('stt');
-            stt.innerText = "⏳ Đang xử lý offset nét...";
+
+            // Khởi tạo giao diện chạy
+            btn.disabled = true;
+            loader.style.display = 'block';
+            updateProgress(10, "Đang kết nối server...");
+
             const b = map.getBounds();
             const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
-            const query = `[out:json];(way["building"](${bbox});way["highway"](${bbox}););out body;>;out skel qt;`;
+            const query = `[out:json];(way["building"](${bbox});way["highway"~"^(primary|secondary|tertiary|residential)$"](${bbox}););out body;>;out skel qt;`;
             
             try {
+                updateProgress(30, "Đang tải dữ liệu vector...");
                 const response = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
                 const data = await response.json();
                 
+                if (!data.elements || data.elements.length === 0) {
+                    throw new Error("Không có dữ liệu vùng này!");
+                }
+
+                updateProgress(60, "Đang lọc nét & tạo lòng đường...");
                 let dxf = "0\nSECTION\n2\nENTITIES\n";
                 const center = map.getCenter();
                 const scale = 111319;
+                const ways = data.elements.filter(e => e.type === "way");
 
-                data.elements.filter(e => e.type === "way").forEach(e => {
+                ways.forEach((e, index) => {
+                    // Cập nhật % xử lý nội bộ
+                    let p = 60 + Math.floor((index / ways.length) * 30);
+                    updateProgress(p, `Đang vẽ: ${index}/${ways.length}`);
+
                     let isBuilding = !!e.tags?.building;
                     let layer = isBuilding ? "RANH_NHA" : "RANH_DUONG";
-                    let weight = isBuilding ? 35 : 25; // Độ đậm nét bao (Lineweight)
-
-                    // Xử lý tạo 2 nét ranh đường (Offset tim đường sang 2 bên)
-                    let offsetDist = 0.00004; // Tương đương ~4-5m lòng đường
                     
                     for (let i = 0; i < e.nodes.length - 1; i++) {
                         let n1 = data.elements.find(n => n.id === e.nodes[i]);
@@ -64,31 +84,42 @@
                         let y2 = (n2.lat - center.lat) * scale;
 
                         if (isBuilding) {
-                            // Với nhà: Vẽ nét đậm bao quanh
-                            dxf += `0\nLINE\n8\n${layer}\n370\n${weight}\n10\n${x1}\n20\n${y1}\n11\n${x2}\n21\n${y2}\n`;
+                            dxf += `0\nLINE\n8\n${layer}\n370\n35\n10\n${x1}\n20\n${y1}\n11\n${x2}\n21\n${y2}\n`;
                         } else {
-                            // Với đường: Tạo 2 nét biên (Parallel)
                             let dx = x2 - x1; let dy = y2 - y1;
                             let len = Math.sqrt(dx*dx + dy*dy);
-                            let nx = -dy/len * 4; // Offset 4m
-                            let ny = dx/len * 4;
-                            
-                            // Biên trái
+                            let nx = -dy/len * 4; let ny = dx/len * 4;
                             dxf += `0\nLINE\n8\n${layer}\n10\n${x1+nx}\n20\n${y1+ny}\n11\n${x2+nx}\n21\n${y2+ny}\n`;
-                            // Biên phải
                             dxf += `0\nLINE\n8\n${layer}\n10\n${x1-nx}\n20\n${y1-ny}\n11\n${x2-nx}\n21\n${y2-ny}\n`;
                         }
                     }
                 });
-                
+
+                updateProgress(100, "Hoàn tất! Đang tải file...");
                 dxf += "0\nENDSEC\n0\nEOF";
                 const blob = new Blob([dxf], {type: 'application/dxf'});
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = "Nam_Architect_ProCAD.dxf";
+                a.download = "Nam_Architect_Final.dxf";
                 a.click();
-                stt.innerText = "✅ ĐÃ XUẤT CAD CAO CẤP!";
-            } catch (e) { stt.innerText = "❌ Lỗi kết nối!"; }
+
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    btn.disabled = false;
+                    stt.innerText = "Xuất file thành công!";
+                }, 2000);
+
+            } catch (e) {
+                stt.innerText = "Lỗi: " + e.message;
+                btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        }
+
+        function updateProgress(val, text) {
+            document.getElementById('bar').style.width = val + "%";
+            document.getElementById('percent').innerText = val + "%";
+            document.getElementById('stt').innerText = text;
         }
     </script>
 </body>
