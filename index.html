@@ -1,73 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - MAP TO CAD (SIMPLE)</title>
+    <title>NAM ARCH - MAP TO CAD</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f9; }
-        #map { height: 100vh; width: 100vw; }
-        .ui-panel { 
-            position: absolute; top: 20px; left: 60px; z-index: 1000; 
-            background: white; padding: 25px; border-radius: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 240px;
-            border: 1px solid #ddd;
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        #map { height: 100vh; width: 100vw; background: #f8f9fa; }
+        .control-box {
+            position: absolute; top: 20px; left: 60px; z-index: 1000;
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); width: 250px;
         }
-        h2 { margin: 0 0 15px; font-size: 18px; color: #333; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        button { 
-            width: 100%; padding: 15px; background: #3498db; color: white; 
-            border: none; cursor: pointer; border-radius: 8px; font-weight: bold;
-            transition: 0.3s; font-size: 14px;
+        h2 { margin: 0 0 10px; font-size: 16px; color: #2c3e50; border-left: 4px solid #e74c3c; padding-left: 10px; }
+        button {
+            width: 100%; padding: 12px; background: #e74c3c; color: white;
+            border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: 0.3s;
         }
-        button:hover { background: #2980b9; transform: translateY(-2px); }
-        #stt { font-size: 12px; margin-top: 15px; color: #7f8c8d; line-height: 1.5; }
-        .badge { background: #e8f4fd; color: #3498db; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        button:hover { background: #c0392b; transform: translateY(-2px); }
+        #status { margin-top: 12px; font-size: 12px; color: #7f8c8d; }
+        .info-tag { display: inline-block; background: #fdf2f2; color: #e74c3c; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div class="ui-panel">
-        <h2>CAD EXPORTER</h2>
-        <div id="stt">
-            <span class="badge">Chế độ: Đơn giản</span><br><br>
-            • Di chuyển đến vùng dự án<br>
-            • Zoom gần để thấy rõ nét<br>
-            • Nhấn nút bên dưới để tải file
-        </div><br>
-        <button onclick="exportDXF()">XUẤT FILE DXF (CAD)</button>
-        <div id="msg" style="margin-top:10px; font-weight:bold; text-align:center;"></div>
-    </div>
-    <div id="map"></div>
 
-    <script>
-        // Khởi tạo bản đồ với phong cách đơn giản (Light Mode)
-        var map = L.map('map').setView([10.7933, 106.6800], 17);
+<div class="control-box">
+    <h2>NAM MAP TO CAD</h2>
+    <span class="info-tag">Định dạng: AutoCad (.DXF)</span>
+    <button onclick="exportDXF()">XUẤT FILE CAD</button>
+    <div id="status">Trạng thái: Sẵn sàng</div>
+</div>
+
+<div id="map"></div>
+
+<script>
+    // Giao diện bản đồ đơn giản (Light Mode) giúp nhìn rõ nét vẽ
+    var map = L.map('map').setView([10.7933, 106.6800], 17);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+    async function exportDXF() {
+        const status = document.getElementById('status');
+        status.innerText = "⏳ Đang quét tọa độ vector...";
         
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
+        const b = map.getBounds();
+        const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
+        // Lấy Building (Nhà) và Highway (Đường)
+        const query = `[out:json];(way["building"](${bbox});way["highway"](${bbox}););out body;>;out skel qt;`;
+        const url = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
 
-        async function exportDXF() {
-            const msg = document.getElementById('msg');
-            msg.style.color = "#e67e22";
-            msg.innerText = "⏳ Đang chuẩn bị dữ liệu...";
-            
-            const b = map.getBounds();
-            const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
-            const query = `[out:json];(way["building"](${bbox});way["highway"](${bbox}););out body;>;out skel qt;`;
-            
-            try {
-                const response = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
-                const data = await response.json();
-                
-                if (!data.elements || data.elements.length === 0) {
-                    msg.style.color = "red";
-                    msg.innerText = "❌ Vùng này không có nét vẽ!";
-                    return;
-                }
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
 
-                let dxf = "0\nSECTION\n2\nENTITIES\n";
+            if (!data.elements || data.elements.length === 0) {
+                status.innerText = "❌ Vùng này không có dữ liệu vẽ!";
+                return;
+            }
+
+            // Tạo nội dung file DXF
+            let dxf = "0\nSECTION\n2\nHEADER\n0\nENDSEC\n0\nSECTION\n2\nTABLES\n0\nENDSEC\n0\nSECTION\n2\nBLOCKS\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n";
+            
+            const center = map.getCenter();
+            data.elements.filter(el => el.type === "way").forEach(el => {
+                // Phân lớp Layer trong CAD
+                let layerName = el.tags?.building ? "NHA_HIEN_HU_U" : "DUONG_GIAO_THONG";
                 
-                data.elements.filter(e => e.type === "way").forEach(e => {
-                    // Tạo layer riêng cho nhà và đường để dễ quản lý trong CAD
-                    let layer = e.tags?.building ? "NHA_HI
+                dxf += "0\nLWPOLYLINE\n100\nAcDbEntity\n8\n" + layerName + "\n100\nAcDbPolyline\n90\n" + el.nodes.length + "\n70\n1\n";
+                
+                el.nodes.forEach(nid => {
+                    let n = data.elements.find(node => node.id === nid);
+                    if (n) {
+                        // Tính toán tọa độ thực tế (đơn vị Mét)
+                        let x = (n.lon - center.lng) * 111319 * Math.cos(center.lat * Math.PI / 180);
+                        let y = (n.lat - center.lat) * 111319;
+                        dxf += "10\n" + x.toFixed(3) + "\n20\n" + y.toFixed(3) + "\n";
+                    }
+                });
+            });
+
+            dxf += "0\nENDSEC\n0\nEOF";
+
+            // Tải file xuống
+            const blob = new Blob([dxf], {type: 'application/dxf'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "Nam_Architect_Plan.dxf";
+            a.click();
+            status.innerText = "✅ Đã tải file CAD (.dxf) thành công!";
+        } catch (e) {
+            status.innerText = "❌ Lỗi kết nối. Thử lại!";
+        }
+    }
+</script>
+</body>
+</html>
