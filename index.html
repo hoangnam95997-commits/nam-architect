@@ -2,87 +2,112 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v33 - Real-time Color Control</title>
+    <title>NAM ARCH v35 - Workspace Control</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
-        :root { --accent: #00ffcc; --bg: #111; --panel: rgba(20, 20, 20, 0.98); --text: #eee; }
-        body { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(25, 25, 25, 0.95); --text: #eee; }
+        .light-mode { --accent: #ff4757; --bg: #f5f6fa; --panel: rgba(255, 255, 255, 0.95); --text: #2f3542; }
+        
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         #map { height: 100vh; width: 100vw; background: #000; }
 
         .sidebar {
-            position: absolute; top: 20px; left: 20px; z-index: 1000; width: 310px;
-            background: var(--panel); border-radius: 16px; padding: 22px;
-            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            position: absolute; top: 20px; left: 20px; z-index: 1000; width: 320px;
+            background: var(--panel); border-radius: 20px; padding: 25px;
+            border: 1px solid rgba(128,128,128,0.2); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
-        h1 { margin: 0; font-size: 19px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+        h1 { margin: 0; font-size: 22px; color: var(--accent); letter-spacing: -1px; margin-bottom: 5px; }
+        .tagline { font-size: 9px; opacity: 0.6; text-transform: uppercase; margin-bottom: 20px; display: block; }
+
+        .control-group { margin-bottom: 15px; display: flex; gap: 8px; flex-direction: column; }
         
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 11px; margin-bottom: 10px; text-transform: uppercase; }
+        button {
+            padding: 12px; border: none; border-radius: 10px; font-weight: bold;
+            cursor: pointer; transition: 0.2s; font-size: 11px; text-transform: uppercase;
+        }
+        .btn-theme { background: #57606f; color: white; }
         .btn-fetch { background: #3498db; color: white; }
-        .btn-export { background: var(--accent); color: #000; }
-        .btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        .btn-export { background: var(--accent); color: #000; margin-top: 10px; }
+        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
 
-        .color-group { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .label-title { font-size: 10px; color: var(--accent); font-weight: bold; margin-bottom: 12px; display: block; opacity: 0.8; }
-        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
-        input[type="color"] { border: none; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; background: none; transition: 0.2s; }
-        input[type="color"]:hover { transform: scale(1.1); }
+        .color-panel { background: rgba(128,128,128,0.1); padding: 15px; border-radius: 12px; margin-top: 15px; }
+        .color-panel label { display: block; font-size: 10px; font-weight: 800; color: var(--accent); margin-bottom: 12px; }
+        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        input[type="color"] { border: none; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; background: none; }
 
-        #status { font-size: 10px; text-align: center; color: var(--accent); font-family: 'Courier New', monospace; }
+        #stt { font-size: 10px; text-align: center; margin-top: 15px; color: var(--accent); font-family: monospace; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h1>NAM ARCH v33</h1>
+        <h1>NAM ARCH v35</h1>
+        <span class="tagline">Interactive Design Dashboard</span>
 
-        <button class="btn btn-fetch" onclick="fetchData()">📡 LẤY DỮ LIỆU HIỆN TRẠNG</button>
-
-        <div class="color-group">
-            <span class="label-title">BẢNG ĐIỀU KHIỂN MÀU DIAGRAM</span>
-            <div class="row"><span>🏢 Tòa nhà</span><input type="color" id="cNha" value="#ff4d4d" oninput="liveUpdate()"></div>
-            <div class="row"><span>🛣️ Lòng đường</span><input type="color" id="cDuong" value="#2d3436" oninput="liveUpdate()"></div>
-            <div class="row"><span>📐 Vỉa hè (Sidewalk)</span><input type="color" id="cViaHe" value="#fdcb6e" oninput="liveUpdate()"></div>
-            <div class="row"><span>🌳 Cây xanh</span><input type="color" id="cCay" value="#00b894" oninput="liveUpdate()"></div>
-            <div class="row"><span>🌊 Mặt nước</span><input type="color" id="cNuoc" value="#0984e3" oninput="applyNuoc()"></div>
+        <div class="control-group">
+            <button class="btn-theme" onclick="toggleTheme()">🌓 ĐỔI GIAO DIỆN (SÁNG/TỐI)</button>
+            <button class="btn-fetch" onclick="loadData()">🔄 CẬP NHẬT DỮ LIỆU VÙNG NÀY</button>
         </div>
 
-        <button class="btn btn-export" onclick="exportDXF()">📥 XUẤT FILE CAD 1:1</button>
-        <div id="status">SẴN SÀNG QUÉT</div>
+        <div class="color-panel">
+            <label>ĐIỀU KHIỂN MÀU TRỰC TIẾP (LIVE)</label>
+            <div class="row"><span>Tòa nhà</span><input type="color" id="cNha" value="#ff4757" oninput="applyLiveColors()"></div>
+            <div class="row"><span>Lòng đường</span><input type="color" id="cDuong" value="#2f3542" oninput="applyLiveColors()"></div>
+            <div class="row"><span>Vỉa hè</span><input type="color" id="cViaHe" value="#f1c40f" oninput="applyLiveColors()"></div>
+            <div class="row"><span>Cây xanh</span><input type="color" id="cCay" value="#2ed573" oninput="applyLiveColors()"></div>
+            <div class="row"><span>Mặt nước</span><input type="color" id="cNuoc" value="#1e90ff" oninput="applyLiveColors()"></div>
+        </div>
+
+        <button class="btn-export" onclick="exportCAD()">📥 XUẤT CAD 1:1 (CLEAN LAYERS)</button>
+        <div id="stt">HỆ THỐNG SẴN SÀNG</div>
     </div>
 
     <div id="map"></div>
 
     <script>
         var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 17);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+        var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+        var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
         
-        // Tạo các lớp chứa đối tượng
-        var gNha = L.layerGroup().addTo(map);
-        var gDuong = L.layerGroup().addTo(map);
-        var gViaHe = L.layerGroup().addTo(map);
-        var gCay = L.layerGroup().addTo(map);
-        var gNuoc = L.layerGroup().addTo(map);
+        var groups = {
+            nha: L.layerGroup().addTo(map),
+            duong: L.layerGroup().addTo(map),
+            viahe: L.layerGroup().addTo(map),
+            cay: L.layerGroup().addTo(map),
+            nuoc: L.layerGroup().addTo(map)
+        };
 
-        // HÀM ĐIỀU KHIỂN MÀU TRỰC TIẾP (LIVE CONTROL)
-        function liveUpdate() {
-            const vNha = document.getElementById('cNha').value;
-            const vDuong = document.getElementById('cDuong').value;
-            const vViaHe = document.getElementById('cViaHe').value;
-            const vCay = document.getElementById('cCay').value;
-            const vNuoc = document.getElementById('cNuoc').value;
-
-            gNha.eachLayer(l => l.setStyle({ color: vNha, fillColor: vNha, fillOpacity: 0.8, weight: 0.5 }));
-            gDuong.eachLayer(l => l.setStyle({ color: vDuong, fillColor: vDuong, fillOpacity: 1, weight: 0 }));
-            gViaHe.eachLayer(l => l.setStyle({ color: vViaHe, fillColor: vViaHe, fillOpacity: 0.8, weight: 0 }));
-            gCay.eachLayer(l => l.setStyle({ color: vCay, fillColor: vCay, fillOpacity: 0.7, weight: 0 }));
-            gNuoc.eachLayer(l => l.setStyle({ color: vNuoc, fillColor: vNuoc, fillOpacity: 0.8, weight: 0 }));
+        // HÀM ĐỔI GIAO DIỆN SÁNG TỐI
+        function toggleTheme() {
+            if(document.body.classList.toggle('light-mode')) {
+                map.removeLayer(darkT); lightT.addTo(map);
+            } else {
+                map.removeLayer(lightT); darkT.addTo(map);
+            }
         }
 
-        async function fetchData() {
-            if(map.getZoom() < 16) { alert("Hãy zoom gần hơn!"); return; }
-            document.getElementById('status').innerText = "ĐANG TẢI DỮ LIỆU...";
+        // HÀM ĐIỀU KHIỂN MÀU TRỰC TIẾP (LIVE)
+        function applyLiveColors() {
+            const colors = {
+                nha: document.getElementById('cNha').value,
+                duong: document.getElementById('cDuong').value,
+                viahe: document.getElementById('cViaHe').value,
+                cay: document.getElementById('cCay').value,
+                nuoc: document.getElementById('cNuoc').value
+            };
+
+            groups.nha.eachLayer(l => l.setStyle({ color: colors.nha, fillColor: colors.nha, fillOpacity: 0.85 }));
+            groups.duong.eachLayer(l => l.setStyle({ color: colors.duong, fillColor: colors.duong, fillOpacity: 1 }));
+            groups.viahe.eachLayer(l => l.setStyle({ color: colors.viahe, fillColor: colors.viahe, fillOpacity: 0.8 }));
+            groups.cay.eachLayer(l => l.setStyle({ color: colors.cay, fillColor: colors.cay, fillOpacity: 0.75 }));
+            groups.nuoc.eachLayer(l => l.setStyle({ color: colors.nuoc, fillColor: colors.nuoc, fillOpacity: 0.8 }));
+        }
+
+        async function loadData() {
+            if(map.getZoom() < 16) return alert("Zoom gần hơn để quét dữ liệu!");
+            document.getElementById('stt').innerText = "📡 ĐANG QUÉT DỮ LIỆU...";
             
             const b = map.getBounds();
             const q = `[out:json][bbox:${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}];(way["building"];way["highway"];way["natural"~"water|wood"];way["landuse"~"grass|forest"];way["leisure"~"park"];);out body;>;out skel qt;`;
@@ -93,58 +118,56 @@
                 const nodeMap = new Map();
                 data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
-                // Xóa cũ để nạp mới
-                [gNha, gDuong, gViaHe, gCay, gNuoc].forEach(g => g.clearLayers());
+                Object.values(groups).forEach(g => g.clearLayers());
                 let rPolys = [], wPolys = [];
 
                 data.elements.filter(e => e.type === "way").forEach(e => {
                     const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n);
                     if (nodes.length < 2) return;
-                    const lats = nodes.map(n => [n.lat, n.lon]);
+                    const latlngs = nodes.map(n => [n.lat, n.lon]);
 
                     if (e.tags?.building) {
-                        L.polygon(lats).addTo(gNha);
+                        L.polygon(latlngs, { weight: 0.5 }).addTo(groups.nha);
                     } else if (e.tags?.highway) {
                         const line = turf.lineString(nodes.map(n => [n.lon, n.lat]));
-                        const rW = (e.tags.highway === 'primary') ? 10 : 6;
-                        rPolys.push(turf.buffer(line, rW/2, {units:'meters'}));
-                        wPolys.push(turf.buffer(line, (rW/2)+3.5, {units:'meters'})); // Vỉa hè bao quanh
+                        const w = (e.tags.highway === 'primary') ? 10 : 6;
+                        rPolys.push(turf.buffer(line, w/2, {units:'meters'}));
+                        wPolys.push(turf.buffer(line, (w/2)+3, {units:'meters'}));
                     } else if (e.tags?.natural === 'water') {
-                        L.polygon(lats).addTo(gNuoc);
+                        L.polygon(latlngs, { weight: 0 }).addTo(groups.nuoc);
                     } else if (e.tags?.leisure || e.tags?.landuse) {
-                        L.polygon(lats).addTo(gCay);
+                        L.polygon(latlngs, { weight: 0 }).addTo(groups.cay);
                     }
                 });
 
                 if (rPolys.length > 0) {
-                    let combinedRoad = rPolys.reduce((a, b) => turf.union(a, b));
-                    let combinedWalk = wPolys.reduce((a, b) => turf.union(a, b));
-                    L.geoJSON(combinedRoad).addTo(gDuong);
-                    L.geoJSON(turf.difference(combinedWalk, combinedRoad)).addTo(gViaHe);
+                    let mR = rPolys.reduce((a, b) => turf.union(a, b));
+                    let mW = wPolys.reduce((a, b) => turf.union(a, b));
+                    L.geoJSON(mR, { weight: 0 }).addTo(groups.duong);
+                    L.geoJSON(turf.difference(mW, mR), { weight: 0 }).addTo(groups.viahe);
                 }
-
-                liveUpdate(); // Áp màu ngay sau khi tải xong
-                document.getElementById('status').innerText = "ĐÃ CẬP NHẬT XONG";
-            } catch (err) { document.getElementById('status').innerText = "LỖI KẾT NỐI SERVER"; }
+                applyLiveColors();
+                document.getElementById('stt').innerText = "✅ ĐÃ CẬP NHẬT MÀU LIVE";
+            } catch (err) { document.getElementById('stt').innerText = "❌ LỖI: SERVER QUÁ TẢI"; }
         }
 
-        function exportDXF() {
-            document.getElementById('status').innerText = "ĐANG XUẤT CAD...";
+        function exportCAD() {
+            document.getElementById('stt').innerText = "📥 ĐANG XUẤT CAD...";
             const center = map.getCenter();
             const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
             let dxf = "0\nSECTION\n2\nENTITIES\n";
 
-            gNha.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CONG_TRINH", center, sx, sy));
-            gDuong.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "MAT_DUONG", center, sx, sy));
-            gViaHe.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "VIA_HE", center, sx, sy));
-            gCay.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CAY_XANH", center, sx, sy));
-            gNuoc.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "MAT_NUOC", center, sx, sy));
+            groups.nha.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CONG_TRINH", center, sx, sy));
+            groups.duong.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "MAT_DUONG", center, sx, sy));
+            groups.viahe.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "VIA_HE", center, sx, sy));
+            groups.nuoc.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "MAT_NUOC", center, sx, sy));
+            groups.cay.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CAY_XANH", center, sx, sy));
 
             dxf += "0\nENDSEC\n0\nEOF";
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-            a.download = "NAM_ARCH_DIAGRAM_1x1.dxf"; a.click();
-            document.getElementById('status').innerText = "FILE CAD ĐÃ TẢI VỀ";
+            a.download = "NAM_ARCH_V35_1x1.dxf"; a.click();
+            document.getElementById('stt').innerText = "🚀 XUẤT FILE THÀNH CÔNG";
         }
 
         function writeDxf(pts, layer, center, sx, sy) {
