@@ -2,13 +2,13 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v47 - Hardcoded v21</title>
+    <title>NAM ARCH v48 - Ultimate V21 Final</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
     <style>
-        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(30, 30, 30, 0.98); --text: #eee; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(30, 30, 30, 0.98); }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #eee; overflow: hidden; }
         #map { height: 100vh; width: 100vw; background: #000; }
         .sidebar {
             position: absolute; top: 20px; left: 20px; z-index: 1000; width: 320px;
@@ -16,125 +16,135 @@
             border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 45px rgba(0,0,0,0.6);
             backdrop-filter: blur(10px);
         }
-        h1 { margin: 0; font-size: 20px; color: var(--accent); text-align: center; text-transform: uppercase; }
+        h1 { margin: 0; font-size: 20px; color: var(--accent); text-align: center; letter-spacing: 1px; }
         button {
             width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold;
             cursor: pointer; transition: 0.3s; font-size: 11px; text-transform: uppercase; margin-top: 15px;
         }
-        .btn-main { background: #3498db; color: white; box-shadow: 0 4px 15px rgba(52,152,219,0.4); }
+        .btn-main { background: #3498db; color: white; border-bottom: 4px solid #2980b9; }
+        .btn-main:active { border-bottom: 0; transform: translateY(2px); }
         .btn-export { background: var(--accent); color: #000; }
-        .status-panel { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .progress-bar { height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 10px; }
-        #progress { width: 0%; height: 100%; background: var(--accent); transition: 0.3s; }
-        #stt { font-size: 11px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; }
-        /* Style chỉ lấy nét theo yêu cầu */
-        .leaflet-interactive { fill-opacity: 0 !important; stroke-width: 1.5; pointer-events: none; }
+        .status-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .prog { height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        #bar { width: 0%; height: 100%; background: var(--accent); transition: 0.3s; }
+        #stt { font-size: 10px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; }
+        .leaflet-interactive { fill-opacity: 0 !important; stroke-width: 1.5; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h1>NAM ARCH v47</h1>
-    <p style="font-size: 9px; text-align:center; opacity:0.6; margin-top:5px">V21 PURE WIREFRAME | SCREEN ONLY</p>
+    <h1>NAM ARCH v48</h1>
+    <p style="font-size: 9px; text-align:center; opacity:0.6">ENGINE V21 - HARDCORE STABLE</p>
 
-    <button class="btn-main" id="btnRun" onclick="runFinalScan()">🚀 QUÉT NÉT MÀN HÌNH (V21)</button>
+    <button class="btn-main" onclick="startScan()">🚀 QUÉT PHẠM VI MÀN HÌNH</button>
 
-    <div class="status-panel">
+    <div class="status-box">
         <div style="font-size: 11px; display: flex; justify-content: space-between;">
-            <span>Trạng thái:</span>
-            <span id="sys-stt" style="color: #00ffcc;">SẴN SÀNG</span>
+            <span>Hệ thống:</span>
+            <span id="lib-stt">KIỂM TRA...</span>
         </div>
-        <div class="progress-bar"><div id="progress"></div></div>
-        <div id="stt">Chưa bắt đầu</div>
+        <div class="prog"><div id="bar"></div></div>
+        <div id="stt">READY</div>
     </div>
 
-    <button class="btn-export" onclick="exportDxfv21()">📥 XUẤT CAD NÉT 1:1</button>
+    <button class="btn-export" onclick="exportDXF()">📥 XUẤT CAD 1:1 (LAYER V21)</button>
 </div>
 
 <div id="map"></div>
 
 <script>
+    // Kiểm tra và báo cáo trạng thái thư viện
+    setInterval(() => {
+        const el = document.getElementById('lib-stt');
+        if (typeof turf !== 'undefined') { el.innerText = "ONLINE"; el.style.color = "#00ffcc"; }
+        else { el.innerText = "OFFLINE (ĐANG KẾT NỐI...)"; el.style.color = "#ff4757"; }
+    }, 1000);
+
     var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 16);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
     
-    var groups = { 
+    var layers = { 
         nha: L.layerGroup().addTo(map), 
         duong: L.layerGroup().addTo(map), 
         viahe: L.layerGroup().addTo(map) 
     };
 
-    async function runFinalScan() {
-        if (typeof turf === 'undefined') {
-            alert("Đang nỗ lực kết nối lại thư viện xử lý hình học. Bạn hãy chờ 5 giây rồi bấm lại nhé!");
-            return;
-        }
-
-        const b = map.getBounds();
-        const screenBox = [b.getSouthWest().lng, b.getSouthWest().lat, b.getNorthEast().lng, b.getNorthEast().lat];
+    async function startScan() {
+        if (typeof turf === 'undefined') { alert("Thư viện chưa sẵn sàng, vui lòng đợi 5s!"); return; }
         
-        Object.values(groups).forEach(g => g.clearLayers());
-        document.getElementById('progress').style.width = '0%';
+        const bounds = map.getBounds();
+        const screenBbox = [bounds.getSouthWest().lng, bounds.getSouthWest().lat, bounds.getNorthEast().lng, bounds.getNorthEast().lat];
         
+        Object.values(layers).forEach(g => g.clearLayers());
+        document.getElementById('bar').style.width = '0%';
+        
+        // Chia 16 mảng để tối ưu bộ nhớ
         const rows = 4, cols = 4;
-        const latStep = (b.getNorthEast().lat - b.getSouthWest().lat) / rows;
-        const lngStep = (b.getNorthEast().lng - b.getSouthWest().lng) / cols;
-        let count = 0;
-
+        const dLat = (bounds.getNorthEast().lat - bounds.getSouthWest().lat) / rows;
+        const dLng = (bounds.getNorthEast().lng - bounds.getSouthWest().lng) / cols;
+        
         for(let i=0; i<rows; i++) {
             for(let j=0; j<cols; j++) {
-                const tile = [b.getSouthWest().lat + i*latStep, b.getSouthWest().lng + j*lngStep, b.getSouthWest().lat + (i+1)*latStep, b.getSouthWest().lng + (j+1)*lngStep];
-                await processV21(tile, screenBox);
-                count++;
-                document.getElementById('progress').style.width = (count/16)*100 + '%';
-                document.getElementById('stt').innerText = `ĐANG XỬ LÝ: ${count}/16 MẢNG`;
+                const box = [
+                    bounds.getSouthWest().lat + i*dLat, 
+                    bounds.getSouthWest().lng + j*dLng, 
+                    bounds.getSouthWest().lat + (i+1)*dLat, 
+                    bounds.getSouthWest().lng + (j+1)*dLng
+                ];
+                await processBox(box, screenBbox);
+                let p = ((i*4 + j + 1)/16)*100;
+                document.getElementById('bar').style.width = p + '%';
+                document.getElementById('stt').innerText = `XỬ LÝ MẢNG: ${i*4+j+1}/16`;
             }
         }
-        document.getElementById('stt').innerText = "✅ XONG! CHỈ QUÉT TRONG MÀN HÌNH";
+        document.getElementById('stt').innerText = "✅ HOÀN THÀNH (DỮ LIỆU ĐÃ CẮT THEO KHUNG)";
     }
 
-    async function processV21(tile, clip) {
-        const query = `[out:json][timeout:30][bbox:${tile[0]},${tile[1]},${tile[2]},${tile[3]}];(way["building"];way["highway"];);out body;>;out skel qt;`;
+    async function processBox(box, clip) {
+        const url = `https://overpass-api.de/api/interpreter?data=[out:json][bbox:${box[0]},${box[1]},${box[2]},${box[3]}];(way["building"];way["highway"];);out body;>;out skel qt;`;
         try {
-            const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
+            const res = await fetch(url);
             const data = await res.json();
-            const nodes = new Map();
-            data.elements.forEach(e => { if(e.type==='node') nodes.set(e.id, [e.lon, e.lat]); });
+            const nodes = {};
+            data.elements.forEach(e => { if(e.type==='node') nodes[e.id] = [e.lon, e.lat]; });
 
-            let roadPolys = [], sidePolys = [];
+            let roads = [], sidewalks = [];
 
-            data.elements.filter(e => e.type === "way").forEach(e => {
-                const pts = e.nodes.map(id => nodes.get(id)).filter(p => p);
+            data.elements.filter(e => e.type === 'way').forEach(e => {
+                const pts = e.nodes.map(id => nodes[id]).filter(p => p);
                 if (pts.length < 2) return;
 
                 if (e.tags.building) {
                     const poly = turf.polygon([pts.concat([pts[0]])]);
-                    L.geoJSON(turf.bboxClip(poly, clip), {color:'#ff4d4d'}).addTo(groups.nha);
+                    L.geoJSON(turf.bboxClip(poly, clip), {color:'#ff4d4d', weight: 1}).addTo(layers.nha);
                 } else if (e.tags.highway) {
                     const line = turf.lineString(pts);
-                    const w = (e.tags.highway === 'primary') ? 10 : 6;
-                    roadPolys.push(turf.bboxClip(turf.buffer(line, w/2, {units:'meters'}), clip));
-                    sidePolys.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters'}), clip));
+                    const w = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 7;
+                    // Thuật toán v21
+                    roads.push(turf.bboxClip(turf.buffer(line, w/2, 'meters'), clip));
+                    sidewalks.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, 'meters'), clip));
                 }
             });
 
-            if (roadPolys.length > 0) {
-                let mR = roadPolys.reduce((a, b) => turf.union(a, b));
-                let mS = sidePolys.reduce((a, b) => turf.union(a, b));
-                L.geoJSON(mR, {color:'#ffffff'}).addTo(groups.duong);
-                L.geoJSON(turf.difference(mS, mR), {color:'#f1c40f'}).addTo(groups.viahe);
+            if (roads.length > 0) {
+                let mR = roads.reduce((a, b) => turf.union(a, b));
+                let mS = sidewalks.reduce((a, b) => turf.union(a, b));
+                L.geoJSON(mR, {color:'#fff', weight: 1}).addTo(layers.duong);
+                L.geoJSON(turf.difference(mS, mR), {color:'#f1c40f', weight: 0.8}).addTo(layers.viahe);
             }
-        } catch (err) { console.error("Tile skip"); }
+        } catch(e) { console.error("Skip tile"); }
     }
 
-    function exportDxfv21() {
+    function exportDXF() {
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
 
-        const write = (g, name) => {
+        const writeL = (g, name) => {
             g.eachLayer(l => {
                 const geo = l.toGeoJSON();
-                let rings = (geo.features) ? geo.features[0].geometry.coordinates : geo.geometry.coordinates;
+                let rings = geo.features ? geo.features[0].geometry.coordinates : geo.geometry.coordinates;
                 if(geo.geometry.type === "MultiPolygon") rings = rings.flat(1);
                 rings.forEach(ring => {
                     let pts = Array.isArray(ring[0][0]) ? ring[0] : ring;
@@ -145,15 +155,14 @@
             });
         };
 
-        write(groups.nha, "NET_NHA");
-        write(groups.duong, "NET_DUONG");
-        write(groups.viahe, "NET_VIAHE");
+        writeL(layers.nha, "NET_NHA");
+        writeL(layers.duong, "NET_DUONG");
+        writeL(layers.viahe, "NET_VIAHE");
         dxf += "0\nENDSEC\n0\nEOF";
         
-        const blob = new Blob([dxf], {type: 'application/dxf'});
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = "NAM_ARCH_V47_FINAL.dxf"; a.click();
+        a.href = URL.createObjectURL(new Blob([dxf], {type:'application/dxf'}));
+        a.download = "NAM_V48_V21_FINAL.dxf"; a.click();
     }
 </script>
 </body>
