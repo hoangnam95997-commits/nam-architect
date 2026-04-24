@@ -2,51 +2,87 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - V21 TURF BOOLEAN</title>
+    <title>NAM ARCH v23 - Professional Workstation</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #000; }
-        #map { height: 100vh; width: 100vw; }
-        .ui { 
-            position: absolute; top: 20px; left: 20px; z-index: 1000; 
-            background: rgba(0, 20, 10, 0.9); padding: 25px; border-radius: 12px; width: 280px;
-            border: 1px solid #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); color: white;
+        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(25, 25, 25, 0.95); }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: white; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* 3D View Perspective */
+        .view-3d #map { transform: perspective(1000px) rotateX(45deg) scale(1.2); }
+
+        .sidebar {
+            position: absolute; top: 20px; left: 20px; z-index: 1000; width: 300px;
+            background: var(--panel); backdrop-filter: blur(10px); padding: 25px;
+            border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.6);
         }
-        h2 { color: #00ffcc; margin: 0 0 5px; font-size: 22px; text-align: center; }
-        p { text-align:center; font-size:11px; margin-top:0; color:#aaa; margin-bottom: 15px;}
-        button { 
-            width: 100%; padding: 15px; background: #00ffcc; color: #000; 
-            border: none; cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.3s;
+        h1 { margin: 0; font-size: 26px; letter-spacing: -1px; color: var(--accent); }
+        .tagline { font-size: 10px; opacity: 0.5; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; display: block; }
+        
+        .group { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+        label { display: block; font-size: 11px; color: var(--accent); margin-bottom: 10px; font-weight: bold; }
+        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        
+        input[type="color"] { border: none; width: 25px; height: 25px; border-radius: 5px; cursor: pointer; background: none; }
+        
+        button {
+            width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold;
+            cursor: pointer; transition: 0.3s; margin-top: 8px; font-size: 12px;
         }
-        button:hover { background: #fff; box-shadow: 0 0 10px #00ffcc; }
-        .progress-container { width: 100%; height: 8px; background: #222; margin-top: 15px; display: none; overflow: hidden; border-radius: 4px; }
-        .progress-fill { width: 0%; height: 100%; background: #00ffcc; transition: 0.2s; }
-        #stt { text-align: center; font-size: 12px; margin-top: 10px; color: #00ffcc; font-family: monospace;}
+        .btn-preview { background: #34495e; color: white; }
+        .btn-export { background: var(--accent); color: #000; }
+        .btn-3d { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        #loader { font-size: 11px; text-align: center; margin-top: 15px; color: #aaa; font-family: monospace; }
     </style>
 </head>
 <body>
-    <div class="ui">
-        <h2>NAM ARCH v21</h2>
-        <p>BOOLEAN UNION TURF.JS</p>
-        <button id="btn" onclick="exportV21()">XUẤT CAD (HÀN NGÃ TƯ)</button>
-        <div class="progress-container" id="p-bar"><div class="progress-fill" id="p-fill"></div></div>
-        <div id="stt">Trạng thái: Sẵn sàng</div>
+
+    <div class="sidebar">
+        <h1>NAM ARCH</h1>
+        <span class="tagline">v23 Architect Suite</span>
+
+        <div class="group">
+            <label>LAYER COLORS (DIAGRAM)</label>
+            <div class="row"><span>Building</span><input type="color" id="cBuilding" value="#ff5e57"></div>
+            <div class="row"><span>Road</span><input type="color" id="cRoad" value="#4b4b4b"></div>
+            <div class="row"><span>Sidewalk</span><input type="color" id="cWalk" value="#1dd1a1"></div>
+        </div>
+
+        <div class="group">
+            <label>VISUALIZATION</label>
+            <button class="btn-3d" onclick="toggle3D()">TOGGLE 3D VIEW (APP)</button>
+        </div>
+
+        <button class="btn-preview" onclick="processData(true)">👁️ XEM TRƯỚC (PREVIEW)</button>
+        <button class="btn-export" onclick="processData(false)">📥 XUẤT DXF (2D FLAT)</button>
+        
+        <div id="loader">Hệ thống sẵn sàng...</div>
     </div>
+
     <div id="map"></div>
 
     <script>
-        var map = L.map('map').setView([10.7933, 106.6800], 17);
+        var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 17);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+        
+        var previewLayer = L.layerGroup().addTo(map);
 
-        async function exportV21() {
-            const stt = document.getElementById('stt');
-            const pFill = document.getElementById('p-fill');
-            document.getElementById('p-bar').style.display = 'block';
-            document.getElementById('btn').disabled = true;
+        function toggle3D() {
+            document.body.classList.toggle('view-3d');
+            stt(document.body.classList.contains('view-3d') ? "Đang ở chế độ 3D Perspective" : "Về chế độ 2D");
+        }
+
+        function stt(t) { document.getElementById('loader').innerText = t; }
+
+        async function processData(isPreview) {
+            previewLayer.clearLayers();
+            stt("ĐANG TÍNH TOÁN HÌNH HỌC...");
             
-            stt.innerText = "1/3: Đang tải dữ liệu...";
             const b = map.getBounds();
             const query = `[out:json][bbox:${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}];(way["building"];way["highway"];);out body;>;out skel qt;`;
             
@@ -56,94 +92,89 @@
                 const nodeMap = new Map();
                 data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
-                pFill.style.width = "40%";
-                stt.innerText = "2/3: Dựng hình khối học...";
-
-                let dxf = "0\nSECTION\n2\nENTITIES\n";
                 const center = map.getCenter();
-                const scale = 111319;
+                const scale = 111319; // 1:1 Meter Scale
+                let dxf = "0\nSECTION\n2\nENTITIES\n";
                 
-                let roadPolygons = []; // Mảng chứa các mặt phẳng đường
+                let roadPolys = [];
+                let walkPolys = [];
 
-                // XỬ LÝ DỮ LIỆU
                 data.elements.filter(e => e.type === "way").forEach(e => {
                     const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n && b.contains([n.lat, n.lon]));
                     if (nodes.length < 2) return;
 
-                    // 1. NẾU LÀ NHÀ
-                    if (e.tags?.building) {
-                        dxf += `0\nPOLYLINE\n8\nNHA\n62\n1\n66\n1\n70\n1\n`;
-                        nodes.forEach(n => {
-                            let x = (n.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
-                            let y = (n.lat - center.lat) * scale;
-                            dxf += `0\nVERTEX\n8\nNHA\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n`;
-                        });
-                        dxf += `0\nSEQEND\n`;
-                    } 
-                    // 2. NẾU LÀ ĐƯỜNG
-                    else if (e.tags?.highway) {
-                        let widthMeters = (e.tags.highway === 'primary' || e.tags.highway === 'trunk') ? 8 : 4;
-                        let coords = nodes.map(n => [n.lon, n.lat]);
-                        
-                        // Tạo đối tượng LineString của Turf
-                        let line = turf.lineString(coords);
-                        
-                        // Buffer (Tạo độ dày) cho con đường tính bằng mét
-                        try {
-                            let poly = turf.buffer(line, widthMeters / 2, {units: 'meters', steps: 2});
-                            if (poly) roadPolygons.push(poly);
-                        } catch(err) {}
+                    const coords = nodes.map(n => [n.lon, n.lat]);
+                    const line = turf.lineString(coords);
+
+                    if (e.tags?.highway) {
+                        const rW = (e.tags.highway === 'primary') ? 8 : 4;
+                        const sW = rW + 3; // Vỉa hè mỗi bên 1.5m
+                        const pR = turf.buffer(line, rW/2, {units:'meters'});
+                        const pW = turf.buffer(line, sW/2, {units:'meters'});
+                        if(pR) roadPolys.push(pR);
+                        if(pW) walkPolys.push(pW);
+                    } else if (e.tags?.building) {
+                        // Vẽ khối nhà lên Preview (nếu là preview) hoặc xuất CAD
+                        if (isPreview) {
+                            L.polygon(nodes.map(n=>[n.lat, n.lon]), {color: document.getElementById('cBuilding').value, fillOpacity: 0.6}).addTo(previewLayer);
+                        } else {
+                            dxf += writePolygonDXF(nodes, "NHA_2D", center, scale);
+                        }
                     }
                 });
 
-                pFill.style.width = "70%";
-                stt.innerText = "3/3: Boolean Gộp Ngã Tư...";
+                // Xử lý Boolean Union cho Giao lộ sạch
+                if (roadPolys.length > 0) {
+                    let mergedRoad = roadPolys.reduce((a, b) => turf.union(a, b));
+                    let mergedWalk = walkPolys.reduce((a, b) => turf.union(a, b));
+                    let finalWalk = turf.difference(mergedWalk, mergedRoad);
 
-                // THUẬT TOÁN BOOLEAN UNION (Nung chảy các con đường thành 1 khối)
-                if (roadPolygons.length > 0) {
-                    // Để tránh lag trình duyệt, mình gom từng khối vào nhau
-                    let mergedRoads = roadPolygons[0];
-                    for(let i = 1; i < roadPolygons.length; i++) {
-                        try {
-                            mergedRoads = turf.union(mergedRoads, roadPolygons[i]);
-                        } catch(err) {} // Bỏ qua nếu có lỗi hình học cục bộ
+                    if (isPreview) {
+                        L.geoJSON(mergedRoad, {style: {color: document.getElementById('cRoad').value, weight: 1}}).addTo(previewLayer);
+                        L.geoJSON(finalWalk, {style: {color: document.getElementById('cWalk').value, weight: 1}}).addTo(previewLayer);
+                        stt("XEM TRƯỚC: Mọi giao lộ đã được xử lý!");
+                    } else {
+                        dxf += turfToDXF(mergedRoad, "MAT_DUONG", center, scale);
+                        dxf += turfToDXF(finalWalk, "VIA_HE", center, scale);
+                        dxf += "0\nENDSEC\n0\nEOF";
+                        downloadDXF(dxf);
+                        stt("XUẤT FILE 2D THÀNH CÔNG!");
                     }
-
-                    // Rút trích đường viền viền bao (Outline) từ khối đã gộp
-                    let rings = [];
-                    if (mergedRoads.geometry.type === 'Polygon') {
-                        rings = mergedRoads.geometry.coordinates;
-                    } else if (mergedRoads.geometry.type === 'MultiPolygon') {
-                        mergedRoads.geometry.coordinates.forEach(polyCoords => rings.push(...polyCoords));
-                    }
-
-                    // Vẽ đường viền đó vào CAD
-                    rings.forEach(ring => {
-                        dxf += `0\nPOLYLINE\n8\nDUONG\n62\n7\n66\n1\n70\n1\n`;
-                        ring.forEach(pt => {
-                            let lon = pt[0], lat = pt[1];
-                            let x = (lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
-                            let y = (lat - center.lat) * scale;
-                            dxf += `0\nVERTEX\n8\nDUONG\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n`;
-                        });
-                        dxf += `0\nSEQEND\n`;
-                    });
                 }
+            } catch (e) { stt("LỖI: Vùng chọn quá lớn?"); }
+        }
 
-                pFill.style.width = "100%";
-                dxf += "0\nENDSEC\n0\nEOF";
-                const blob = new Blob([dxf], {type: 'application/dxf'});
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = "Nam_V21_Turf_Boolean.dxf";
-                a.click();
-                
-                stt.innerText = "HOÀN TẤT! Z -> E";
-                document.getElementById('btn').disabled = false;
-            } catch (err) { 
-                stt.innerText = "LỖI: Rất có thể do mạng!"; 
-                document.getElementById('btn').disabled = false;
-            }
+        function writePolygonDXF(nodes, layer, center, scale) {
+            let s = `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
+            nodes.forEach(n => {
+                let x = (n.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
+                let y = (n.lat - center.lat) * scale;
+                s += `0\nVERTEX\n8\n${layer}\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n30\n0\n`;
+            });
+            return s + "0\nSEQEND\n";
+        }
+
+        function turfToDXF(poly, layer, center, scale) {
+            let s = "";
+            let rings = (poly.geometry.type === 'Polygon') ? poly.geometry.coordinates : poly.geometry.coordinates.flat(1);
+            rings.forEach(ring => {
+                s += `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
+                ring.forEach(pt => {
+                    let x = (pt[0] - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
+                    let y = (pt[1] - center.lat) * scale;
+                    s += `0\nVERTEX\n8\n${layer}\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n30\n0\n`;
+                });
+                s += `0\nSEQEND\n`;
+            });
+            return s;
+        }
+
+        function downloadDXF(data) {
+            const blob = new Blob([data], {type: 'application/dxf'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "NAM_ARCH_V23_2D_CLEAN.dxf";
+            a.click();
         }
     </script>
 </body>
