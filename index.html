@@ -2,107 +2,93 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - CADMAPPER ENGINE</title>
+    <title>NAM ARCH - DOUBLE LINE CAD</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #2c3e50; }
+        body { margin: 0; font-family: sans-serif; }
         #map { height: 100vh; width: 100vw; }
-        .ui { position: absolute; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,0.95); padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 280px; }
-        button { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; font-size: 14px; text-transform: uppercase; }
-        .info { font-size: 11px; color: #34495e; margin-top: 10px; line-height: 1.6; }
-        .progress-bar { height: 6px; background: #ecf0f1; border-radius: 3px; margin-top: 10px; display: none; overflow: hidden; }
-        .progress-fill { width: 0%; height: 100%; background: #27ae60; transition: width 0.2s; }
+        .ui { position: absolute; top: 20px; left: 50px; z-index: 1000; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 260px; }
+        button { width: 100%; padding: 15px; background: #2c3e50; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .progress { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 15px 0; display: none; overflow: hidden; }
+        .bar { width: 0%; height: 100%; background: #e67e22; transition: width 0.2s; }
     </style>
 </head>
 <body>
     <div class="ui">
-        <h2 style="margin:0 0 10px; font-size:20px; color:#d35400;">NAM CAD PRO v6</h2>
-        <button onclick="exportCadmapperStyle()">XUẤT CAD CHUẨN QUY HOẠCH</button>
-        <div class="progress-bar" id="p-bar"><div class="progress-fill" id="p-fill"></div></div>
-        <div class="info">
-            • <b>Đường:</b> Phân cấp đại lộ & hẻm nhỏ<br>
-            • <b>Nhà:</b> Polyline khép kín nét đậm<br>
-            • <b>Vùng:</b> Chỉ quét vùng nhìn thấy (Viewport)
-        </div>
-        <div id="stt" style="text-align:center; font-weight:bold; margin-top:10px; font-size:12px;"></div>
+        <h2 style="margin:0 0 10px; font-size:18px;">NAM CAD PRO v5</h2>
+        <p style="font-size:11px; color:#666;">• Đường sẽ có 2 nét ranh<br>• Nhà nét đỏ, đường nét trắng</p>
+        <button id="btn" onclick="exportDoubleLineCAD()">XUẤT CAD 2 NÉT ĐƯỜNG</button>
+        <div id="loader" class="progress"><div id="bar" class="bar"></div></div>
+        <div id="stt" style="margin-top:10px; font-size:12px; text-align:center; color:#7f8c8d;">Sẵn sàng</div>
     </div>
     <div id="map"></div>
 
     <script>
         var map = L.map('map').setView([10.7933, 106.6800], 17);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
 
-        async function exportCadmapperStyle() {
-            const stt = document.getElementById('stt');
-            const pFill = document.getElementById('p-fill');
-            document.getElementById('p-bar').style.display = 'block';
+        async function exportDoubleLineCAD() {
+            const bar = document.getElementById('bar');
+            document.getElementById('loader').style.display = 'block';
             
             const b = map.getBounds();
             const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
-            // Query nâng cao lấy cả thông tin phân cấp đường
             const query = `[out:json][bbox:${bbox}];(way["building"];way["highway"];);out body;>;out skel qt;`;
             
             try {
-                stt.innerText = "⏳ ĐANG TẢI DỮ LIỆU GIS...";
-                const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
-                const data = await res.json();
+                const response = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
+                const data = await response.json();
                 
                 let dxf = "  0\nSECTION\n  2\nHEADER\n  9\n$ACADVER\n  1\nAC1009\n  0\nENDSEC\n  0\nSECTION\n  2\nENTITIES\n";
                 const center = map.getCenter();
                 const scale = 111319;
-
                 const ways = data.elements.filter(e => e.type === "way");
-                ways.forEach((e, idx) => {
-                    const isBuilding = !!e.tags?.building;
-                    const type = e.tags?.highway || "building";
-                    
-                    // THUẬT TOÁN PHÂN CẤP BỀ RỘNG ĐƯỜNG (Cadmapper logic)
-                    let width = 2.5; // Mặc định hẻm nhỏ 5m (mỗi bên 2.5m)
-                    if(type === 'primary' || type === 'trunk') width = 12;
-                    if(type === 'secondary') width = 8;
-                    if(type === 'tertiary') width = 5;
 
-                    const coords = e.nodes.map(id => data.elements.find(n => n.id === id)).filter(n => !!n);
+                ways.forEach((e, idx) => {
+                    let isBuilding = !!e.tags?.building;
+                    let color = isBuilding ? "1" : "7"; 
                     
-                    if (isBuilding) {
-                        // VẼ NHÀ: Dùng LWPOLYLINE khép kín
-                        dxf += `  0\nPOLYLINE\n  8\nBUILDINGS\n 62\n1\n 66\n1\n 70\n1\n`; // 70\n1 là lệnh khép kín
-                        coords.forEach(n => {
-                            let x = (n.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
-                            let y = (n.lat - center.lat) * scale;
-                            dxf += `  0\nVERTEX\n  8\nBUILDINGS\n 10\n${x}\n 20\n${y}\n 30\n0.0\n`;
-                        });
-                        dxf += `  0\nSEQEND\n`;
-                    } else {
-                        // VẼ ĐƯỜNG: Thuật toán Double-Line Offset
-                        for (let i = 0; i < coords.length - 1; i++) {
-                            let n1 = coords[i], n2 = coords[i+1];
+                    for (let i = 0; i < e.nodes.length - 1; i++) {
+                        let n1 = data.elements.find(n => n.id === e.nodes[i]);
+                        let n2 = data.elements.find(n => n.id === e.nodes[i+1]);
+                        
+                        if (n1 && n2) {
                             let x1 = (n1.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
                             let y1 = (n1.lat - center.lat) * scale;
                             let x2 = (n2.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
                             let y2 = (n2.lat - center.lat) * scale;
 
-                            let dx = x2 - x1, dy = y2 - y1;
-                            let len = Math.sqrt(dx*dx + dy*dy);
-                            if (len > 0) {
-                                let nx = (-dy/len) * width, ny = (dx/len) * width;
-                                dxf += `  0\nLINE\n  8\nROADS\n 62\n7\n 10\n${x1+nx}\n 20\n${y1+ny}\n 11\n${x2+nx}\n 21\n${y2+ny}\n`;
-                                dxf += `  0\nLINE\n  8\nROADS\n 62\n7\n 10\n${x1-nx}\n 20\n${y1-ny}\n 11\n${x2-nx}\n 21\n${y2-ny}\n`;
+                            if (isBuilding) {
+                                // Vẽ 1 nét cho nhà (màu đỏ)
+                                dxf += `  0\nLINE\n  8\nNHA\n 62\n1\n 10\n${x1}\n 20\n${y1}\n 11\n${x2}\n 21\n${y2}\n`;
+                            } else {
+                                // THUẬT TOÁN OFFSET: Vẽ 2 nét cho đường (màu trắng)
+                                let dx = x2 - x1; let dy = y2 - y1;
+                                let len = Math.sqrt(dx*dx + dy*dy);
+                                if (len > 0) {
+                                    let nx = (-dy / len) * 3.5; // Offset mỗi bên 3.5m -> lòng đường 7m
+                                    let ny = (dx / len) * 3.5;
+                                    
+                                    // Nét bên trái
+                                    dxf += `  0\nLINE\n  8\nDUONG\n 62\n7\n 10\n${x1+nx}\n 20\n${y1+ny}\n 11\n${x2+nx}\n 21\n${y2+ny}\n`;
+                                    // Nét bên phải
+                                    dxf += `  0\nLINE\n  8\nDUONG\n 62\n7\n 10\n${x1-nx}\n 20\n${y1-ny}\n 11\n${x2-nx}\n 21\n${y2-ny}\n`;
+                                }
                             }
                         }
                     }
-                    pFill.style.width = Math.floor((idx/ways.length)*100) + "%";
+                    bar.style.width = Math.floor((idx / ways.length) * 100) + "%";
                 });
-
+                
                 dxf += "  0\nENDSEC\n  0\nEOF\n";
                 const blob = new Blob([dxf], {type: 'application/dxf'});
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = "Nam_Cadmapper_Pro.dxf";
+                a.download = "Nam_Architect_DoubleLine.dxf";
                 a.click();
-                stt.innerText = "✅ THÀNH CÔNG!";
-            } catch (e) { stt.innerText = "❌ LỖI KẾT NỐI!"; }
+                document.getElementById('stt').innerText = "✅ XUẤT XONG!";
+            } catch (e) { alert("Lỗi dữ liệu!"); }
         }
     </script>
 </body>
