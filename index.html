@@ -2,149 +2,157 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - V21 TURF BOOLEAN</title>
+    <title>NAM ARCH v36 - Large Area Mode</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #000; }
+        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(25, 25, 25, 0.95); --text: #eee; }
+        .light-mode { --accent: #ff4757; --bg: #f5f6fa; --panel: rgba(255, 255, 255, 0.95); --text: #2f3542; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         #map { height: 100vh; width: 100vw; }
-        .ui { 
-            position: absolute; top: 20px; left: 20px; z-index: 1000; 
-            background: rgba(0, 20, 10, 0.9); padding: 25px; border-radius: 12px; width: 280px;
-            border: 1px solid #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); color: white;
+        .sidebar {
+            position: absolute; top: 20px; left: 20px; z-index: 1000; width: 310px;
+            background: var(--panel); border-radius: 15px; padding: 20px;
+            border: 1px solid rgba(128,128,128,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
-        h2 { color: #00ffcc; margin: 0 0 5px; font-size: 22px; text-align: center; }
-        p { text-align:center; font-size:11px; margin-top:0; color:#aaa; margin-bottom: 15px;}
-        button { 
-            width: 100%; padding: 15px; background: #00ffcc; color: #000; 
-            border: none; cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.3s;
+        h1 { margin: 0; font-size: 18px; color: var(--accent); text-align: center; }
+        .control-group { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+        button {
+            padding: 10px; border: none; border-radius: 8px; font-weight: bold;
+            cursor: pointer; transition: 0.2s; font-size: 10px; text-transform: uppercase;
         }
-        button:hover { background: #fff; box-shadow: 0 0 10px #00ffcc; }
-        .progress-container { width: 100%; height: 8px; background: #222; margin-top: 15px; display: none; overflow: hidden; border-radius: 4px; }
-        .progress-fill { width: 0%; height: 100%; background: #00ffcc; transition: 0.2s; }
-        #stt { text-align: center; font-size: 12px; margin-top: 10px; color: #00ffcc; font-family: monospace;}
+        .btn-fetch { background: #3498db; color: white; }
+        .btn-export { background: var(--accent); color: #000; }
+        .btn-tool { background: #57606f; color: white; }
+        .color-panel { background: rgba(128,128,128,0.1); padding: 12px; border-radius: 10px; margin-top: 15px; }
+        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 12px; }
+        input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; background: none; }
+        #stt { font-size: 9px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; }
     </style>
 </head>
 <body>
-    <div class="ui">
-        <h2>NAM ARCH v21</h2>
-        <p>BOOLEAN UNION TURF.JS</p>
-        <button id="btn" onclick="exportV21()">XUẤT CAD (HÀN NGÃ TƯ)</button>
-        <div class="progress-container" id="p-bar"><div class="progress-fill" id="p-fill"></div></div>
-        <div id="stt">Trạng thái: Sẵn sàng</div>
+
+<div class="sidebar">
+    <h1>NAM ARCH v36</h1>
+    <div class="control-group">
+        <button class="btn-tool" onclick="toggleTheme()">🌓 ĐỔI GIAO DIỆN (SÁNG/TỐI)</button>
+        <button class="btn-fetch" onclick="loadLargeData()">🚀 QUÉT DỮ LIỆU DIỆN TÍCH LỚN</button>
     </div>
-    <div id="map"></div>
 
-    <script>
-        var map = L.map('map').setView([10.7933, 106.6800], 17);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+    <div class="color-panel">
+        <div class="row"><span>Tòa nhà</span><input type="color" id="cNha" value="#ff4d4d" oninput="liveColor()"></div>
+        <div class="row"><span>Lòng đường</span><input type="color" id="cDuong" value="#3d3d3d" oninput="liveColor()"></div>
+        <div class="row"><span>Vỉa hè</span><input type="color" id="cViaHe" value="#f1c40f" oninput="liveColor()"></div>
+        <div class="row"><span>Cây xanh</span><input type="color" id="cCay" value="#2ecc71" oninput="liveColor()"></div>
+        <div class="row"><span>Mặt nước</span><input type="color" id="cNuoc" value="#3498db" oninput="liveColor()"></div>
+    </div>
 
-        async function exportV21() {
-            const stt = document.getElementById('stt');
-            const pFill = document.getElementById('p-fill');
-            document.getElementById('p-bar').style.display = 'block';
-            document.getElementById('btn').disabled = true;
-            
-            stt.innerText = "1/3: Đang tải dữ liệu...";
-            const b = map.getBounds();
-            const query = `[out:json][bbox:${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}];(way["building"];way["highway"];);out body;>;out skel qt;`;
-            
-            try {
-                const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
-                const data = await res.json();
-                const nodeMap = new Map();
-                data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
+    <button class="btn-export" onclick="exportCAD()">📥 XUẤT CAD 1:1 (CLEAN)</button>
+    <div id="stt">READY</div>
+</div>
 
-                pFill.style.width = "40%";
-                stt.innerText = "2/3: Dựng hình khối học...";
+<div id="map"></div>
 
-                let dxf = "0\nSECTION\n2\nENTITIES\n";
-                const center = map.getCenter();
-                const scale = 111319;
-                
-                let roadPolygons = []; // Mảng chứa các mặt phẳng đường
+<script>
+    var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 16);
+    var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+    var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
+    
+    var groups = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), cay: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
-                // XỬ LÝ DỮ LIỆU
-                data.elements.filter(e => e.type === "way").forEach(e => {
-                    const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n && b.contains([n.lat, n.lon]));
-                    if (nodes.length < 2) return;
+    function toggleTheme() {
+        if(document.body.classList.toggle('light-mode')) { map.removeLayer(darkT); lightT.addTo(map); }
+        else { map.removeLayer(lightT); darkT.addTo(map); }
+    }
 
-                    // 1. NẾU LÀ NHÀ
-                    if (e.tags?.building) {
-                        dxf += `0\nPOLYLINE\n8\nNHA\n62\n1\n66\n1\n70\n1\n`;
-                        nodes.forEach(n => {
-                            let x = (n.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
-                            let y = (n.lat - center.lat) * scale;
-                            dxf += `0\nVERTEX\n8\nNHA\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n`;
-                        });
-                        dxf += `0\nSEQEND\n`;
-                    } 
-                    // 2. NẾU LÀ ĐƯỜNG
-                    else if (e.tags?.highway) {
-                        let widthMeters = (e.tags.highway === 'primary' || e.tags.highway === 'trunk') ? 8 : 4;
-                        let coords = nodes.map(n => [n.lon, n.lat]);
-                        
-                        // Tạo đối tượng LineString của Turf
-                        let line = turf.lineString(coords);
-                        
-                        // Buffer (Tạo độ dày) cho con đường tính bằng mét
-                        try {
-                            let poly = turf.buffer(line, widthMeters / 2, {units: 'meters', steps: 2});
-                            if (poly) roadPolygons.push(poly);
-                        } catch(err) {}
-                    }
-                });
+    function liveColor() {
+        const c = { nha: document.getElementById('cNha').value, duong: document.getElementById('cDuong').value, viahe: document.getElementById('cViaHe').value, cay: document.getElementById('cCay').value, nuoc: document.getElementById('cNuoc').value };
+        groups.nha.eachLayer(l => l.setStyle({ color: c.nha, fillColor: c.nha, fillOpacity: 0.8 }));
+        groups.duong.eachLayer(l => l.setStyle({ color: c.duong, fillColor: c.duong, fillOpacity: 1 }));
+        groups.viahe.eachLayer(l => l.setStyle({ color: c.viahe, fillColor: c.viahe, fillOpacity: 0.8 }));
+        groups.cay.eachLayer(l => l.setStyle({ color: c.cay, fillColor: c.cay, fillOpacity: 0.7 }));
+        groups.nuoc.eachLayer(l => l.setStyle({ color: c.nuoc, fillColor: c.nuoc, fillOpacity: 0.8 }));
+    }
 
-                pFill.style.width = "70%";
-                stt.innerText = "3/3: Boolean Gộp Ngã Tư...";
+    async function loadLargeData() {
+        document.getElementById('stt').innerText = "ĐANG TỐI ƯU & QUÉT DIỆN TÍCH LỚN...";
+        const b = map.getBounds();
+        // Tối ưu Query Overpass cho diện tích lớn
+        const q = `[out:json][timeout:90][maxsize:1073741824][bbox:${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}];
+        (way["building"];way["highway"];way["natural"~"water|wood"];way["landuse"~"grass|forest"];way["leisure"~"park"];);
+        out body;>;out skel qt;`;
+        
+        try {
+            const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
+            const data = await res.json();
+            const nodeMap = new Map();
+            data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
-                // THUẬT TOÁN BOOLEAN UNION (Nung chảy các con đường thành 1 khối)
-                if (roadPolygons.length > 0) {
-                    // Để tránh lag trình duyệt, mình gom từng khối vào nhau
-                    let mergedRoads = roadPolygons[0];
-                    for(let i = 1; i < roadPolygons.length; i++) {
-                        try {
-                            mergedRoads = turf.union(mergedRoads, roadPolygons[i]);
-                        } catch(err) {} // Bỏ qua nếu có lỗi hình học cục bộ
-                    }
+            Object.values(groups).forEach(g => g.clearLayers());
+            let rPolys = [], wPolys = [];
 
-                    // Rút trích đường viền viền bao (Outline) từ khối đã gộp
-                    let rings = [];
-                    if (mergedRoads.geometry.type === 'Polygon') {
-                        rings = mergedRoads.geometry.coordinates;
-                    } else if (mergedRoads.geometry.type === 'MultiPolygon') {
-                        mergedRoads.geometry.coordinates.forEach(polyCoords => rings.push(...polyCoords));
-                    }
+            data.elements.filter(e => e.type === "way").forEach(e => {
+                const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n);
+                if (nodes.length < 2) return;
+                const latlngs = nodes.map(n => [n.lat, n.lon]);
 
-                    // Vẽ đường viền đó vào CAD
-                    rings.forEach(ring => {
-                        dxf += `0\nPOLYLINE\n8\nDUONG\n62\n7\n66\n1\n70\n1\n`;
-                        ring.forEach(pt => {
-                            let lon = pt[0], lat = pt[1];
-                            let x = (lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
-                            let y = (lat - center.lat) * scale;
-                            dxf += `0\nVERTEX\n8\nDUONG\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n`;
-                        });
-                        dxf += `0\nSEQEND\n`;
-                    });
-                }
+                if (e.tags?.building) L.polygon(latlngs, {weight:0.5}).addTo(groups.nha);
+                else if (e.tags?.highway) {
+                    const line = turf.lineString(nodes.map(n => [n.lon, n.lat]));
+                    // Giảm độ chi tiết buffer khi diện tích quá lớn để tránh treo trình duyệt
+                    const w = (e.tags.highway === 'primary') ? 10 : 6;
+                    rPolys.push(turf.buffer(line, w/2, {units:'meters', steps: 4})); 
+                    wPolys.push(turf.buffer(line, (w/2)+3, {units:'meters', steps: 4}));
+                } else if (e.tags?.natural === 'water') L.polygon(latlngs, {weight:0}).addTo(groups.nuoc);
+                else if (e.tags?.leisure || e.tags?.landuse) L.polygon(latlngs, {weight:0}).addTo(groups.cay);
+            });
 
-                pFill.style.width = "100%";
-                dxf += "0\nENDSEC\n0\nEOF";
-                const blob = new Blob([dxf], {type: 'application/dxf'});
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = "Nam_V21_Turf_Boolean.dxf";
-                a.click();
-                
-                stt.innerText = "HOÀN TẤT! Z -> E";
-                document.getElementById('btn').disabled = false;
-            } catch (err) { 
-                stt.innerText = "LỖI: Rất có thể do mạng!"; 
-                document.getElementById('btn').disabled = false;
+            // Xử lý gộp mảng lớn theo đợt (Chunking) để không treo trình duyệt
+            if (rPolys.length > 0) {
+                let mR = rPolys.reduce((a, b) => turf.union(a, b));
+                let mW = wPolys.reduce((a, b) => turf.union(a, b));
+                L.geoJSON(mR, {weight:0}).addTo(groups.duong);
+                L.geoJSON(turf.difference(mW, mR), {weight:0}).addTo(groups.viahe);
             }
-        }
-    </script>
+            liveColor();
+            document.getElementById('stt').innerText = "QUÉT THÀNH CÔNG DIỆN TÍCH LỚN";
+        } catch (e) { document.getElementById('stt').innerText = "LỖI: DIỆN TÍCH QUÁ LỚN, HÃY ZOOM VÀO CHÚT"; }
+    }
+
+    function exportCAD() {
+        document.getElementById('stt').innerText = "ĐANG XUẤT CAD...";
+        const center = map.getCenter();
+        const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
+        let dxf = "0\nSECTION\n2\nENTITIES\n";
+        groups.nha.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "NHA", center, sx, sy));
+        groups.duong.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "DUONG", center, sx, sy));
+        groups.viahe.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "VIA_HE", center, sx, sy));
+        groups.nuoc.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "NUOC", center, sx, sy));
+        groups.cay.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CAY", center, sx, sy));
+        dxf += "0\nENDSEC\n0\nEOF";
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([dxf], {type:'application/dxf'}));
+        a.download = "NAM_V36_LARGE.dxf"; a.click();
+        document.getElementById('stt').innerText = "XUẤT CAD XONG";
+    }
+
+    function writeDxf(pts, layer, center, sx, sy) {
+        let s = `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
+        pts.forEach(p => s += `0\nVERTEX\n8\n${layer}\n10\n${((p.lng - center.lng) * sx).toFixed(3)}\n20\n${((p.lat - center.lat) * sy).toFixed(3)}\n`);
+        return s + "0\nSEQEND\n";
+    }
+
+    function geoToDxf(geo, layer, center, sx, sy) {
+        let s = "";
+        let rings = (geo.geometry.type === 'Polygon') ? geo.geometry.coordinates : geo.geometry.coordinates.flat(1);
+        rings.forEach(ring => {
+            s += `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
+            ring.forEach(pt => s += `0\nVERTEX\n8\n${layer}\n10\n${((pt[0] - center.lng) * sx).toFixed(3)}\n20\n${((pt[1] - center.lat) * sy).toFixed(3)}\n`);
+            s += `0\nSEQEND\n`;
+        });
+        return s;
+    }
+</script>
 </body>
 </html>
