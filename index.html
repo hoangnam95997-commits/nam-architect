@@ -2,97 +2,87 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v32 - Fix Load Error</title>
+    <title>NAM ARCH v33 - Real-time Color Control</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
-        :root { --accent: #00ffcc; --bg: #000; --panel: rgba(25, 25, 25, 0.98); --text: #fff; }
-        .light-mode { --accent: #ff4757; --bg: #fff; --panel: rgba(240, 240, 240, 0.98); --text: #222; }
-        
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-        #map { height: 100vh; width: 100vw; }
+        :root { --accent: #00ffcc; --bg: #111; --panel: rgba(20, 20, 20, 0.98); --text: #eee; }
+        body { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        #map { height: 100vh; width: 100vw; background: #000; }
 
         .sidebar {
-            position: absolute; top: 15px; left: 15px; z-index: 1000; width: 300px;
-            background: var(--panel); border-radius: 12px; padding: 20px;
-            border: 1px solid rgba(128,128,128,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: absolute; top: 20px; left: 20px; z-index: 1000; width: 310px;
+            background: var(--panel); border-radius: 16px; padding: 22px;
+            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.6);
         }
-        h1 { margin: 0; font-size: 18px; color: var(--accent); text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        h1 { margin: 0; font-size: 19px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
         
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
-        button {
-            padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 9px; text-transform: uppercase;
-        }
-        .btn-full { grid-column: span 2; padding: 12px; font-size: 11px; }
-        .btn-blue { background: #0984e3; color: #fff; }
-        .btn-green { background: #26de81; color: #000; }
-        .btn-gray { background: #4b6584; color: #fff; }
-        .btn-main { background: var(--accent); color: #000; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 11px; margin-bottom: 10px; text-transform: uppercase; }
+        .btn-fetch { background: #3498db; color: white; }
+        .btn-export { background: var(--accent); color: #000; }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
 
-        .group { margin-bottom: 10px; background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
-        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
-        input[type="color"] { border: none; width: 28px; height: 28px; cursor: pointer; background: none; }
+        .color-group { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .label-title { font-size: 10px; color: var(--accent); font-weight: bold; margin-bottom: 12px; display: block; opacity: 0.8; }
+        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
+        input[type="color"] { border: none; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; background: none; transition: 0.2s; }
+        input[type="color"]:hover { transform: scale(1.1); }
 
-        #stt { font-size: 9px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; }
+        #status { font-size: 10px; text-align: center; color: var(--accent); font-family: 'Courier New', monospace; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h1>NAM ARCH v32</h1>
+        <h1>NAM ARCH v33</h1>
 
-        <button class="btn-full btn-blue" onclick="loadData()">🚀 QUÉT DỮ LIỆU & HIỆN MÀU</button>
+        <button class="btn btn-fetch" onclick="fetchData()">📡 LẤY DỮ LIỆU HIỆN TRẠNG</button>
 
-        <div class="btn-group">
-            <button class="btn-gray" onclick="toggleTheme()">🌓 SÁNG / TỐI</button>
-            <button class="btn-green" id="btnPreview" onclick="togglePreview()">👁️ ẨN MÀU</button>
+        <div class="color-group">
+            <span class="label-title">BẢNG ĐIỀU KHIỂN MÀU DIAGRAM</span>
+            <div class="row"><span>🏢 Tòa nhà</span><input type="color" id="cNha" value="#ff4d4d" oninput="liveUpdate()"></div>
+            <div class="row"><span>🛣️ Lòng đường</span><input type="color" id="cDuong" value="#2d3436" oninput="liveUpdate()"></div>
+            <div class="row"><span>📐 Vỉa hè (Sidewalk)</span><input type="color" id="cViaHe" value="#fdcb6e" oninput="liveUpdate()"></div>
+            <div class="row"><span>🌳 Cây xanh</span><input type="color" id="cCay" value="#00b894" oninput="liveUpdate()"></div>
+            <div class="row"><span>🌊 Mặt nước</span><input type="color" id="cNuoc" value="#0984e3" oninput="applyNuoc()"></div>
         </div>
 
-        <div class="group">
-            <div class="row"><span>Tòa nhà</span><input type="color" id="cNha" value="#ff4d4d" oninput="applyColors()"></div>
-            <div class="row"><span>Lòng đường</span><input type="color" id="cDuong" value="#3d3d3d" oninput="applyColors()"></div>
-            <div class="row"><span>Vỉa hè</span><input type="color" id="cViaHe" value="#f1c40f" oninput="applyColors()"></div>
-            <div class="row"><span>Cây xanh</span><input type="color" id="cCay" value="#2ecc71" oninput="applyColors()"></div>
-            <div class="row"><span>Mặt nước</span><input type="color" id="cNuoc" value="#3498db" oninput="applyColors()"></div>
-        </div>
-
-        <button class="btn-full btn-main" onclick="exportCAD()">📥 XUẤT CAD 1:1 (LAYER CHUẨN)</button>
-        <div id="stt">CHỜ LỆNH QUÉT...</div>
+        <button class="btn btn-export" onclick="exportDXF()">📥 XUẤT FILE CAD 1:1</button>
+        <div id="status">SẴN SÀNG QUÉT</div>
     </div>
 
     <div id="map"></div>
 
     <script>
         var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 17);
-        var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
-        var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
         
-        var groups = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), cay: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
-        var isPreview = true;
+        // Tạo các lớp chứa đối tượng
+        var gNha = L.layerGroup().addTo(map);
+        var gDuong = L.layerGroup().addTo(map);
+        var gViaHe = L.layerGroup().addTo(map);
+        var gCay = L.layerGroup().addTo(map);
+        var gNuoc = L.layerGroup().addTo(map);
 
-        function toggleTheme() {
-            if(document.body.classList.toggle('light-mode')) { map.removeLayer(darkT); lightT.addTo(map); }
-            else { map.removeLayer(lightT); darkT.addTo(map); }
+        // HÀM ĐIỀU KHIỂN MÀU TRỰC TIẾP (LIVE CONTROL)
+        function liveUpdate() {
+            const vNha = document.getElementById('cNha').value;
+            const vDuong = document.getElementById('cDuong').value;
+            const vViaHe = document.getElementById('cViaHe').value;
+            const vCay = document.getElementById('cCay').value;
+            const vNuoc = document.getElementById('cNuoc').value;
+
+            gNha.eachLayer(l => l.setStyle({ color: vNha, fillColor: vNha, fillOpacity: 0.8, weight: 0.5 }));
+            gDuong.eachLayer(l => l.setStyle({ color: vDuong, fillColor: vDuong, fillOpacity: 1, weight: 0 }));
+            gViaHe.eachLayer(l => l.setStyle({ color: vViaHe, fillColor: vViaHe, fillOpacity: 0.8, weight: 0 }));
+            gCay.eachLayer(l => l.setStyle({ color: vCay, fillColor: vCay, fillOpacity: 0.7, weight: 0 }));
+            gNuoc.eachLayer(l => l.setStyle({ color: vNuoc, fillColor: vNuoc, fillOpacity: 0.8, weight: 0 }));
         }
 
-        function togglePreview() {
-            isPreview = !isPreview;
-            Object.values(groups).forEach(g => isPreview ? g.addTo(map) : map.removeLayer(g));
-            document.getElementById('btnPreview').innerText = isPreview ? "👁️ ẨN MÀU" : "👁️ HIỆN MÀU";
-        }
-
-        function applyColors() {
-            groups.nha.eachLayer(l => l.setStyle({ color: document.getElementById('cNha').value, fillColor: document.getElementById('cNha').value, fillOpacity: 0.8, weight: 0.5 }));
-            groups.duong.eachLayer(l => l.setStyle({ color: document.getElementById('cDuong').value, fillColor: document.getElementById('cDuong').value, fillOpacity: 0.9, weight: 0 }));
-            groups.viahe.eachLayer(l => l.setStyle({ color: document.getElementById('cViaHe').value, fillColor: document.getElementById('cViaHe').value, fillOpacity: 0.7, weight: 0 }));
-            groups.cay.eachLayer(l => l.setStyle({ color: document.getElementById('cCay').value, fillColor: document.getElementById('cCay').value, fillOpacity: 0.7, weight: 0 }));
-            groups.nuoc.eachLayer(l => l.setStyle({ color: document.getElementById('cNuoc').value, fillColor: document.getElementById('cNuoc').value, fillOpacity: 0.8, weight: 0 }));
-        }
-
-        async function loadData() {
-            if(map.getZoom() < 16) return alert("Vui lòng Zoom sát vào khu đất hơn!");
-            document.getElementById('stt').innerText = "ĐANG TẢI... (ĐỪNG DI CHUYỂN)";
+        async function fetchData() {
+            if(map.getZoom() < 16) { alert("Hãy zoom gần hơn!"); return; }
+            document.getElementById('status').innerText = "ĐANG TẢI DỮ LIỆU...";
             
             const b = map.getBounds();
             const q = `[out:json][bbox:${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}];(way["building"];way["highway"];way["natural"~"water|wood"];way["landuse"~"grass|forest"];way["leisure"~"park"];);out body;>;out skel qt;`;
@@ -103,53 +93,58 @@
                 const nodeMap = new Map();
                 data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
-                Object.values(groups).forEach(g => g.clearLayers());
+                // Xóa cũ để nạp mới
+                [gNha, gDuong, gViaHe, gCay, gNuoc].forEach(g => g.clearLayers());
                 let rPolys = [], wPolys = [];
 
                 data.elements.filter(e => e.type === "way").forEach(e => {
                     const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n);
                     if (nodes.length < 2) return;
-                    const latlngs = nodes.map(n => [n.lat, n.lon]);
+                    const lats = nodes.map(n => [n.lat, n.lon]);
 
-                    if (e.tags?.building) L.polygon(latlngs).addTo(groups.nha);
-                    else if (e.tags?.highway) {
+                    if (e.tags?.building) {
+                        L.polygon(lats).addTo(gNha);
+                    } else if (e.tags?.highway) {
                         const line = turf.lineString(nodes.map(n => [n.lon, n.lat]));
-                        const w = (e.tags.highway === 'primary') ? 10 : 7;
-                        rPolys.push(turf.buffer(line, w/2, {units:'meters'}));
-                        wPolys.push(turf.buffer(line, (w/2)+3.5, {units:'meters'}));
+                        const rW = (e.tags.highway === 'primary') ? 10 : 6;
+                        rPolys.push(turf.buffer(line, rW/2, {units:'meters'}));
+                        wPolys.push(turf.buffer(line, (rW/2)+3.5, {units:'meters'})); // Vỉa hè bao quanh
+                    } else if (e.tags?.natural === 'water') {
+                        L.polygon(lats).addTo(gNuoc);
+                    } else if (e.tags?.leisure || e.tags?.landuse) {
+                        L.polygon(lats).addTo(gCay);
                     }
-                    else if (e.tags?.natural === 'water') L.polygon(latlngs).addTo(groups.nuoc);
-                    else if (e.tags?.leisure || e.tags?.landuse) L.polygon(latlngs).addTo(groups.cay);
                 });
 
                 if (rPolys.length > 0) {
-                    let mR = rPolys.reduce((a, b) => turf.union(a, b));
-                    let mW = wPolys.reduce((a, b) => turf.union(a, b));
-                    L.geoJSON(mR).addTo(groups.duong);
-                    L.geoJSON(turf.difference(mW, mR)).addTo(groups.viahe);
+                    let combinedRoad = rPolys.reduce((a, b) => turf.union(a, b));
+                    let combinedWalk = wPolys.reduce((a, b) => turf.union(a, b));
+                    L.geoJSON(combinedRoad).addTo(gDuong);
+                    L.geoJSON(turf.difference(combinedWalk, combinedRoad)).addTo(gViaHe);
                 }
-                applyColors();
-                document.getElementById('stt').innerText = "TẢI XONG! ĐÃ CẬP NHẬT MÀU.";
-            } catch (err) { document.getElementById('stt').innerText = "LỖI: THỬ LẠI SAU 10 GIÂY"; }
+
+                liveUpdate(); // Áp màu ngay sau khi tải xong
+                document.getElementById('status').innerText = "ĐÃ CẬP NHẬT XONG";
+            } catch (err) { document.getElementById('status').innerText = "LỖI KẾT NỐI SERVER"; }
         }
 
-        function exportCAD() {
-            document.getElementById('stt').innerText = "ĐANG XUẤT CAD...";
+        function exportDXF() {
+            document.getElementById('status').innerText = "ĐANG XUẤT CAD...";
             const center = map.getCenter();
             const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
             let dxf = "0\nSECTION\n2\nENTITIES\n";
 
-            groups.nha.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CONG_TRINH", center, sx, sy));
-            groups.duong.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "MAT_DUONG", center, sx, sy));
-            groups.viahe.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "VIA_HE", center, sx, sy));
-            groups.nuoc.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "MAT_NUOC", center, sx, sy));
-            groups.cay.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CAY_XANH", center, sx, sy));
+            gNha.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CONG_TRINH", center, sx, sy));
+            gDuong.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "MAT_DUONG", center, sx, sy));
+            gViaHe.eachLayer(l => dxf += geoToDxf(l.toGeoJSON(), "VIA_HE", center, sx, sy));
+            gCay.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CAY_XANH", center, sx, sy));
+            gNuoc.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "MAT_NUOC", center, sx, sy));
 
             dxf += "0\nENDSEC\n0\nEOF";
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-            a.download = "NAM_ARCH_STABLE_1x1.dxf"; a.click();
-            document.getElementById('stt').innerText = "CAD SẴN SÀNG!";
+            a.download = "NAM_ARCH_DIAGRAM_1x1.dxf"; a.click();
+            document.getElementById('status').innerText = "FILE CAD ĐÃ TẢI VỀ";
         }
 
         function writeDxf(pts, layer, center, sx, sy) {
