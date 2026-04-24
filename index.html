@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v55.1 - Pure Export Edition</title>
+    <title>NAM ARCH PRO v58.1 - High-Vis Scanner</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -14,8 +14,7 @@
     <style>
         :root { 
             --primary: #00e5ff; --secondary: #0077ff;
-            --bg-dark: #111827; 
-            --panel-bg: rgba(31, 41, 55, 0.95);
+            --bg-dark: #111827; --panel-bg: rgba(31, 41, 55, 0.95);
             --box-bg: rgba(17, 24, 39, 0.6); 
             --text-main: #f9fafb; --text-muted: #9ca3af;
             --border: rgba(255, 255, 255, 0.1);
@@ -24,92 +23,50 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); overflow: hidden; }
         #map { height: 100vh; width: 100vw; background: var(--bg-dark); }
         
-        /* SEARCH BAR */
-        .search-box {
-            position: absolute; top: 20px; right: 20px; z-index: 1000;
-            display: flex; background: var(--panel-bg); backdrop-filter: blur(10px);
-            border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
+        .search-box { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .search-box input { background: transparent; border: none; padding: 12px 15px; width: 250px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
         .search-box input::placeholder { color: var(--text-muted); }
         .search-box button { background: var(--box-bg); border: none; border-left: 1px solid var(--border); padding: 0 15px; cursor: pointer; color: var(--primary); transition: 0.2s; }
         .search-box button:hover { background: rgba(0, 229, 255, 0.1); }
 
-        /* SIDEBAR */
         .sidebar-container { position: absolute; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 10px; align-items: flex-start; }
-        .sidebar {
-            width: 350px; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--border); border-radius: 20px; padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
-            max-height: 90vh; overflow-y: auto;
-        }
+        .sidebar { width: 350px; background: var(--panel-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 20px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto; }
         .sidebar::-webkit-scrollbar { width: 4px; }
         .sidebar::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
         .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; }
 
-        .toggle-btn {
-            background: var(--panel-bg); border: 1px solid var(--border); color: var(--text-main);
-            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; font-size: 14px; margin-top: 10px;
-        }
+        .toggle-btn { background: var(--panel-bg); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; margin-top: 10px; }
         .toggle-btn:hover { background: var(--box-bg); transform: scale(1.05); }
 
-        h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; text-align: center; letter-spacing: 0.5px; }
+        h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; text-align: center; }
         .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 20px; margin-top: 4px;}
 
-        /* BOX ĐIỀU KHIỂN */
         .ctrl-box { background: var(--box-bg); border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid var(--border); }
         .row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
         .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;}
         
-        /* BẢNG MÀU & CHECKBOX */
-        .layer-label { cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; color: var(--text-main); font-size: 12px;}
+        .layer-label { cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 12px;}
         .layer-label input[type="checkbox"] { cursor: pointer; accent-color: var(--primary); }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; background: none; transition: 0.2s; }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
 
-        /* THANH ZOOM */
         .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.3); border-radius: 2px; outline: none; margin-top: 5px; }
         .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--primary); cursor: pointer; transition: 0.2s; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
         
-        /* NÚT BẤM */
-        .btn-glow {
-            width: 100%; padding: 14px; border: none; border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px;
-            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px;
-        }
+        .btn-glow { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px; }
         .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); }
         
-        .btn-outline {
-            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
-            background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px;
-            text-transform: uppercase; cursor: pointer; transition: 0.3s;
-        }
+        .btn-outline { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
         .btn-outline:hover { background: rgba(128,128,128,0.15); border-color: var(--primary); color: var(--primary); }
 
-        /* TIẾN TRÌNH */
         .prog-wrap { height: 6px; background: rgba(128,128,128,0.2); border-radius: 3px; overflow: hidden; margin: 12px 0; }
         #progress { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease; }
         #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase;}
 
-        /* HUD BOTTOM */
-        .hud-bottom { 
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999;
-            background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); 
-            border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px;
-            font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
+        .hud-bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .hud-item { display: flex; align-items: center; gap: 8px; }
         .hud-val { color: var(--text-main); font-weight: 700; }
-
         .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; z-index: 999; pointer-events: none; opacity: 0.5; }
         .crosshair::before { content: ''; position: absolute; top: 14px; left: 0; width: 30px; height: 2px; background: var(--primary); }
         .crosshair::after { content: ''; position: absolute; top: 0; left: 14px; width: 2px; height: 30px; background: var(--primary); }
-
         .leaflet-interactive { pointer-events: none; }
     </style>
 </head>
@@ -123,7 +80,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">SOLID BLOCK v55.1</span>
+        <span class="tagline">HIGH-VIS SCANNER v58.1</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -132,47 +89,21 @@
 
         <div class="ctrl-box">
             <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px;">
-                <span style="color: var(--primary); text-transform: uppercase; font-size: 11px;">🎨 Quản lý Layer & Màu sắc</span>
+                <span style="color: var(--primary); text-transform: uppercase; font-size: 11px;">⚙️ TRÍCH XUẤT LAYER CAD</span>
             </div>
-            
             <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 15px;" onclick="toggleMapTheme()">🗺️ NỀN BẢN ĐỒ: TỐI (DARK)</button>
 
-            <div id="color-set-dark">
-                <div class="row">
-                    <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> 🏢 Tòa Nhà</label>
-                    <input type="color" id="cNha" value="#ff4757" oninput="updateLiveColors()">
-                </div>
-                <div class="row">
-                    <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> 🛣️ Lòng Đường</label>
-                    <input type="color" id="cDuong" value="#374151" oninput="updateLiveColors()">
-                </div>
-                <div class="row">
-                    <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> 🚶 Vỉa Hè</label>
-                    <input type="color" id="cViaHe" value="#f1c40f" oninput="updateLiveColors()">
-                </div>
-                <div class="row">
-                    <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> 💧 Mặt Nước</label>
-                    <input type="color" id="cNuoc" value="#3498db" oninput="updateLiveColors()">
-                </div>
+            <div class="row" style="justify-content: flex-start; gap: 20px;">
+                <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> 🏢 Tòa Nhà</label>
             </div>
-
-            <div id="color-set-light" style="display: none;">
-                <div class="row">
-                    <label class="layer-label"><input type="checkbox" id="showNhaL" checked onchange="toggleLayer('nha')"> 🏢 Tòa Nhà</label>
-                    <input type="color" id="cNhaL" value="#f87171" oninput="updateLiveColors()">
-                </div>
-                <div class="row">
-                    <label class="layer-label"><input type="checkbox" id="showDuongL" checked onchange="toggleLayer('duong')"> 🛣️ Lòng Đường</label>
-                    <input type="color" id="cDuongL" value="#d1d5db" oninput="updateLiveColors()">
-                </div>
-                <div class="row">
-                    <label class="layer-label"><input type="checkbox" id="showViaheL" checked onchange="toggleLayer('viahe')"> 🚶 Vỉa Hè</label>
-                    <input type="color" id="cViaHeL" value="#fbbf24" oninput="updateLiveColors()">
-                </div>
-                <div class="row">
-                    <label class="layer-label"><input type="checkbox" id="showNuocL" checked onchange="toggleLayer('nuoc')"> 💧 Mặt Nước</label>
-                    <input type="color" id="cNuocL" value="#60a5fa" oninput="updateLiveColors()">
-                </div>
+            <div class="row" style="justify-content: flex-start; gap: 20px;">
+                <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> 🛣️ Lòng Đường</label>
+            </div>
+            <div class="row" style="justify-content: flex-start; gap: 20px;">
+                <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> 🚶 Vỉa Hè</label>
+            </div>
+            <div class="row" style="justify-content: flex-start; gap: 20px;">
+                <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> 💧 Mặt Nước</label>
             </div>
         </div>
 
@@ -180,7 +111,7 @@
 
         <div class="ctrl-box">
             <div class="row">
-                <span title="Hệ thống tự động nhả luồng CPU để chống treo máy">Trạng thái Core:</span>
+                <span title="Chống treo máy">Trạng thái Core:</span>
                 <span id="lib-stt" style="color: var(--text-muted)">ĐANG TẢI...</span>
             </div>
             <div class="prog-wrap"><div id="progress"></div></div>
@@ -190,9 +121,7 @@
         <button class="btn-outline" style="margin-top: 0;" onclick="exportDxfSafe()" title="Phím tắt: Ctrl + E">📥 XUẤT CAD CHUẨN KỸ THUẬT (CTRL + E)</button>
     </div>
     
-    <div class="toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện Bảng điều khiển (Phím tắt: M)">
-        <span id="toggle-icon">◀</span>
-    </div>
+    <div class="toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện Bảng điều khiển (Phím tắt: M)"><span id="toggle-icon">◀</span></div>
 </div>
 
 <div class="crosshair"></div>
@@ -227,13 +156,17 @@
     }, 1000);
 
     var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
+    
+    // BẢN ĐỒ TỐI: Dark Matter
     var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
-    var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 });
+    
+    // BẢN ĐỒ SÁNG: Voyager Đa sắc
+    var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 100, maxNativeZoom: 19 });
     
     L.GridLayer.Graticule = L.GridLayer.extend({
         createTile: function () {
             var tile = document.createElement('canvas'); tile.width = tile.height = 256;
-            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke(); return tile;
         }
     });
@@ -244,26 +177,12 @@
         isLightMap = !isLightMap;
         if(isLightMap) {
             map.removeLayer(darkT); lightT.addTo(map);
-            document.getElementById('color-set-dark').style.display = 'none';
-            document.getElementById('color-set-light').style.display = 'block';
-            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: SÁNG (LIGHT)';
-            
-            document.getElementById('showNhaL').checked = document.getElementById('showNha').checked;
-            document.getElementById('showDuongL').checked = document.getElementById('showDuong').checked;
-            document.getElementById('showViaheL').checked = document.getElementById('showViahe').checked;
-            document.getElementById('showNuocL').checked = document.getElementById('showNuoc').checked;
+            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: ĐA SẮC (VOYAGER)';
         } else {
             map.removeLayer(lightT); darkT.addTo(map);
-            document.getElementById('color-set-dark').style.display = 'block';
-            document.getElementById('color-set-light').style.display = 'none';
             document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: TỐI (DARK)';
-            
-            document.getElementById('showNha').checked = document.getElementById('showNhaL').checked;
-            document.getElementById('showDuong').checked = document.getElementById('showDuongL').checked;
-            document.getElementById('showViahe').checked = document.getElementById('showViaheL').checked;
-            document.getElementById('showNuoc').checked = document.getElementById('showNuocL').checked;
         }
-        updateLiveColors();
+        updateLineStyles(); // Cập nhật lại sắc độ nét vẽ ngay lập tức
     }
 
     async function searchLocation() {
@@ -296,29 +215,24 @@
     var layers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
     function toggleLayer(type) {
-        const suffix = isLightMap ? 'L' : '';
-        const isChecked = document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1) + suffix).checked;
+        const isChecked = document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked;
         if (isChecked) map.addLayer(layers[type]); else map.removeLayer(layers[type]);
     }
 
-    function updateLiveColors() {
-        const suffix = isLightMap ? 'L' : '';
-        const cN = document.getElementById('cNha' + suffix).value;
-        const cD = document.getElementById('cDuong' + suffix).value;
-        const cV = document.getElementById('cViaHe' + suffix).value;
-        const cW = document.getElementById('cNuoc' + suffix).value;
-        
-        const borderColor = isLightMap ? '#000000' : '#ffffff';
-
-        const styleConfig = (fillColorHex) => ({
-            color: borderColor, opacity: 1, weight: 1.5,
-            fillColor: fillColorHex, fillOpacity: 0.95
-        });
-
-        layers.nha.eachLayer(l => l.setStyle(styleConfig(cN)));
-        layers.duong.eachLayer(l => l.setStyle(styleConfig(cD)));
-        layers.viahe.eachLayer(l => l.setStyle(styleConfig(cV)));
-        layers.nuoc.eachLayer(l => l.setStyle(styleConfig(cW)));
+    // ĐÃ FIX: TĂNG SẮC ĐỘ NÉT VẼ
+    function updateLineStyles() {
+        // Chế độ sáng: Đen đậm | Chế độ tối: Xanh Neon (để nổi bật cực độ)
+        const lineColor = isLightMap ? '#000000' : '#00e5ff'; 
+        const styleConfig = {
+            color: lineColor,  
+            opacity: 1,        // Sắc nét 100%
+            weight: 4,         // Tăng độ dày lên 4 để cực kỳ dễ nhìn
+            fillOpacity: 0     // Không tô màu nền (để thấy ảnh vệ tinh)
+        };
+        layers.nha.eachLayer(l => l.setStyle(styleConfig));
+        layers.duong.eachLayer(l => l.setStyle(styleConfig));
+        layers.viahe.eachLayer(l => l.setStyle(styleConfig));
+        layers.nuoc.eachLayer(l => l.setStyle(styleConfig));
     }
 
     const yieldCPU = () => new Promise(r => setTimeout(r, 5));
@@ -341,6 +255,12 @@
         return current[0];
     }
 
+    function makeClosedPolygon(pts) {
+        let ring = pts.map(p => [p[0], p[1]]);
+        if (ring[0][0] !== ring[ring.length-1][0] || ring[0][1] !== ring[ring.length-1][1]) ring.push([...ring[0]]);
+        return turf.polygon([ring]);
+    }
+
     async function startMegaScan() {
         if(typeof turf === 'undefined' || !turf.bboxClip) return alert("Hệ thống Core đang tải, đợi chút nhé!");
         
@@ -351,14 +271,8 @@
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
         
-        const suffix = isLightMap ? 'L' : '';
-        const cN = document.getElementById('cNha' + suffix).value;
-        const cD = document.getElementById('cDuong' + suffix).value;
-        const cV = document.getElementById('cViaHe' + suffix).value;
-        const cW = document.getElementById('cNuoc' + suffix).value;
-        
-        const borderColor = isLightMap ? '#000000' : '#ffffff';
-        const styleConfig = (fillColorHex) => ({ color: borderColor, opacity: 1, weight: 1.5, fillColor: fillColorHex, fillOpacity: 0.95 });
+        const lineColor = isLightMap ? '#000000' : '#00e5ff';
+        const styleConfig = { color: lineColor, opacity: 1, weight: 4, fillOpacity: 0 };
 
         document.getElementById('progress').style.width = '10%';
         document.getElementById('stt').innerText = "KẾT NỐI VỆ TINH OVERPASS...";
@@ -373,6 +287,8 @@
 
             let rBufs = [], sBufs = [];
             let total = data.elements.filter(e => e.type === "way").length;
+            if(total === 0) return document.getElementById('stt').innerText = "KHÔNG CÓ DỮ LIỆU Ở ĐÂY!";
+
             let count = 0;
 
             for (const e of data.elements) {
@@ -380,21 +296,21 @@
                 count++;
                 if (count % 50 === 0) {
                     document.getElementById('progress').style.width = 10 + (count/total)*40 + '%';
-                    document.getElementById('stt').innerText = `XÂY LƯỚI KHÔNG GIAN: ${count}/${total}`;
+                    document.getElementById('stt').innerText = `QUÉT NÉT: ${count}/${total}`;
                     await yieldCPU(); 
                 }
 
                 const pts = e.nodes.map(id => nodes.get(id)).filter(p => p);
-                if (pts.length < 2) continue;
+                if (pts.length < 3) continue;
 
                 if (e.tags.building) {
-                    const poly = turf.bboxClip(turf.polygon([pts.concat([pts[0]])]), screenBox);
+                    const poly = turf.bboxClip(makeClosedPolygon(pts), screenBox);
                     geoData.nha.push(poly);
-                    L.geoJSON(poly, styleConfig(cN)).addTo(layers.nha);
+                    L.geoJSON(poly, { style: styleConfig }).addTo(layers.nha);
                 } else if (e.tags.natural === 'water') {
-                    const poly = turf.bboxClip(turf.polygon([pts.concat([pts[0]])]), screenBox);
+                    const poly = turf.bboxClip(makeClosedPolygon(pts), screenBox);
                     geoData.nuoc.push(poly);
-                    L.geoJSON(poly, styleConfig(cW)).addTo(layers.nuoc);
+                    L.geoJSON(poly, { style: styleConfig }).addTo(layers.nuoc);
                 } else if (e.tags.highway) {
                     const line = turf.lineString(pts);
                     const w = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
@@ -406,30 +322,28 @@
             document.getElementById('progress').style.width = '60%';
             
             if (rBufs.length > 0) {
-                document.getElementById('stt').innerText = "ĐANG ĐỤC LỖ LÒNG ĐƯỜNG...";
+                document.getElementById('stt').innerText = "XỬ LÝ NÉT LÒNG ĐƯỜNG...";
                 let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
-                geoData.duong.push(mR);
-                L.geoJSON(mR, styleConfig(cD)).addTo(layers.duong);
+                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: styleConfig }).addTo(layers.duong); }
 
                 document.getElementById('progress').style.width = '80%';
-                document.getElementById('stt').innerText = "ĐANG GHÉP VỈA HÈ V21...";
+                document.getElementById('stt').innerText = "XỬ LÝ NÉT VỈA HÈ...";
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 
                 try {
                     let viahe = turf.difference(mS, mR);
-                    if(viahe) {
-                        geoData.viahe.push(viahe);
-                        L.geoJSON(viahe, styleConfig(cV)).addTo(layers.viahe);
-                    }
-                } catch(e) { geoData.viahe.push(mS); }
+                    if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: styleConfig }).addTo(layers.viahe); }
+                } catch(e) { 
+                    if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: styleConfig }).addTo(layers.viahe); }
+                }
             }
             
+            updateLineStyles();
             document.getElementById('progress').style.width = '100%';
-            document.getElementById('stt').innerText = "HOÀN TẤT! SẴN SÀNG XUẤT CAD.";
-        } catch (err) { alert("Lỗi tải dữ liệu. Hãy thu nhỏ phạm vi một chút hoặc thử lại!"); }
+            document.getElementById('stt').innerText = "TRÍCH XUẤT NÉT HOÀN TẤT!";
+        } catch (err) { alert("Lỗi mạng hoặc tải dữ liệu!"); }
     }
 
-    // --- HÀM XUẤT DXF KHÔNG CÓ BẤT KỲ MÃ MÀU NÀO ---
     function extractRings(geom) {
         let rings = [];
         if (!geom) return rings;
@@ -455,8 +369,7 @@
                 const rings = extractRings(geoArray[i]);
                 rings.forEach(ring => {
                     if(!ring || ring.length < 2) return;
-                    
-                    // CHUẨN XÁC: Chỉ có tọa độ và Layer, Ép màu "ByLayer" (Mã 62 mặc định không ghi)
+                    // XUẤT FILE DXF CHUẨN (KHÔNG MÀU)
                     dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
                     ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
                     dxf += "0\nSEQEND\n";
@@ -464,16 +377,15 @@
             }
         };
 
-        const suffix = isLightMap ? 'L' : '';
-        if(document.getElementById('showNha' + suffix).checked) await writeToDxf(geoData.nha, "V21_NHA");
-        if(document.getElementById('showDuong' + suffix).checked) await writeToDxf(geoData.duong, "V21_DUONG");
-        if(document.getElementById('showViahe' + suffix).checked) await writeToDxf(geoData.viahe, "V21_VIAHE");
-        if(document.getElementById('showNuoc' + suffix).checked) await writeToDxf(geoData.nuoc, "V21_NUOC");
+        if(document.getElementById('showNha').checked) await writeToDxf(geoData.nha, "V21_NHA");
+        if(document.getElementById('showDuong').checked) await writeToDxf(geoData.duong, "V21_DUONG");
+        if(document.getElementById('showViahe').checked) await writeToDxf(geoData.viahe, "V21_VIAHE");
+        if(document.getElementById('showNuoc').checked) await writeToDxf(geoData.nuoc, "V21_NUOC");
 
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-        a.download = "NAM_ARCH_PRO_V55_1.dxf"; a.click();
+        a.download = "NAM_ARCH_PRO_V58_1.dxf"; a.click();
         document.getElementById('stt').innerText = "XUẤT FILE THÀNH CÔNG!";
     }
 </script>
