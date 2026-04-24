@@ -2,34 +2,34 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - V18 GOLDEN CLEAN</title>
+    <title>NAM ARCH - V19 SNAP MODE</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #1a1a1a; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #111; }
         #map { height: 100vh; width: 100vw; }
         .ui { 
             position: absolute; top: 20px; left: 20px; z-index: 1000; 
-            background: #222; padding: 25px; border-radius: 15px; width: 280px;
-            border: 2px solid #f1c40f; color: white;
+            background: #1a1a1a; padding: 25px; border-radius: 12px; width: 280px;
+            border: 2px solid #ff9f43; color: white;
         }
-        h2 { color: #f1c40f; margin: 0 0 10px; font-size: 22px; text-align: center; }
+        h2 { color: #ff9f43; margin: 0 0 10px; font-size: 22px; text-align: center; }
         button { 
-            width: 100%; padding: 15px; background: #f1c40f; color: #000; 
-            border: none; cursor: pointer; border-radius: 8px; font-weight: bold;
+            width: 100%; padding: 15px; background: #ff9f43; color: #000; 
+            border: none; cursor: pointer; border-radius: 4px; font-weight: bold;
         }
-        .progress-container { width: 100%; height: 8px; background: #333; border-radius: 10px; margin-top: 15px; display: none; overflow: hidden; }
-        .progress-fill { width: 0%; height: 100%; background: #f1c40f; transition: 0.2s; }
-        #stt { text-align: center; font-size: 11px; margin-top: 10px; color: #aaa; }
+        .progress-container { width: 100%; height: 6px; background: #333; margin-top: 15px; display: none; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: #ff9f43; transition: 0.2s; }
+        #stt { text-align: center; font-size: 11px; margin-top: 10px; color: #ff9f43; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
     <div class="ui">
-        <h2>NAM ARCH v18</h2>
-        <p style="text-align:center; font-size:11px; margin-top:-5px; color:#f1c40f;">ANTI-INTERSECTION MODE</p>
-        <button onclick="exportV18()">XUẤT CAD KHÔNG GIAO CẮT</button>
+        <h2>NAM ARCH v19</h2>
+        <p style="text-align:center; font-size:11px; margin-top:-5px; color:#aaa;">AUTO-SNAP & TRIM JUNCTIONS</p>
+        <button onclick="exportV19()">XUẤT CAD BẮT ĐIỂM</button>
         <div class="progress-container" id="p-bar"><div class="progress-fill" id="p-fill"></div></div>
-        <div id="stt">Mở Tab ẩn danh để tránh lỗi bản cũ!</div>
+        <div id="stt">Nhớ dùng TAB ẨN DANH để cập nhật!</div>
     </div>
     <div id="map"></div>
 
@@ -37,7 +37,7 @@
         var map = L.map('map').setView([10.7933, 106.6800], 17);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
 
-        async function exportV18() {
+        async function exportV19() {
             const stt = document.getElementById('stt');
             const pFill = document.getElementById('p-fill');
             document.getElementById('p-bar').style.display = 'block';
@@ -56,6 +56,7 @@
                 const scale = 111319;
                 const ways = data.elements.filter(e => e.type === "way");
 
+                // Thuật toán: Vẽ từng SEGMENT thay vì cả Way để dễ dàng xử lý điểm chạm
                 ways.forEach((e, idx) => {
                     const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n && b.contains([n.lat, n.lon]));
                     if (nodes.length < 2) return;
@@ -69,8 +70,8 @@
                         });
                         dxf += `0\nSEQEND\n`;
                     } else {
-                        let w = (e.tags.highway === 'primary' || e.tags.highway === 'trunk') ? 6 : 3;
-                        let leftSide = [], rightSide = [];
+                        // XỬ LÝ ĐƯỜNG: VẼ 2 LỀ NHƯNG TỰ NGẮT TẠI ĐIỂM GIAO
+                        let w = (e.tags.highway === 'primary' || e.tags.highway === 'trunk') ? 5 : 2.5;
 
                         for (let i = 0; i < nodes.length - 1; i++) {
                             let n1 = nodes[i], n2 = nodes[i+1];
@@ -81,25 +82,15 @@
 
                             let dx = x2 - x1, dy = y2 - y1;
                             let len = Math.sqrt(dx*dx + dy*dy);
-                            if (len < 0.5) continue; // Lọc bỏ nốt quá gần gây xoắn
+                            if (len < 0.5) continue;
 
                             let ox = (-dy / len) * w, oy = (dx / len) * w;
-                            
-                            leftSide.push({x: x1 + ox, y: y1 + oy});
-                            rightSide.unshift({x: x1 - ox, y: y1 - oy});
-                            if (i === nodes.length - 2) {
-                                leftSide.push({x: x2 + ox, y: y2 + oy});
-                                rightSide.unshift({x: x2 - ox, y: y2 - oy});
-                            }
-                        }
 
-                        // Vẽ đường thành một vòng khép kín để AutoCAD tự xử lý ngã tư
-                        if (leftSide.length > 1) {
-                            dxf += `0\nPOLYLINE\n8\nDUONG\n62\n7\n66\n1\n70\n1\n`;
-                            [...leftSide, ...rightSide].forEach(p => {
-                                dxf += `0\nVERTEX\n8\nDUONG\n10\n${p.x.toFixed(2)}\n20\n${p.y.toFixed(2)}\n`;
-                            });
-                            dxf += `0\nSEQEND\n`;
+                            // Vẽ 2 LINE riêng biệt cho mỗi segment - Cách này giúp AutoCAD dễ dàng TRIM/EXTEND
+                            // Lề trái
+                            dxf += `0\nLINE\n8\nDUONG\n62\n7\n10\n${(x1+ox).toFixed(2)}\n20\n${(y1+oy).toFixed(2)}\n11\n${(x2+ox).toFixed(2)}\n21\n${(y2+oy).toFixed(2)}\n`;
+                            // Lề phải
+                            dxf += `0\nLINE\n8\nDUONG\n62\n7\n10\n${(x1-ox).toFixed(2)}\n20\n${(y1-oy).toFixed(2)}\n11\n${(x2-ox).toFixed(2)}\n21\n${(y2-oy).toFixed(2)}\n`;
                         }
                     }
                     pFill.style.width = (idx/ways.length*100) + "%";
@@ -109,9 +100,9 @@
                 const blob = new Blob([dxf], {type: 'application/dxf'});
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = "Nam_V18_Golden_Clean.dxf";
+                a.download = "Nam_V19_SnapMode.dxf";
                 a.click();
-                stt.innerText = "XONG! Gõ Z -> E để xem bản v18.";
+                stt.innerText = "XONG! Mở CAD gõ Z -> E.";
             } catch (err) { stt.innerText = "Lỗi!"; }
         }
     </script>
