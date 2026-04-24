@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v60.1 - Progress Fixed</title>
+    <title>NAM ARCH PRO v60 - Cyber Core</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -57,31 +57,9 @@
         .btn-outline { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
         .btn-outline:hover { background: rgba(128,128,128,0.15); }
 
-        /* =========================================
-           THANH TIẾN TRÌNH CẢI TIẾN (SHIMMER)
-           ========================================= */
-        .prog-container { margin: 15px 0; }
-        .prog-wrap { 
-            height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; 
-            overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative;
-        }
-        #progress { 
-            width: 0%; height: 100%; 
-            background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); 
-            background-size: 200% 100%;
-            transition: width 0.3s ease; 
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
-        }
-        /* Hiệu ứng tia sáng chạy ngang khi đang quét */
-        .prog-wrap.active #progress {
-            animation: progressFlow 2s linear infinite;
-        }
-        @keyframes progressFlow {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 200% 0%; }
-        }
-
-        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px;}
+        .prog-wrap { height: 6px; background: rgba(128,128,128,0.2); border-radius: 3px; overflow: hidden; margin: 12px 0; }
+        #progress { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease; }
+        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; line-height: 1.4;}
 
         .hud-bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .hud-item { display: flex; align-items: center; gap: 8px; }
@@ -93,13 +71,53 @@
         
         .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
 
-        /* CYBER CORE BADGE (GIỮ NGUYÊN) */
-        .core-badge { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; transition: all 0.3s ease; }
-        .core-badge.loading { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
-        .cyber-spinner { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff); animation: spin 1s linear infinite; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0); }
-        .core-badge.loading .stt-text { background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientText 2s linear infinite; }
-        .core-badge.online { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); text-shadow: 0 0 5px #10b981; }
+        /* =========================================
+           HIỆU ỨNG CYBER CORE THEO ẢNH CỦA BẠN
+           ========================================= */
+        .core-badge {
+            display: flex; align-items: center; gap: 8px;
+            padding: 4px 12px; border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        /* Trạng thái Đang Tải (Phát sáng 3 màu xoay) */
+        .core-badge.loading {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 8px rgba(0, 229, 255, 0.1);
+        }
+
+        .cyber-spinner {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff);
+            animation: spin 1s linear infinite;
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0);
+            mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0);
+            filter: drop-shadow(0 0 4px rgba(255, 0, 255, 0.8));
+        }
+
+        .core-badge.loading .stt-text {
+            background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientText 2s linear infinite;
+        }
+
+        /* Trạng thái Sẵn Sàng (Xanh lá Matrix) */
+        .core-badge.online {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #10b981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), inset 0 0 5px rgba(16, 185, 129, 0.2);
+            text-shadow: 0 0 5px #10b981;
+        }
+
         .core-badge.online .cyber-spinner { display: none; }
+        .core-badge.offline { color: #ef4444; border: 1px solid #ef4444; background: rgba(239,68,68,0.1); }
+        .core-badge.offline .cyber-spinner { display: none; }
+
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes gradientText { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
     </style>
@@ -114,7 +132,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V60.1 - SCANNER STABLE</span>
+        <span class="tagline">V60 - CYBER CORE EDITION</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -136,34 +154,34 @@
             <div class="row" style="justify-content: flex-start; gap: 20px;">
                 <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> 🚶 Vỉa Hè</label>
             </div>
+            <div class="row" style="justify-content: flex-start; gap: 20px;">
+                <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> 💧 Mặt Nước</label>
+            </div>
         </div>
 
         <button class="btn-glow" onclick="startMegaScan()" title="Phím tắt: Space">🚀 BẮT ĐẦU QUÉT (SPACE)</button>
 
         <div class="ctrl-box" style="padding-bottom: 10px;">
             <div class="row">
-                <span>Trạng thái Core:</span>
+                <span title="Chống treo máy">Hệ thống Core:</span>
+                
                 <div id="coreBadge" class="core-badge loading">
                     <div class="cyber-spinner"></div>
                     <span class="stt-text" id="lib-stt">ĐANG TẢI...</span>
                 </div>
+
             </div>
-            
-            <div class="prog-container">
-                <div class="prog-wrap" id="progWrap">
-                    <div id="progress"></div>
-                </div>
-                <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
-            </div>
+            <div class="prog-wrap"><div id="progress"></div></div>
+            <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
         </div>
 
         <div style="display: flex; gap: 10px;">
-            <button class="btn-outline" style="margin-top: 0; flex: 1; padding: 12px 0;" onclick="resetScan()">🔄 LÀM MỚI</button>
-            <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe()">📥 XUẤT CAD</button>
+            <button class="btn-outline" style="margin-top: 0; flex: 1; padding: 12px 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI</button>
+            <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe()" title="Phím tắt: Ctrl + E">📥 XUẤT CAD</button>
         </div>
     </div>
     
-    <div class="toggle-btn" onclick="toggleSidebar()" title="Phím tắt: M)"><span id="toggle-icon">◀</span></div>
+    <div class="toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện Bảng điều khiển (Phím tắt: M)"><span id="toggle-icon">◀</span></div>
 </div>
 
 <div class="crosshair"></div>
@@ -188,14 +206,20 @@
     document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT') return;
         if (e.code === 'Space') { e.preventDefault(); startMegaScan(); }
+        if (e.ctrlKey && e.code === 'KeyE') { e.preventDefault(); exportDxfSafe(); }
         if (e.code === 'KeyM') { e.preventDefault(); toggleSidebar(); }
     });
 
+    // CẬP NHẬT TRẠNG THÁI CYBER BADGE
     setInterval(() => {
         const el = document.getElementById('lib-stt');
         const badge = document.getElementById('coreBadge');
         if (typeof turf !== 'undefined') { 
-            el.innerText = "ONLINE (V6.5)"; badge.className = "core-badge online";
+            el.innerText = "ONLINE (V6.5)"; 
+            badge.className = "core-badge online";
+        } else { 
+            el.innerText = "ĐANG TẢI..."; 
+            badge.className = "core-badge loading";
         }
     }, 1000);
 
@@ -217,16 +241,18 @@
         isLightMap = !isLightMap;
         if(isLightMap) {
             map.removeLayer(darkT); lightT.addTo(map);
-            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: ĐA SÁC (VOYAGER)';
+            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: ĐA SẮC (VOYAGER)';
             document.getElementById('dot-nha').style.background = '#dc2626';
             document.getElementById('dot-duong').style.background = '#111827';
             document.getElementById('dot-viahe').style.background = '#ea580c';
+            document.getElementById('dot-nuoc').style.background = '#0284c7';
         } else {
             map.removeLayer(lightT); darkT.addTo(map);
             document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: TỐI (DARK)';
             document.getElementById('dot-nha').style.background = '#ff3366';
             document.getElementById('dot-duong').style.background = '#ffffff';
             document.getElementById('dot-viahe').style.background = '#ffcc00';
+            document.getElementById('dot-nuoc').style.background = '#00e5ff';
         }
         updateLineStyles();
     }
@@ -235,11 +261,14 @@
         const input = document.getElementById('searchInput');
         const query = input.value.trim();
         if(!query) return;
+        input.placeholder = "Đang tìm...";
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data = await res.json();
-            if(data && data.length > 0) map.flyTo([data[0].lat, data[0].lon], 16);
-        } catch(e) {}
+            if(data && data.length > 0) map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
+            else alert("Không tìm thấy địa điểm này!");
+        } catch(e) { alert("Lỗi kết nối khi tìm kiếm!"); }
+        input.placeholder = "Tìm kiếm địa điểm...";
     }
 
     const zSlider = document.getElementById('zoomSlider');
@@ -252,73 +281,86 @@
         document.getElementById('hud-alt').innerText = alt >= 1000 ? (alt/1000).toFixed(1) + 'km' : alt + 'm';
     }
     zSlider.addEventListener('input', e => map.setZoom(e.target.value));
-    map.on('move zoomend', updateHUD); updateHUD();
+    map.on('move', updateHUD); map.on('zoomend', updateHUD); updateHUD();
 
     var geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
     var layers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
     function toggleLayer(type) {
-        if (document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked) map.addLayer(layers[type]);
-        else map.removeLayer(layers[type]);
+        const isChecked = document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked;
+        if (isChecked) map.addLayer(layers[type]); else map.removeLayer(layers[type]);
     }
 
     function getLayerStyle(type) {
         const config = isLightMap ? {
-            nha: { color: '#dc2626', weight: 3, fillOpacity: 0.15 },
-            duong: { color: '#111827', weight: 3, fillOpacity: 0.1 },
-            viahe: { color: '#ea580c', weight: 3, fillOpacity: 0.15 }
+            nha: { color: '#dc2626', weight: 3, fillColor: '#dc2626', fillOpacity: 0.15 },
+            duong: { color: '#111827', weight: 3, fillColor: '#111827', fillOpacity: 0.1 },
+            viahe: { color: '#ea580c', weight: 3, fillColor: '#ea580c', fillOpacity: 0.15 },
+            nuoc: { color: '#0284c7', weight: 3, fillColor: '#0284c7', fillOpacity: 0.15 }
         } : {
-            nha: { color: '#ff3366', weight: 3, fillOpacity: 0.15 }, 
-            duong: { color: '#ffffff', weight: 3, fillOpacity: 0.1 }, 
-            viahe: { color: '#ffcc00', weight: 3, fillOpacity: 0.15 }  
+            nha: { color: '#ff3366', weight: 3, fillColor: '#ff3366', fillOpacity: 0.15 }, 
+            duong: { color: '#ffffff', weight: 3, fillColor: '#ffffff', fillOpacity: 0.1 }, 
+            viahe: { color: '#ffcc00', weight: 3, fillColor: '#ffcc00', fillOpacity: 0.15 }, 
+            nuoc: { color: '#00e5ff', weight: 3, fillColor: '#00e5ff', fillOpacity: 0.15 }  
         };
         return config[type];
     }
 
     function updateLineStyles() {
-        Object.keys(layers).forEach(type => {
-            layers[type].eachLayer(l => l.setStyle(getLayerStyle(type)));
-        });
+        layers.nha.eachLayer(l => l.setStyle(getLayerStyle('nha')));
+        layers.duong.eachLayer(l => l.setStyle(getLayerStyle('duong')));
+        layers.viahe.eachLayer(l => l.setStyle(getLayerStyle('viahe')));
+        layers.nuoc.eachLayer(l => l.setStyle(getLayerStyle('nuoc')));
     }
 
     function resetScan() {
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
-        updateProgress(0, "SẴN SÀNG NHẬN LỆNH", false);
-    }
-
-    // --- HÀM CẬP NHẬT TIẾN TRÌNH CẢI TIẾN ---
-    function updateProgress(percent, text, isActive = true) {
-        const pBar = document.getElementById('progress');
-        const pWrap = document.getElementById('progWrap');
-        const stt = document.getElementById('stt');
-        
-        pBar.style.width = percent + '%';
-        stt.innerText = text;
-        
-        if(isActive) pWrap.classList.add('active');
-        else pWrap.classList.remove('active');
-        
-        if(percent >= 100) {
-            stt.style.color = "#10b981";
-            pWrap.classList.remove('active');
-        } else {
-            stt.style.color = "var(--primary)";
-        }
+        document.getElementById('progress').style.width = '0%';
+        document.getElementById('stt').innerText = "ĐÃ XÓA. SẴN SÀNG QUÉT VÙNG MỚI!";
+        document.getElementById('stt').style.color = "var(--text-main)";
     }
 
     const yieldCPU = () => new Promise(r => setTimeout(r, 5));
 
+    async function chunkedUnion(polygons, type) {
+        if (!polygons || polygons.length === 0) return null;
+        if (polygons.length === 1) return polygons[0];
+        let current = [...polygons]; let step = 0;
+        while (current.length > 1) {
+            let next = [];
+            for (let i = 0; i < current.length; i += 2) {
+                if (i % 4 === 0) await yieldCPU();
+                if (i + 1 < current.length) {
+                    try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); }
+                } else next.push(current[i]);
+            }
+            current = next; step++;
+            document.getElementById('stt').innerText = `TỐI ƯU HÓA ${type}: CẤP ${step}`;
+        }
+        return current[0];
+    }
+
+    function makeClosedPolygon(pts) {
+        let ring = pts.map(p => [p[0], p[1]]);
+        if (ring[0][0] !== ring[ring.length-1][0] || ring[0][1] !== ring[ring.length-1][1]) ring.push([...ring[0]]);
+        return turf.polygon([ring]);
+    }
+
     async function startMegaScan() {
-        if(typeof turf === 'undefined') return alert("Core đang khởi động!");
-        resetScan();
+        if(typeof turf === 'undefined' || !turf.bboxClip) return alert("Hệ thống Core đang tải, đợi chút nhé!");
         
-        // Nhảy 10% và bật hiệu ứng shimmer ngay lập tức
-        updateProgress(10, "KẾT NỐI VỆ TINH...", true);
+        resetScan();
 
         const b = map.getBounds();
         const sw = b.getSouthWest(), ne = b.getNorthEast();
-        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];);out body;>;out skel qt;`;
+        const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
+
+        document.getElementById('progress').style.width = '10%';
+        document.getElementById('stt').innerText = "ĐANG TẢI DỮ LIỆU VỆ TINH...";
+        document.getElementById('stt').style.color = "var(--primary)";
+
+        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
         
         try {
             const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
@@ -326,61 +368,109 @@
             const nodes = new Map();
             data.elements.forEach(e => { if(e.type === 'node') nodes.set(e.id, [e.lon, e.lat]); });
 
-            let ways = data.elements.filter(e => e.type === "way");
-            if(ways.length === 0) return updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false);
+            let rBufs = [], sBufs = [];
+            let total = data.elements.filter(e => e.type === "way").length;
+            if(total === 0) return document.getElementById('stt').innerText = "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!";
 
-            for (let i = 0; i < ways.length; i++) {
-                // Cập nhật % dựa trên số lượng đối tượng đang xử lý
-                if (i % 20 === 0) {
-                    let p = 15 + (i / ways.length) * 60;
-                    updateProgress(p, `DỰNG HÌNH NÉT: ${i}/${ways.length}`);
+            let count = 0;
+
+            for (const e of data.elements) {
+                if (e.type !== "way") continue;
+                count++;
+                if (count % 50 === 0) {
+                    document.getElementById('progress').style.width = 10 + (count/total)*40 + '%';
+                    document.getElementById('stt').innerText = `DỰNG HÌNH NÉT: ${count}/${total}`;
                     await yieldCPU(); 
                 }
 
-                const e = ways[i];
                 const pts = e.nodes.map(id => nodes.get(id)).filter(p => p);
                 if (pts.length < 3) continue;
 
                 if (e.tags.building) {
-                    const poly = turf.bboxClip(turf.polygon([pts.concat([pts[0]])]), [sw.lng, sw.lat, ne.lng, ne.lat]);
+                    const poly = turf.bboxClip(makeClosedPolygon(pts), screenBox);
                     geoData.nha.push(poly);
                     L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha);
+                } else if (e.tags.natural === 'water') {
+                    const poly = turf.bboxClip(makeClosedPolygon(pts), screenBox);
+                    geoData.nuoc.push(poly);
+                    L.geoJSON(poly, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc);
                 } else if (e.tags.highway) {
                     const line = turf.lineString(pts);
-                    const buf = turf.bboxClip(turf.buffer(line, 4, {units:'meters'}), [sw.lng, sw.lat, ne.lng, ne.lat]);
-                    geoData.duong.push(buf);
-                    L.geoJSON(buf, { style: getLayerStyle('duong') }).addTo(layers.duong);
+                    const w = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
+                    rBufs.push(turf.bboxClip(turf.buffer(line, w/2, {units:'meters', steps: 2}), screenBox));
+                    sBufs.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters', steps: 2}), screenBox));
                 }
             }
 
-            updateProgress(90, "HOÀN TẤT TRÍCH XUẤT...");
-            await yieldCPU();
-            updateProgress(100, "XONG! SẴN SÀNG XUẤT CAD.", false);
-        } catch (err) { updateProgress(0, "LỖI KẾT NỐI!", false); }
+            document.getElementById('progress').style.width = '60%';
+            
+            if (rBufs.length > 0) {
+                document.getElementById('stt').innerText = "XỬ LÝ NÉT LÒNG ĐƯỜNG...";
+                let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
+                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
+
+                document.getElementById('progress').style.width = '80%';
+                document.getElementById('stt').innerText = "XỬ LÝ NÉT VỈA HÈ...";
+                let mS = await chunkedUnion(sBufs, "VỈA HÈ");
+                
+                try {
+                    let viahe = turf.difference(mS, mR);
+                    if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
+                } catch(e) { 
+                    if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
+                }
+            }
+            
+            document.getElementById('progress').style.width = '100%';
+            document.getElementById('stt').innerText = "HOÀN TẤT! SẴN SÀNG XUẤT CAD.";
+            document.getElementById('stt').style.color = "#10b981"; 
+        } catch (err) { alert("Lỗi mạng hoặc tải dữ liệu!"); }
+    }
+
+    function extractRings(geom) {
+        let rings = [];
+        if (!geom) return rings;
+        if (geom.type === 'Feature') return extractRings(geom.geometry);
+        if (geom.type === 'FeatureCollection') { geom.features.forEach(f => rings.push(...extractRings(f))); return rings; }
+        if (geom.type === 'Polygon') rings.push(...geom.coordinates);
+        else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(poly => rings.push(...poly));
+        else if (geom.type === 'GeometryCollection') geom.geometries.forEach(g => rings.push(...extractRings(g)));
+        return rings;
     }
 
     async function exportDxfSafe() {
-        if(geoData.nha.length === 0) return alert("Chưa có dữ liệu!");
-        updateProgress(95, "ĐANG BIÊN DỊCH CAD...");
+        if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Bạn chưa quét dữ liệu nào!");
+        
+        document.getElementById('stt').innerText = "ĐANG GHI FILE DXF...";
+        document.getElementById('stt').style.color = "var(--primary)";
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
-        const writeToDxf = async (arr, layer) => {
-            for (let g of arr) {
-                const rings = (g.geometry.type === 'Polygon') ? g.geometry.coordinates : g.geometry.coordinates.flat(1);
-                rings.forEach(r => {
-                    dxf += `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
-                    r.forEach(pt => { dxf += `0\nVERTEX\n8\n${layer}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
+
+        const writeToDxf = async (geoArray, layerName) => {
+            for (let i = 0; i < geoArray.length; i++) {
+                if (i % 10 === 0) await yieldCPU();
+                const rings = extractRings(geoArray[i]);
+                rings.forEach(ring => {
+                    if(!ring || ring.length < 2) return;
+                    dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
+                    ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
                     dxf += "0\nSEQEND\n";
                 });
             }
         };
-        await writeToDxf(geoData.nha, "V21_NHA");
-        await writeToDxf(geoData.duong, "V21_DUONG");
+
+        if(document.getElementById('showNha').checked) await writeToDxf(geoData.nha, "V21_NHA");
+        if(document.getElementById('showDuong').checked) await writeToDxf(geoData.duong, "V21_DUONG");
+        if(document.getElementById('showViahe').checked) await writeToDxf(geoData.viahe, "V21_VIAHE");
+        if(document.getElementById('showNuoc').checked) await writeToDxf(geoData.nuoc, "V21_NUOC");
+
         dxf += "0\nENDSEC\n0\nEOF";
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([dxf], {type:'application/dxf'}));
-        a.download = "NAM_ARCH_PRO_STABLE.dxf"; a.click();
-        updateProgress(100, "XUẤT FILE THÀNH CÔNG!", false);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
+        a.download = "NAM_ARCH_PRO_V60.dxf"; a.click();
+        document.getElementById('stt').innerText = "XUẤT FILE CAD THÀNH CÔNG!";
+        document.getElementById('stt').style.color = "#10b981";
     }
 </script>
 </body>
