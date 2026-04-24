@@ -2,86 +2,123 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v23 - Professional Workstation</title>
+    <title>NAM ARCH v24 - Pro Edition</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
-        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(25, 25, 25, 0.95); }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: white; overflow: hidden; }
-        #map { height: 100vh; width: 100vw; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        /* 3D View Perspective */
-        .view-3d #map { transform: perspective(1000px) rotateX(45deg) scale(1.2); }
+        :root {
+            --accent: #00ffcc; --bg: #0f0f0f; --panel: rgba(20, 20, 20, 0.9); --text: #ffffff;
+        }
+        .light-mode {
+            --accent: #6c5ce7; --bg: #f0f2f5; --panel: rgba(255, 255, 255, 0.95); --text: #1a1a1a;
+        }
+        body { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); transition: 0.4s; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; transition: 0.6s ease-in-out; }
+        .view-3d #map { transform: perspective(1200px) rotateX(40deg) scale(1.1); }
 
+        /* Sidebar */
         .sidebar {
             position: absolute; top: 20px; left: 20px; z-index: 1000; width: 300px;
-            background: var(--panel); backdrop-filter: blur(10px); padding: 25px;
-            border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            background: var(--panel); backdrop-filter: blur(15px); padding: 25px;
+            border-radius: 20px; border: 1px solid rgba(128,128,128,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
-        h1 { margin: 0; font-size: 26px; letter-spacing: -1px; color: var(--accent); }
-        .tagline { font-size: 10px; opacity: 0.5; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; display: block; }
-        
-        .group { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
-        label { display: block; font-size: 11px; color: var(--accent); margin-bottom: 10px; font-weight: bold; }
-        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-        
-        input[type="color"] { border: none; width: 25px; height: 25px; border-radius: 5px; cursor: pointer; background: none; }
-        
+        h1 { margin: 0; font-size: 28px; font-weight: 900; color: var(--accent); letter-spacing: -1.5px; }
+        .tagline { font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; display: block; }
+
+        /* Compass */
+        #compass {
+            position: absolute; top: 20px; right: 20px; z-index: 1000;
+            width: 50px; height: 50px; background: var(--panel); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid var(--accent); box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        #compass::after { content: 'N'; font-weight: bold; color: var(--accent); font-size: 14px; margin-top: -2px; }
+        .needle { 
+            position: absolute; width: 2px; height: 30px; background: var(--accent); 
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        /* Controls */
+        .group { margin-bottom: 20px; }
+        label { display: block; font-size: 10px; font-weight: 800; opacity: 0.5; margin-bottom: 12px; }
+        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        input[type="color"] { border: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; background: none; }
+
         button {
-            width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold;
+            width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700;
             cursor: pointer; transition: 0.3s; margin-top: 8px; font-size: 12px;
         }
-        .btn-preview { background: #34495e; color: white; }
-        .btn-export { background: var(--accent); color: #000; }
-        .btn-3d { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        .btn-main { background: var(--accent); color: #000; box-shadow: 0 4px 15px var(--accent); }
+        .btn-preview { background: rgba(128,128,128,0.15); color: var(--text); border: 1px solid rgba(128,128,128,0.3); }
+        .btn-theme { background: transparent; color: var(--text); border: 1px solid var(--text); opacity: 0.6; }
+        button:hover { transform: translateY(-2px); filter: brightness(1.2); }
 
-        #loader { font-size: 11px; text-align: center; margin-top: 15px; color: #aaa; font-family: monospace; }
+        /* Progress Bar */
+        .progress-box { margin-top: 20px; display: none; }
+        .progress-track { width: 100%; height: 6px; background: rgba(128,128,128,0.2); border-radius: 10px; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: var(--accent); transition: 0.3s; box-shadow: 0 0 10px var(--accent); }
+        #status-text { font-size: 10px; text-align: center; margin-top: 8px; font-family: monospace; text-transform: uppercase; color: var(--accent); }
     </style>
 </head>
 <body>
 
+    <div id="compass"><div class="needle"></div></div>
+
     <div class="sidebar">
         <h1>NAM ARCH</h1>
-        <span class="tagline">v23 Architect Suite</span>
+        <span class="tagline">Workstation v24 Professional</span>
 
         <div class="group">
-            <label>LAYER COLORS (DIAGRAM)</label>
-            <div class="row"><span>Building</span><input type="color" id="cBuilding" value="#ff5e57"></div>
-            <div class="row"><span>Road</span><input type="color" id="cRoad" value="#4b4b4b"></div>
-            <div class="row"><span>Sidewalk</span><input type="color" id="cWalk" value="#1dd1a1"></div>
+            <label>INTERFACE & VIEW</label>
+            <button class="btn-theme" onclick="toggleTheme()">🌓 SWITCH THEME (LIGHT/DARK)</button>
+            <button class="btn-preview" style="margin-top:10px" onclick="toggle3D()">🏗️ TOGGLE 3D VIEW (APP ONLY)</button>
         </div>
 
         <div class="group">
-            <label>VISUALIZATION</label>
-            <button class="btn-3d" onclick="toggle3D()">TOGGLE 3D VIEW (APP)</button>
+            <label>DIAGRAM COLORS</label>
+            <div class="row"><span>Tòa nhà</span><input type="color" id="cNha" value="#ff4757"></div>
+            <div class="row"><span>Lòng đường</span><input type="color" id="cDuong" value="#2f3542"></div>
+            <div class="row"><span>Vỉa hè</span><input type="color" id="cViaHe" value="#2ed573"></div>
         </div>
 
-        <button class="btn-preview" onclick="processData(true)">👁️ XEM TRƯỚC (PREVIEW)</button>
-        <button class="btn-export" onclick="processData(false)">📥 XUẤT DXF (2D FLAT)</button>
-        
-        <div id="loader">Hệ thống sẵn sàng...</div>
+        <button class="btn-preview" onclick="runProcess(true)">👁️ XEM TRƯỚC GIAO LỘ</button>
+        <button class="btn-main" onclick="runProcess(false)">📥 XUẤT CAD 2D (1:1 SCALE)</button>
+
+        <div class="progress-box" id="p-box">
+            <div class="progress-track"><div class="progress-fill" id="p-fill"></div></div>
+            <div id="status-text">Ready</div>
+        </div>
     </div>
 
     <div id="map"></div>
 
     <script>
         var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 17);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
-        
+        var darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+        var lightTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
         var previewLayer = L.layerGroup().addTo(map);
 
-        function toggle3D() {
-            document.body.classList.toggle('view-3d');
-            stt(document.body.classList.contains('view-3d') ? "Đang ở chế độ 3D Perspective" : "Về chế độ 2D");
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            if(document.body.classList.contains('light-mode')) {
+                map.removeLayer(darkTiles); lightTiles.addTo(map);
+            } else {
+                map.removeLayer(lightTiles); darkTiles.addTo(map);
+            }
         }
 
-        function stt(t) { document.getElementById('loader').innerText = t; }
+        function toggle3D() { document.body.classList.toggle('view-3d'); }
 
-        async function processData(isPreview) {
+        function updateProgress(percent, text) {
+            document.getElementById('p-box').style.display = 'block';
+            document.getElementById('p-fill').style.width = percent + "%";
+            document.getElementById('status-text').innerText = text;
+        }
+
+        async function runProcess(isPreview) {
             previewLayer.clearLayers();
-            stt("ĐANG TÍNH TOÁN HÌNH HỌC...");
+            updateProgress(10, "ĐANG KẾT NỐI VỆ TINH...");
             
             const b = map.getBounds();
             const query = `[out:json][bbox:${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}];(way["building"];way["highway"];);out body;>;out skel qt;`;
@@ -89,17 +126,20 @@
             try {
                 const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
                 const data = await res.json();
+                updateProgress(30, "ĐANG PHÂN TÍCH NODE...");
+
                 const nodeMap = new Map();
                 data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
                 const center = map.getCenter();
-                const scale = 111319; // 1:1 Meter Scale
+                const scale = 111319;
                 let dxf = "0\nSECTION\n2\nENTITIES\n";
                 
                 let roadPolys = [];
                 let walkPolys = [];
 
-                data.elements.filter(e => e.type === "way").forEach(e => {
+                const ways = data.elements.filter(e => e.type === "way");
+                ways.forEach((e, i) => {
                     const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n && b.contains([n.lat, n.lon]));
                     if (nodes.length < 2) return;
 
@@ -107,44 +147,48 @@
                     const line = turf.lineString(coords);
 
                     if (e.tags?.highway) {
-                        const rW = (e.tags.highway === 'primary') ? 8 : 4;
-                        const sW = rW + 3; // Vỉa hè mỗi bên 1.5m
+                        const rW = (e.tags.highway === 'primary') ? 9 : 5;
                         const pR = turf.buffer(line, rW/2, {units:'meters'});
-                        const pW = turf.buffer(line, sW/2, {units:'meters'});
+                        const pW = turf.buffer(line, (rW/2)+2, {units:'meters'});
                         if(pR) roadPolys.push(pR);
                         if(pW) walkPolys.push(pW);
                     } else if (e.tags?.building) {
-                        // Vẽ khối nhà lên Preview (nếu là preview) hoặc xuất CAD
                         if (isPreview) {
-                            L.polygon(nodes.map(n=>[n.lat, n.lon]), {color: document.getElementById('cBuilding').value, fillOpacity: 0.6}).addTo(previewLayer);
+                            L.polygon(nodes.map(n=>[n.lat, n.lon]), {color: document.getElementById('cNha').value, weight: 1}).addTo(previewLayer);
                         } else {
-                            dxf += writePolygonDXF(nodes, "NHA_2D", center, scale);
+                            dxf += writeDxfPoly(nodes, "NHA_FOOTPRINT", center, scale);
                         }
                     }
+                    if(i % 10 === 0) updateProgress(30 + (i/ways.length)*20, "DỰNG HÌNH KHỐI...");
                 });
 
-                // Xử lý Boolean Union cho Giao lộ sạch
                 if (roadPolys.length > 0) {
+                    updateProgress(60, "ĐANG HÀN NGÃ TƯ (BOOLEAN)...");
                     let mergedRoad = roadPolys.reduce((a, b) => turf.union(a, b));
                     let mergedWalk = walkPolys.reduce((a, b) => turf.union(a, b));
                     let finalWalk = turf.difference(mergedWalk, mergedRoad);
 
                     if (isPreview) {
-                        L.geoJSON(mergedRoad, {style: {color: document.getElementById('cRoad').value, weight: 1}}).addTo(previewLayer);
-                        L.geoJSON(finalWalk, {style: {color: document.getElementById('cWalk').value, weight: 1}}).addTo(previewLayer);
-                        stt("XEM TRƯỚC: Mọi giao lộ đã được xử lý!");
+                        L.geoJSON(mergedRoad, {style: {color: document.getElementById('cRoad').value, weight: 0, fillOpacity: 0.8}}).addTo(previewLayer);
+                        L.geoJSON(finalWalk, {style: {color: document.getElementById('cViaHe').value, weight: 0, fillOpacity: 0.6}}).addTo(previewLayer);
                     } else {
-                        dxf += turfToDXF(mergedRoad, "MAT_DUONG", center, scale);
-                        dxf += turfToDXF(finalWalk, "VIA_HE", center, scale);
+                        updateProgress(90, "ĐANG ĐÓNG GÓI DXF...");
+                        dxf += turfToDxf(mergedRoad, "MAT_DUONG", center, scale);
+                        dxf += turfToDxf(finalWalk, "VIA_HE", center, scale);
                         dxf += "0\nENDSEC\n0\nEOF";
-                        downloadDXF(dxf);
-                        stt("XUẤT FILE 2D THÀNH CÔNG!");
+                        const blob = new Blob([dxf], {type: 'application/dxf'});
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = "NAM_ARCH_V24_MASTER.dxf";
+                        a.click();
                     }
                 }
-            } catch (e) { stt("LỖI: Vùng chọn quá lớn?"); }
+                updateProgress(100, isPreview ? "XEM TRƯỚC HOÀN TẤT" : "XUẤT FILE THÀNH CÔNG");
+                setTimeout(() => { document.getElementById('p-box').style.display = 'none'; }, 3000);
+            } catch (e) { updateProgress(0, "LỖI KẾT NỐI!"); }
         }
 
-        function writePolygonDXF(nodes, layer, center, scale) {
+        function writeDxfPoly(nodes, layer, center, scale) {
             let s = `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
             nodes.forEach(n => {
                 let x = (n.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
@@ -154,7 +198,7 @@
             return s + "0\nSEQEND\n";
         }
 
-        function turfToDXF(poly, layer, center, scale) {
+        function turfToDxf(poly, layer, center, scale) {
             let s = "";
             let rings = (poly.geometry.type === 'Polygon') ? poly.geometry.coordinates : poly.geometry.coordinates.flat(1);
             rings.forEach(ring => {
@@ -167,14 +211,6 @@
                 s += `0\nSEQEND\n`;
             });
             return s;
-        }
-
-        function downloadDXF(data) {
-            const blob = new Blob([data], {type: 'application/dxf'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = "NAM_ARCH_V23_2D_CLEAN.dxf";
-            a.click();
         }
     </script>
 </body>
