@@ -2,106 +2,79 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v40 - Outline Only</title>
+    <title>NAM ARCH v41 - Stable Outline</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(30, 30, 30, 0.98); --text: #fff; }
-        .light-mode { --accent: #ff4757; --bg: #f0f0f0; --panel: rgba(255, 255, 255, 0.98); --text: #222; }
+        :root { --accent: #00ffcc; --bg: #1a1a1a; --panel: #252525; --text: #fff; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-        #map { height: 100vh; width: 100vw; background: #000; }
+        #map { height: 100vh; width: 100vw; }
         .sidebar {
             position: absolute; top: 20px; left: 20px; z-index: 1000; width: 300px;
-            background: var(--panel); border-radius: 15px; padding: 20px;
-            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: var(--panel); border-radius: 12px; padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #444;
         }
-        h1 { margin: 0; font-size: 18px; color: var(--accent); text-align: center; text-transform: uppercase; }
-        .desc { font-size: 10px; opacity: 0.6; text-align: center; margin-bottom: 20px; display: block; }
+        h1 { margin: 0; font-size: 18px; color: var(--accent); text-align: center; }
+        .status-box { margin: 15px 0; padding: 10px; background: #111; border-radius: 6px; font-family: monospace; font-size: 11px; }
         button {
-            width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold;
-            cursor: pointer; transition: 0.2s; font-size: 11px; text-transform: uppercase; margin-bottom: 10px;
+            width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold;
+            cursor: pointer; margin-bottom: 8px; text-transform: uppercase; font-size: 11px;
         }
-        .btn-fetch { background: #3498db; color: white; border-bottom: 3px solid #2980b9; }
+        .btn-fetch { background: #3498db; color: white; }
         .btn-export { background: var(--accent); color: #000; }
-        .btn-theme { background: #57606f; color: white; }
-        
-        .progress-box { background: #333; height: 6px; border-radius: 3px; overflow: hidden; margin: 15px 0; display: none; }
-        #bar { width: 0%; height: 100%; background: var(--accent); transition: 0.2s; }
-        #stt { font-size: 10px; text-align: center; color: var(--accent); font-family: monospace; }
-        
-        /* Chỉ hiển thị nét, không đổ màu */
-        .leaflet-interactive { fill: none !important; stroke-width: 1.5; }
+        .progress-container { height: 8px; background: #444; border-radius: 4px; overflow: hidden; margin-top: 10px; }
+        #progress-bar { width: 0%; height: 100%; background: var(--accent); transition: 0.3s; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h1>NAM ARCH v40</h1>
-        <span class="desc">Chế độ quét nét siêu tốc (No-Fill)</span>
-
-        <button class="btn-theme" onclick="toggleTheme()">🌓 GIAO DIỆN SÁNG/TỐI</button>
-        <button class="btn-fetch" onclick="runFastScan()">🚀 QUÉT NÉT DIỆN TÍCH LỚN</button>
+        <h1>NAM ARCH v41</h1>
+        <div class="status-box" id="stt">READY</div>
         
-        <div class="progress-box" id="pbox"><div id="bar"></div></div>
-        <div id="stt">SẴN SÀNG QUÉT NÉT</div>
-
-        <button class="btn-export" onclick="exportDXF()">📥 XUẤT FILE DXF 1:1</button>
+        <button class="btn-fetch" onclick="startStableScan()">🚀 QUÉT ỔN ĐỊNH (FIX LỖI)</button>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+        
+        <button class="btn-export" style="margin-top:20px" onclick="exportFinalDXF()">📥 XUẤT DXF CHUẨN CAD</button>
     </div>
 
     <div id="map"></div>
 
     <script>
         var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 16);
-        var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
-        var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
-        
-        // Các lớp chứa nét
-        var layers = {
-            building: L.layerGroup().addTo(map),
-            road: L.layerGroup().addTo(map),
-            water: L.layerGroup().addTo(map)
-        };
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
 
-        function toggleTheme() {
-            if(document.body.classList.toggle('light-mode')) { map.removeLayer(darkT); lightT.addTo(map); }
-            else { map.removeLayer(lightT); darkT.addTo(map); }
-        }
+        var dataStorage = { nha: [], duong: [], nuoc: [] };
 
-        async function runFastScan() {
+        async function startStableScan() {
             const b = map.getBounds();
             const sw = b.getSouthWest(), ne = b.getNorthEast();
-            const latStep = (ne.lat - sw.lat) / 4;
-            const lngStep = (ne.lng - sw.lng) / 4;
-            
-            document.getElementById('pbox').style.display = 'block';
-            Object.values(layers).forEach(g => g.clearLayers());
+            const rows = 4, cols = 4;
+            const latStep = (ne.lat - sw.lat) / rows;
+            const lngStep = (ne.lng - sw.lng) / cols;
 
-            let tasks = [];
-            for(let i=0; i<4; i++) {
-                for(let j=0; j<4; j++) {
-                    tasks.push([sw.lat + i*latStep, sw.lng + j*lngStep, sw.lat + (i+1)*latStep, sw.lng + (j+1)*lngStep]);
+            document.getElementById('progress-bar').style.width = '0%';
+            dataStorage = { nha: [], duong: [], nuoc: [] };
+            let total = rows * cols;
+            let count = 0;
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const box = [
+                        sw.lat + i * latStep, sw.lng + j * lngStep,
+                        sw.lat + (i + 1) * latStep, sw.lng + (j + 1) * lngStep
+                    ];
+                    document.getElementById('stt').innerText = `QUÉT MẢNG: ${++count}/${total}`;
+                    await fetchWithRetry(box);
+                    document.getElementById('progress-bar').style.width = (count / total) * 100 + '%';
                 }
             }
-
-            let done = 0;
-            // Quét song song 4 luồng
-            const workers = [tasks.slice(0,4), tasks.slice(4,8), tasks.slice(8,12), tasks.slice(12,16)];
-            
-            await Promise.all(workers.map(async (group) => {
-                for(const box of group) {
-                    await fetchWireframe(box);
-                    done++;
-                    document.getElementById('bar').style.width = (done/16)*100 + '%';
-                    document.getElementById('stt').innerText = `QUÉT NÉT: ${done}/16`;
-                }
-            }));
-
-            document.getElementById('stt').innerText = "✅ ĐÃ QUÉT XONG NÉT TOÀN VÙNG";
+            drawData();
+            document.getElementById('stt').innerText = "✅ ĐÃ QUÉT XONG - FILE SẴN SÀNG";
         }
 
-        async function fetchWireframe(box) {
-            // Chỉ lấy building và highway để tối ưu tốc độ
-            const q = `[out:json][timeout:25][bbox:${box[0]},${box[1]},${box[2]},${box[3]}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
+        async function fetchWithRetry(box, retry = 2) {
+            const q = `[out:json][timeout:30][bbox:${box[0]},${box[1]},${box[2]},${box[3]}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
             try {
                 const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
                 const data = await res.json();
@@ -109,45 +82,50 @@
                 data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
                 data.elements.filter(e => e.type === "way").forEach(e => {
-                    const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n);
-                    if (nodes.length < 2) return;
-                    const pts = nodes.map(n => [n.lat, n.lon]);
+                    const pts = e.nodes.map(id => nodeMap.get(id)).filter(n => n).map(n => [n.lat, n.lon]);
+                    if (pts.length < 2) return;
 
-                    if (e.tags.building) {
-                        L.polyline(pts, {color: '#ff4d4d', weight: 1}).addTo(layers.building);
-                    } else if (e.tags.highway) {
-                        L.polyline(pts, {color: '#ffffff', weight: 1.5}).addTo(layers.road);
-                    } else if (e.tags.natural === 'water') {
-                        L.polyline(pts, {color: '#3498db', weight: 1}).addTo(layers.water);
-                    }
+                    if (e.tags.building) dataStorage.nha.push(pts);
+                    else if (e.tags.highway) dataStorage.duong.push(pts);
+                    else if (e.tags.natural === 'water') dataStorage.nuoc.push(pts);
                 });
-            } catch (e) { console.log("Tile fail"); }
+            } catch (e) {
+                if (retry > 0) await fetchWithRetry(box, retry - 1);
+            }
         }
 
-        function exportDXF() {
-            document.getElementById('stt').innerText = "ĐANG XUẤT NÉT CAD...";
+        function drawData() {
+            // Vẽ lên bản đồ để xem trước
+            dataStorage.nha.forEach(p => L.polyline(p, {color: '#ff4d4d', weight: 1}).addTo(map));
+            dataStorage.duong.forEach(p => L.polyline(p, {color: '#fff', weight: 1}).addTo(map));
+        }
+
+        function exportFinalDXF() {
+            document.getElementById('stt').innerText = "XUẤT FILE CHUẨN...";
             const center = map.getCenter();
             const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
+            
             let dxf = "0\nSECTION\n2\nENTITIES\n";
 
-            const write = (layerGroup, name) => {
-                layerGroup.eachLayer(l => {
-                    const pts = l.getLatLngs();
-                    dxf += `0\nPOLYLINE\n8\n${name}\n66\n1\n70\n0\n`;
-                    pts.forEach(p => dxf += `0\nVERTEX\n8\n${name}\n10\n${((p.lng - center.lng) * sx).toFixed(3)}\n20\n${((p.lat - center.lat) * sy).toFixed(3)}\n`);
+            const writeLayer = (data, layerName, isClosed) => {
+                data.forEach(pts => {
+                    dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n${isClosed ? 1 : 0}\n`;
+                    pts.forEach(p => {
+                        dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((p[1] - center.lng) * sx).toFixed(3)}\n20\n${((p[0] - center.lat) * sy).toFixed(3)}\n`;
+                    });
                     dxf += "0\nSEQEND\n";
                 });
             };
 
-            write(layers.building, "NET_NHA");
-            write(layers.road, "NET_DUONG");
-            write(layers.water, "NET_NUOC");
+            writeLayer(dataStorage.nha, "NHA", true);
+            writeLayer(dataStorage.duong, "DUONG", false);
+            writeLayer(dataStorage.nuoc, "NUOC", true);
 
             dxf += "0\nENDSEC\n0\nEOF";
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([dxf], {type:'application/dxf'}));
-            a.download = "NAM_V40_WIREFRAME.dxf"; a.click();
-            document.getElementById('stt').innerText = "XUẤT CAD XONG!";
+            a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
+            a.download = "NAM_ARCH_V41_STABLE.dxf"; a.click();
+            document.getElementById('stt').innerText = "XUẤT CAD THÀNH CÔNG";
         }
     </script>
 </body>
