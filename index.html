@@ -2,68 +2,59 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - CAD ONLY</title>
+    <title>NAM ARCH - CAD FIX</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { margin: 0; }
         #map { height: 100vh; width: 100vw; background: #ffffff; }
-        .ui { 
-            position: absolute; top: 20px; left: 60px; z-index: 1000; 
-            background: white; padding: 20px; border-radius: 10px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 220px;
-            font-family: sans-serif;
-        }
-        button { 
-            width: 100%; padding: 12px; background: #2c3e50; color: white; 
-            border: none; cursor: pointer; border-radius: 5px; font-weight: bold;
-        }
-        #stt { font-size: 11px; margin-top: 10px; color: #666; }
+        .ui { position: absolute; top: 20px; left: 60px; z-index: 1000; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 220px; font-family: sans-serif; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="ui">
-        <h3 style="margin:0 0 10px 0;">CAD CLEAN EXPORT</h3>
-        <p style="font-size:12px; color:red;">• Không lấy chữ / nhãn<br>• Chỉ lấy nét nhà & đường</p>
-        <button onclick="exportCleanCAD()">XUẤT FILE DXF</button>
-        <div id="stt">Trạng thái: Sẵn sàng</div>
+        <h3 style="margin:0 0 10px 0;">CAD CLEAN FIX</h3>
+        <button onclick="exportDXF()">XUẤT FILE DXF</button>
+        <div id="stt" style="font-size:11px; margin-top:10px;">Trạng thái: Sẵn sàng</div>
     </div>
     <div id="map"></div>
 
     <script>
         var map = L.map('map').setView([10.7933, 106.6800], 17);
-        
-        // Sử dụng lớp nền trắng tối giản (No labels)
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
 
-        async function exportCleanCAD() {
+        async function exportDXF() {
             const stt = document.getElementById('stt');
-            stt.innerText = "⏳ Đang lọc nét vẽ...";
+            stt.innerText = "⏳ Đang lấy nét vẽ...";
             const b = map.getBounds();
             const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
-            
-            // Chỉ truy vấn 'way' (đường nét), không lấy 'node' có nhãn text
             const query = `[out:json];(way["building"](${bbox});way["highway"](${bbox}););out body;>;out skel qt;`;
             
             try {
                 const response = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
                 const data = await response.json();
                 
+                if (!data.elements || data.elements.length < 5) {
+                    stt.innerText = "❌ Vùng này không có nét vẽ!";
+                    return;
+                }
+
                 let dxf = "0\nSECTION\n2\nENTITIES\n";
                 const center = map.getCenter();
+                // Hệ số nhân lớn hơn để thấy được trong CAD
+                const scale = 100000; 
 
                 data.elements.filter(e => e.type === "way").forEach(e => {
-                    // Phân lớp Layer để bạn dễ quản lý trong AutoCAD
                     let layer = e.tags?.building ? "NET_NHA" : "NET_DUONG";
-                    
                     dxf += "0\nLWPOLYLINE\n100\nAcDbEntity\n8\n" + layer + "\n100\nAcDbPolyline\n90\n" + e.nodes.length + "\n70\n1\n";
                     
                     e.nodes.forEach(nid => {
                         let n = data.elements.find(node => node.id === nid);
                         if (n) {
-                            let x = (n.lon - center.lng) * 100000;
-                            let y = (n.lat - center.lat) * 100000;
-                            dxf += "10\n" + x.toFixed(3) + "\n20\n" + y.toFixed(3) + "\n";
+                            let x = (n.lon - center.lng) * scale;
+                            let y = (n.lat - center.lat) * scale;
+                            dxf += "10\n" + x.toFixed(4) + "\n20\n" + y.toFixed(4) + "\n";
                         }
                     });
                 });
@@ -74,8 +65,8 @@
                 a.href = URL.createObjectURL(blob);
                 a.download = "Nam_Clean_Plan.dxf";
                 a.click();
-                stt.innerText = "✅ ĐÃ TẢI FILE (CHỈ CÓ NÉT)";
-            } catch (e) { stt.innerText = "❌ Lỗi kết nối server!"; }
+                stt.innerText = "✅ THÀNH CÔNG!";
+            } catch (e) { stt.innerText = "❌ Lỗi kết nối!"; }
         }
     </script>
 </body>
