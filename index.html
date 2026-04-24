@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v59 - Ultimate Clarity</title>
+    <title>NAM ARCH PRO v60 - Cyber Core</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -69,8 +69,57 @@
         .crosshair::after { content: ''; position: absolute; top: 0; left: 14px; width: 2px; height: 30px; background: var(--primary); }
         .leaflet-interactive { pointer-events: none; }
         
-        /* Chú thích màu sắc nhỏ */
         .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+
+        /* =========================================
+           HIỆU ỨNG CYBER CORE THEO ẢNH CỦA BẠN
+           ========================================= */
+        .core-badge {
+            display: flex; align-items: center; gap: 8px;
+            padding: 4px 12px; border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        /* Trạng thái Đang Tải (Phát sáng 3 màu xoay) */
+        .core-badge.loading {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 8px rgba(0, 229, 255, 0.1);
+        }
+
+        .cyber-spinner {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff);
+            animation: spin 1s linear infinite;
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0);
+            mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0);
+            filter: drop-shadow(0 0 4px rgba(255, 0, 255, 0.8));
+        }
+
+        .core-badge.loading .stt-text {
+            background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientText 2s linear infinite;
+        }
+
+        /* Trạng thái Sẵn Sàng (Xanh lá Matrix) */
+        .core-badge.online {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #10b981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), inset 0 0 5px rgba(16, 185, 129, 0.2);
+            text-shadow: 0 0 5px #10b981;
+        }
+
+        .core-badge.online .cyber-spinner { display: none; }
+        .core-badge.offline { color: #ef4444; border: 1px solid #ef4444; background: rgba(239,68,68,0.1); }
+        .core-badge.offline .cyber-spinner { display: none; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes gradientText { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
     </style>
 </head>
 <body>
@@ -83,7 +132,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V59 - ULTIMATE CLARITY</span>
+        <span class="tagline">V60 - CYBER CORE EDITION</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -114,8 +163,13 @@
 
         <div class="ctrl-box" style="padding-bottom: 10px;">
             <div class="row">
-                <span title="Chống treo máy">Trạng thái Core:</span>
-                <span id="lib-stt" style="color: var(--text-muted)">ĐANG TẢI...</span>
+                <span title="Chống treo máy">Hệ thống Core:</span>
+                
+                <div id="coreBadge" class="core-badge loading">
+                    <div class="cyber-spinner"></div>
+                    <span class="stt-text" id="lib-stt">ĐANG TẢI...</span>
+                </div>
+
             </div>
             <div class="prog-wrap"><div id="progress"></div></div>
             <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
@@ -156,10 +210,17 @@
         if (e.code === 'KeyM') { e.preventDefault(); toggleSidebar(); }
     });
 
+    // CẬP NHẬT TRẠNG THÁI CYBER BADGE
     setInterval(() => {
         const el = document.getElementById('lib-stt');
-        if (typeof turf !== 'undefined') { el.innerText = "ONLINE (V6.5)"; el.style.color = "#10b981"; }
-        else { el.innerText = "OFFLINE"; el.style.color = "#ef4444"; }
+        const badge = document.getElementById('coreBadge');
+        if (typeof turf !== 'undefined') { 
+            el.innerText = "ONLINE (V6.5)"; 
+            badge.className = "core-badge online";
+        } else { 
+            el.innerText = "ĐANG TẢI..."; 
+            badge.className = "core-badge loading";
+        }
     }, 1000);
 
     var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
@@ -230,7 +291,6 @@
         if (isChecked) map.addLayer(layers[type]); else map.removeLayer(layers[type]);
     }
 
-    // ĐÃ FIX: Tách màu sắc rõ ràng cho từng loại để tránh tình trạng "rối nùi" và không nhìn thấy gì
     function getLayerStyle(type) {
         const config = isLightMap ? {
             nha: { color: '#dc2626', weight: 3, fillColor: '#dc2626', fillOpacity: 0.15 },
@@ -238,10 +298,10 @@
             viahe: { color: '#ea580c', weight: 3, fillColor: '#ea580c', fillOpacity: 0.15 },
             nuoc: { color: '#0284c7', weight: 3, fillColor: '#0284c7', fillOpacity: 0.15 }
         } : {
-            nha: { color: '#ff3366', weight: 3, fillColor: '#ff3366', fillOpacity: 0.15 }, // Đỏ Neon
-            duong: { color: '#ffffff', weight: 3, fillColor: '#ffffff', fillOpacity: 0.1 },  // Trắng
-            viahe: { color: '#ffcc00', weight: 3, fillColor: '#ffcc00', fillOpacity: 0.15 }, // Vàng Neon
-            nuoc: { color: '#00e5ff', weight: 3, fillColor: '#00e5ff', fillOpacity: 0.15 }   // Cyan
+            nha: { color: '#ff3366', weight: 3, fillColor: '#ff3366', fillOpacity: 0.15 }, 
+            duong: { color: '#ffffff', weight: 3, fillColor: '#ffffff', fillOpacity: 0.1 }, 
+            viahe: { color: '#ffcc00', weight: 3, fillColor: '#ffcc00', fillOpacity: 0.15 }, 
+            nuoc: { color: '#00e5ff', weight: 3, fillColor: '#00e5ff', fillOpacity: 0.15 }  
         };
         return config[type];
     }
@@ -253,7 +313,6 @@
         layers.nuoc.eachLayer(l => l.setStyle(getLayerStyle('nuoc')));
     }
 
-    // --- NÚT LÀM MỚI (RESET) ---
     function resetScan() {
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
@@ -291,7 +350,6 @@
     async function startMegaScan() {
         if(typeof turf === 'undefined' || !turf.bboxClip) return alert("Hệ thống Core đang tải, đợi chút nhé!");
         
-        // Tự động xóa dữ liệu cũ trước khi quét mới
         resetScan();
 
         const b = map.getBounds();
@@ -365,7 +423,7 @@
             
             document.getElementById('progress').style.width = '100%';
             document.getElementById('stt').innerText = "HOÀN TẤT! SẴN SÀNG XUẤT CAD.";
-            document.getElementById('stt').style.color = "#10b981"; // Màu xanh lá báo hiệu thành công
+            document.getElementById('stt').style.color = "#10b981"; 
         } catch (err) { alert("Lỗi mạng hoặc tải dữ liệu!"); }
     }
 
@@ -395,7 +453,6 @@
                 const rings = extractRings(geoArray[i]);
                 rings.forEach(ring => {
                     if(!ring || ring.length < 2) return;
-                    // XUẤT CAD: Tuyệt đối khô khan, không có mã màu, chỉ có Tọa độ và Layer
                     dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
                     ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
                     dxf += "0\nSEQEND\n";
@@ -411,7 +468,7 @@
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-        a.download = "NAM_ARCH_PRO_V59.dxf"; a.click();
+        a.download = "NAM_ARCH_PRO_V60.dxf"; a.click();
         document.getElementById('stt').innerText = "XUẤT FILE CAD THÀNH CÔNG!";
         document.getElementById('stt').style.color = "#10b981";
     }
