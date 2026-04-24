@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v53.1 - Standard UI</title>
+    <title>NAM ARCH PRO v54 - Dual Theme Map</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -14,24 +14,15 @@
     <style>
         :root { 
             --primary: #00e5ff; --secondary: #0077ff;
-            /* ĐÃ FIX: Tông màu Xám Slate chuẩn App chuyên nghiệp thay vì đen thui */
-            --bg-dark: #111827; /* Gray 900 */
-            --panel-bg: rgba(31, 41, 55, 0.95); /* Gray 800 */
-            --box-bg: rgba(17, 24, 39, 0.6); /* Nền các ô điều khiển */
+            /* Giao diện UI luôn giữ cố định màu Dark Slate chuyên nghiệp */
+            --bg-dark: #111827; 
+            --panel-bg: rgba(31, 41, 55, 0.95);
+            --box-bg: rgba(17, 24, 39, 0.6); 
             --text-main: #f9fafb; --text-muted: #9ca3af;
             --border: rgba(255, 255, 255, 0.1);
         }
-        
-        .light-mode {
-            --primary: #0284c7; --secondary: #0369a1;
-            --bg-dark: #f3f4f6; /* Gray 100 */
-            --panel-bg: rgba(255, 255, 255, 0.98);
-            --box-bg: rgba(243, 244, 246, 0.8);
-            --text-main: #111827; --text-muted: #4b5563;
-            --border: rgba(0, 0, 0, 0.12);
-        }
 
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); overflow: hidden; transition: 0.3s; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); overflow: hidden; }
         #map { height: 100vh; width: 100vw; background: var(--bg-dark); }
         
         /* SEARCH BAR */
@@ -39,7 +30,7 @@
             position: absolute; top: 20px; right: 20px; z-index: 1000;
             display: flex; background: var(--panel-bg); backdrop-filter: blur(10px);
             border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
         .search-box input { background: transparent; border: none; padding: 12px 15px; width: 250px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
         .search-box input::placeholder { color: var(--text-muted); }
@@ -68,7 +59,7 @@
         h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; text-align: center; letter-spacing: 0.5px; }
         .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 20px; margin-top: 4px;}
 
-        /* BOX ĐIỀU KHIỂN (Sáng sủa hơn) */
+        /* BOX ĐIỀU KHIỂN */
         .ctrl-box { background: var(--box-bg); border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid var(--border); }
         .row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
         .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;}
@@ -95,9 +86,9 @@
         .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); }
         
         .btn-outline {
-            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px;
-            background: var(--box-bg); color: var(--text-main); font-weight: 700; font-size: 11px;
-            text-transform: uppercase; cursor: pointer; transition: 0.3s; margin-top: 8px;
+            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+            background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px;
+            text-transform: uppercase; cursor: pointer; transition: 0.3s;
         }
         .btn-outline:hover { background: rgba(128,128,128,0.15); border-color: var(--primary); color: var(--primary); }
 
@@ -133,7 +124,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">STANDARD UI v53.1</span>
+        <span class="tagline">DUAL THEME v54</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -144,21 +135,45 @@
             <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px;">
                 <span style="color: var(--primary); text-transform: uppercase; font-size: 11px;">🎨 Quản lý Layer & Màu sắc</span>
             </div>
-            <div class="row">
-                <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> 🏢 Tòa Nhà</label>
-                <input type="color" id="cNha" value="#ff4757" oninput="updateLiveColors()">
+            
+            <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 15px;" onclick="toggleMapTheme()">🗺️ NỀN BẢN ĐỒ: TỐI (DARK)</button>
+
+            <div id="color-set-dark">
+                <div class="row">
+                    <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> 🏢 Tòa Nhà</label>
+                    <input type="color" id="cNha" value="#ff4757" oninput="updateLiveColors()">
+                </div>
+                <div class="row">
+                    <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> 🛣️ Lòng Đường</label>
+                    <input type="color" id="cDuong" value="#ffffff" oninput="updateLiveColors()">
+                </div>
+                <div class="row">
+                    <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> 🚶 Vỉa Hè</label>
+                    <input type="color" id="cViaHe" value="#f1c40f" oninput="updateLiveColors()">
+                </div>
+                <div class="row">
+                    <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> 💧 Mặt Nước</label>
+                    <input type="color" id="cNuoc" value="#3498db" oninput="updateLiveColors()">
+                </div>
             </div>
-            <div class="row">
-                <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> 🛣️ Lòng Đường</label>
-                <input type="color" id="cDuong" value="#ffffff" oninput="updateLiveColors()">
-            </div>
-            <div class="row">
-                <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> 🚶 Vỉa Hè</label>
-                <input type="color" id="cViaHe" value="#f1c40f" oninput="updateLiveColors()">
-            </div>
-            <div class="row">
-                <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> 💧 Mặt Nước</label>
-                <input type="color" id="cNuoc" value="#3498db" oninput="updateLiveColors()">
+
+            <div id="color-set-light" style="display: none;">
+                <div class="row">
+                    <label class="layer-label"><input type="checkbox" id="showNhaL" checked onchange="toggleLayer('nha')"> 🏢 Tòa Nhà (Light)</label>
+                    <input type="color" id="cNhaL" value="#dc2626" oninput="updateLiveColors()">
+                </div>
+                <div class="row">
+                    <label class="layer-label"><input type="checkbox" id="showDuongL" checked onchange="toggleLayer('duong')"> 🛣️ Lòng Đường (Light)</label>
+                    <input type="color" id="cDuongL" value="#111827" oninput="updateLiveColors()">
+                </div>
+                <div class="row">
+                    <label class="layer-label"><input type="checkbox" id="showViaheL" checked onchange="toggleLayer('viahe')"> 🚶 Vỉa Hè (Light)</label>
+                    <input type="color" id="cViaHeL" value="#d97706" oninput="updateLiveColors()">
+                </div>
+                <div class="row">
+                    <label class="layer-label"><input type="checkbox" id="showNuocL" checked onchange="toggleLayer('nuoc')"> 💧 Mặt Nước (Light)</label>
+                    <input type="color" id="cNuocL" value="#2563eb" oninput="updateLiveColors()">
+                </div>
             </div>
         </div>
 
@@ -173,8 +188,7 @@
             <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
         </div>
 
-        <button class="btn-outline" onclick="exportDxfSafe()" title="Phím tắt: Ctrl + E">📥 XUẤT CAD CHUẨN (CTRL + E)</button>
-        <button class="btn-outline" style="border-color: var(--text-muted); color: var(--text-muted);" onclick="document.body.classList.toggle('light-mode')">🌓 ĐỔI GIAO DIỆN SÁNG/TỐI</button>
+        <button class="btn-outline" style="margin-top: 0;" onclick="exportDxfSafe()" title="Phím tắt: Ctrl + E">📥 XUẤT CAD CHUẨN (CTRL + E)</button>
     </div>
     
     <div class="toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện Bảng điều khiển (Phím tắt: M)">
@@ -223,11 +237,41 @@
     L.GridLayer.Graticule = L.GridLayer.extend({
         createTile: function () {
             var tile = document.createElement('canvas'); tile.width = tile.height = 256;
-            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke(); return tile;
         }
     });
     new L.GridLayer.Graticule({maxZoom: 100}).addTo(map);
+
+    // --- QUẢN LÝ THEME BẢN ĐỒ ---
+    let isLightMap = false;
+    function toggleMapTheme() {
+        isLightMap = !isLightMap;
+        if(isLightMap) {
+            map.removeLayer(darkT); lightT.addTo(map);
+            document.getElementById('color-set-dark').style.display = 'none';
+            document.getElementById('color-set-light').style.display = 'block';
+            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: SÁNG (LIGHT)';
+            
+            // Đồng bộ Checkbox
+            document.getElementById('showNhaL').checked = document.getElementById('showNha').checked;
+            document.getElementById('showDuongL').checked = document.getElementById('showDuong').checked;
+            document.getElementById('showViaheL').checked = document.getElementById('showViahe').checked;
+            document.getElementById('showNuocL').checked = document.getElementById('showNuoc').checked;
+        } else {
+            map.removeLayer(lightT); darkT.addTo(map);
+            document.getElementById('color-set-dark').style.display = 'block';
+            document.getElementById('color-set-light').style.display = 'none';
+            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: TỐI (DARK)';
+            
+            // Đồng bộ Checkbox
+            document.getElementById('showNha').checked = document.getElementById('showNhaL').checked;
+            document.getElementById('showDuong').checked = document.getElementById('showDuongL').checked;
+            document.getElementById('showViahe').checked = document.getElementById('showViaheL').checked;
+            document.getElementById('showNuoc').checked = document.getElementById('showNuocL').checked;
+        }
+        updateLiveColors();
+    }
 
     // --- TÌM KIẾM ---
     async function searchLocation() {
@@ -262,15 +306,18 @@
     var layers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
     function toggleLayer(type) {
-        const isChecked = document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked;
+        // Đọc giá trị checkbox tùy theo bộ màu đang bật
+        const suffix = isLightMap ? 'L' : '';
+        const isChecked = document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1) + suffix).checked;
         if (isChecked) map.addLayer(layers[type]); else map.removeLayer(layers[type]);
     }
 
     function updateLiveColors() {
-        const cN = document.getElementById('cNha').value;
-        const cD = document.getElementById('cDuong').value;
-        const cV = document.getElementById('cViaHe').value;
-        const cW = document.getElementById('cNuoc').value;
+        const suffix = isLightMap ? 'L' : '';
+        const cN = document.getElementById('cNha' + suffix).value;
+        const cD = document.getElementById('cDuong' + suffix).value;
+        const cV = document.getElementById('cViaHe' + suffix).value;
+        const cW = document.getElementById('cNuoc' + suffix).value;
         layers.nha.eachLayer(l => l.setStyle({color: cN}));
         layers.duong.eachLayer(l => l.setStyle({color: cD}));
         layers.viahe.eachLayer(l => l.setStyle({color: cV}));
@@ -308,13 +355,15 @@
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
         
-        const cN = document.getElementById('cNha').value;
-        const cD = document.getElementById('cDuong').value;
-        const cV = document.getElementById('cViaHe').value;
-        const cW = document.getElementById('cNuoc').value;
+        // Lấy màu sắc dựa trên giao diện đang kích hoạt
+        const suffix = isLightMap ? 'L' : '';
+        const cN = document.getElementById('cNha' + suffix).value;
+        const cD = document.getElementById('cDuong' + suffix).value;
+        const cV = document.getElementById('cViaHe' + suffix).value;
+        const cW = document.getElementById('cNuoc' + suffix).value;
 
         document.getElementById('progress').style.width = '10%';
-        document.getElementById('stt').innerText = "KẾT NỐI VỆ TINH...";
+        document.getElementById('stt').innerText = "KẾT NỐI VỆ TINH OVERPASS...";
 
         const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
         
@@ -333,7 +382,7 @@
                 count++;
                 if (count % 50 === 0) {
                     document.getElementById('progress').style.width = 10 + (count/total)*40 + '%';
-                    document.getElementById('stt').innerText = `XÂY LƯỚI: ${count}/${total}`;
+                    document.getElementById('stt').innerText = `XÂY LƯỚI KHÔNG GIAN: ${count}/${total}`;
                     await yieldCPU(); 
                 }
 
@@ -359,13 +408,13 @@
             document.getElementById('progress').style.width = '60%';
             
             if (rBufs.length > 0) {
-                document.getElementById('stt').innerText = "ĐANG TẠO LÒNG ĐƯỜNG...";
+                document.getElementById('stt').innerText = "ĐANG ĐỤC LỖ LÒNG ĐƯỜNG...";
                 let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
                 geoData.duong.push(mR);
                 L.geoJSON(mR, {color: cD, weight: 1.5}).addTo(layers.duong);
 
                 document.getElementById('progress').style.width = '80%';
-                document.getElementById('stt').innerText = "ĐANG TẠO VỈA HÈ...";
+                document.getElementById('stt').innerText = "ĐANG GHÉP VỈA HÈ V21...";
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 
                 try {
@@ -415,15 +464,17 @@
             }
         };
 
-        if(document.getElementById('showNha').checked) await writeToDxf(geoData.nha, "V21_NHA");
-        if(document.getElementById('showDuong').checked) await writeToDxf(geoData.duong, "V21_DUONG");
-        if(document.getElementById('showViahe').checked) await writeToDxf(geoData.viahe, "V21_VIAHE");
-        if(document.getElementById('showNuoc').checked) await writeToDxf(geoData.nuoc, "V21_NUOC");
+        // Đọc giá trị Checkbox tùy theo UI đang ở sáng hay tối
+        const suffix = isLightMap ? 'L' : '';
+        if(document.getElementById('showNha' + suffix).checked) await writeToDxf(geoData.nha, "V21_NHA");
+        if(document.getElementById('showDuong' + suffix).checked) await writeToDxf(geoData.duong, "V21_DUONG");
+        if(document.getElementById('showViahe' + suffix).checked) await writeToDxf(geoData.viahe, "V21_VIAHE");
+        if(document.getElementById('showNuoc' + suffix).checked) await writeToDxf(geoData.nuoc, "V21_NUOC");
 
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-        a.download = "NAM_ARCH_PRO_V53.dxf"; a.click();
+        a.download = "NAM_ARCH_PRO_V54.dxf"; a.click();
         document.getElementById('stt').innerText = "XUẤT FILE THÀNH CÔNG!";
     }
 </script>
