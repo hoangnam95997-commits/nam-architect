@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v61 - Cyber Progress</title>
+    <title>NAM ARCH PRO v60.1 - Progress Fixed</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -24,110 +24,128 @@
         #map { height: 100vh; width: 100vw; background: var(--bg-dark); }
         
         .search-box { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .search-box input { background: transparent; border: none; padding: 12px 15px; width: 200px; color: var(--text-main); font-size: 13px; outline: none; }
-        .search-box button { background: var(--box-bg); border: none; border-left: 1px solid var(--border); padding: 0 15px; cursor: pointer; color: var(--primary); font-weight: bold;}
+        .search-box input { background: transparent; border: none; padding: 12px 15px; width: 250px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-box button { background: var(--box-bg); border: none; border-left: 1px solid var(--border); padding: 0 15px; cursor: pointer; color: var(--primary); transition: 0.2s; font-weight: bold;}
+        .search-box button:hover { background: rgba(0, 229, 255, 0.1); }
 
         .sidebar-container { position: absolute; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 10px; align-items: flex-start; }
         .sidebar { width: 350px; background: var(--panel-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 20px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto; }
-        .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: 0.3s; }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
+        .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; }
 
         .toggle-btn { background: var(--panel-bg); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; margin-top: 10px; }
+        .toggle-btn:hover { background: var(--box-bg); transform: scale(1.05); }
 
-        h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), #ff00ff); -webkit-background-clip: text; color: transparent; text-align: center; }
-        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; text-align: center; }
+        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 20px; margin-top: 4px;}
 
         .ctrl-box { background: var(--box-bg); border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid var(--border); }
         .row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;}
         
         .layer-label { cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 12px;}
-        .layer-label input { accent-color: var(--primary); }
+        .layer-label input[type="checkbox"] { cursor: pointer; accent-color: var(--primary); }
 
-        .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.3); border-radius: 2px; outline: none; }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--primary); cursor: pointer; }
+        .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.3); border-radius: 2px; outline: none; margin-top: 5px; }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--primary); cursor: pointer; transition: 0.2s; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
         
-        .btn-glow { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, #ff00ff 100%); color: #fff; font-weight: 800; text-transform: uppercase; cursor: pointer; box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: 0.3s; margin-bottom: 12px; }
-        .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        .btn-glow { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px; }
+        .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); }
         
-        .btn-outline { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; }
+        .btn-outline { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        .btn-outline:hover { background: rgba(128,128,128,0.15); }
 
         /* =========================================
-           THANH TIẾN TRÌNH CYBER (ĐÃ FIX)
+           THANH TIẾN TRÌNH CẢI TIẾN (SHIMMER)
            ========================================= */
         .prog-container { margin: 15px 0; }
         .prog-wrap { 
-            height: 10px; background: rgba(0,0,0,0.4); border-radius: 5px; 
+            height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; 
             overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative;
         }
-        
         #progress { 
             width: 0%; height: 100%; 
             background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); 
             background-size: 200% 100%;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            transition: width 0.3s ease; 
             box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
         }
-
-        /* Hiệu ứng sọc chạy khi đang quét */
+        /* Hiệu ứng tia sáng chạy ngang khi đang quét */
         .prog-wrap.active #progress {
             animation: progressFlow 2s linear infinite;
         }
-
         @keyframes progressFlow {
             0% { background-position: 0% 0%; }
             100% { background-position: 200% 0%; }
         }
 
-        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px; min-height: 14px;}
+        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px;}
 
-        /* HUD & BADGE */
-        .core-badge { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; }
-        .core-badge.loading { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
-        .core-badge.online { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
-        
-        .cyber-spinner { width: 12px; height: 12px; border-radius: 50%; background: conic-gradient(#00e5ff, #ff00ff, #00e5ff); animation: spin 1s linear infinite; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff 0); }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        .hud-bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); }
-        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; z-index: 999; pointer-events: none; opacity: 0.5; border: 1px solid var(--primary); border-radius: 50%; }
-        .crosshair::before { content: ''; position: absolute; top: 14px; left: -5px; width: 40px; height: 1px; background: var(--primary); }
-        .crosshair::after { content: ''; position: absolute; top: -5px; left: 14px; width: 1px; height: 40px; background: var(--primary); }
-        
+        .hud-bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .hud-item { display: flex; align-items: center; gap: 8px; }
+        .hud-val { color: var(--text-main); font-weight: 700; }
+        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; z-index: 999; pointer-events: none; opacity: 0.5; }
+        .crosshair::before { content: ''; position: absolute; top: 14px; left: 0; width: 30px; height: 2px; background: var(--primary); }
+        .crosshair::after { content: ''; position: absolute; top: 0; left: 14px; width: 2px; height: 30px; background: var(--primary); }
         .leaflet-interactive { pointer-events: none; }
-        .color-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+        
+        .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+
+        /* CYBER CORE BADGE (GIỮ NGUYÊN) */
+        .core-badge { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; transition: all 0.3s ease; }
+        .core-badge.loading { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
+        .cyber-spinner { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff); animation: spin 1s linear infinite; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0); }
+        .core-badge.loading .stt-text { background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientText 2s linear infinite; }
+        .core-badge.online { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); text-shadow: 0 0 5px #10b981; }
+        .core-badge.online .cyber-spinner { display: none; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes gradientText { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
     </style>
 </head>
 <body>
 
 <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Tìm địa điểm...">
-    <button onclick="searchLocation()">TÌM</button>
+    <input type="text" id="searchInput" placeholder="Tìm kiếm địa điểm..." onkeypress="if(event.key === 'Enter') searchLocation()">
+    <button onclick="searchLocation()" title="Tìm kiếm">Tìm</button>
 </div>
 
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V61 - ACTIVE PROGRESS</span>
+        <span class="tagline">V60.1 - SCANNER STABLE</span>
 
         <div class="ctrl-box">
-            <div class="row"><span>Zoom Level</span><span id="z-val" style="color:var(--primary)">16.0</span></div>
+            <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
             <input type="range" id="zoomSlider" min="1" max="100" step="0.5" value="16" class="zoom-slider">
         </div>
 
         <div class="ctrl-box">
-            <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 10px;" onclick="toggleMapTheme()">🗺️ NỀN BẢN ĐỒ: TỐI</button>
-            <div class="row"><label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> <span class="color-dot" style="background:#ff3366;"></span> 🏢 Tòa Nhà</label></div>
-            <div class="row"><label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> <span class="color-dot" style="background:#ffffff;"></span> 🛣️ Lòng Đường</label></div>
-            <div class="row"><label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" style="background:#ffcc00;"></span> 🚶 Vỉa Hè</label></div>
+            <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                <span style="color: var(--primary); text-transform: uppercase; font-size: 11px;">⚙️ TRÍCH XUẤT LAYER CAD</span>
+            </div>
+            <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 15px; width: 100%;" onclick="toggleMapTheme()">🗺️ NỀN BẢN ĐỒ: TỐI (DARK)</button>
+
+            <div class="row" style="justify-content: flex-start; gap: 20px;">
+                <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> <span class="color-dot" id="dot-nha" style="background:#ff3366;"></span> 🏢 Tòa Nhà</label>
+            </div>
+            <div class="row" style="justify-content: flex-start; gap: 20px;">
+                <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> <span class="color-dot" id="dot-duong" style="background:#ffffff;"></span> 🛣️ Lòng Đường</label>
+            </div>
+            <div class="row" style="justify-content: flex-start; gap: 20px;">
+                <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> 🚶 Vỉa Hè</label>
+            </div>
         </div>
 
-        <button class="btn-glow" onclick="startMegaScan()">🚀 BẮT ĐẦU QUÉT (SPACE)</button>
+        <button class="btn-glow" onclick="startMegaScan()" title="Phím tắt: Space">🚀 BẮT ĐẦU QUÉT (SPACE)</button>
 
-        <div class="ctrl-box">
+        <div class="ctrl-box" style="padding-bottom: 10px;">
             <div class="row">
                 <span>Trạng thái Core:</span>
                 <div id="coreBadge" class="core-badge loading">
                     <div class="cyber-spinner"></div>
-                    <span id="lib-stt">ĐANG TẢI...</span>
+                    <span class="stt-text" id="lib-stt">ĐANG TẢI...</span>
                 </div>
             </div>
             
@@ -139,88 +157,128 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 8px;">
-            <button class="btn-outline" onclick="resetScan()">🔄 LÀM MỚI</button>
-            <button class="btn-outline" style="border-color:var(--primary); color:var(--primary)" onclick="exportDxfSafe()">📥 XUẤT CAD</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-outline" style="margin-top: 0; flex: 1; padding: 12px 0;" onclick="resetScan()">🔄 LÀM MỚI</button>
+            <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe()">📥 XUẤT CAD</button>
         </div>
     </div>
-    <div class="toggle-btn" onclick="toggleSidebar()">◀</div>
+    
+    <div class="toggle-btn" onclick="toggleSidebar()" title="Phím tắt: M)"><span id="toggle-icon">◀</span></div>
 </div>
 
 <div class="crosshair"></div>
 <div class="hud-bottom">
-    <div>📍 <span id="hud-coord">10.7933, 106.6800</span></div>
-    <div>🚁 ALT: <span id="hud-alt">610m</span></div>
+    <div class="hud-item" title="La bàn">🧭 HƯỚNG: <span class="hud-val">BẮC (N)</span></div>
+    <div class="hud-item" title="Tọa độ tâm bản đồ">📍 TỌA ĐỘ: <span class="hud-val" id="hud-coord">10.7933, 106.6800</span></div>
+    <div class="hud-item" title="Độ cao camera mô phỏng">🚁 CAO ĐỘ: <span class="hud-val" id="hud-alt">610m</span></div>
 </div>
 
 <div id="map"></div>
 
 <script>
+    // --- KHỞI TẠO ---
     let sidebarOpen = true;
     function toggleSidebar() {
         const sb = document.getElementById('sidebar');
         sidebarOpen = !sidebarOpen;
         sb.classList.toggle('hidden', !sidebarOpen);
-        document.querySelector('.toggle-btn').innerText = sidebarOpen ? '◀' : '▶';
+        document.getElementById('toggle-icon').innerText = sidebarOpen ? '◀' : '▶';
     }
 
-    // Hotkeys
     document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT') return;
         if (e.code === 'Space') { e.preventDefault(); startMegaScan(); }
+        if (e.code === 'KeyM') { e.preventDefault(); toggleSidebar(); }
     });
 
-    // Core Status
     setInterval(() => {
         const el = document.getElementById('lib-stt');
         const badge = document.getElementById('coreBadge');
         if (typeof turf !== 'undefined') { 
-            el.innerText = "ONLINE"; badge.className = "core-badge online";
+            el.innerText = "ONLINE (V6.5)"; badge.className = "core-badge online";
         }
     }, 1000);
 
-    // Map Setup
     var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
     var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
     var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 100, maxNativeZoom: 19 });
+    
+    L.GridLayer.Graticule = L.GridLayer.extend({
+        createTile: function () {
+            var tile = document.createElement('canvas'); tile.width = tile.height = 256;
+            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke(); return tile;
+        }
+    });
+    new L.GridLayer.Graticule({maxZoom: 100}).addTo(map);
 
     let isLightMap = false;
     function toggleMapTheme() {
         isLightMap = !isLightMap;
-        if(isLightMap) { map.removeLayer(darkT); lightT.addTo(map); document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: ĐA SẮC'; }
-        else { map.removeLayer(lightT); darkT.addTo(map); document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: TỐI'; }
+        if(isLightMap) {
+            map.removeLayer(darkT); lightT.addTo(map);
+            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: ĐA SÁC (VOYAGER)';
+            document.getElementById('dot-nha').style.background = '#dc2626';
+            document.getElementById('dot-duong').style.background = '#111827';
+            document.getElementById('dot-viahe').style.background = '#ea580c';
+        } else {
+            map.removeLayer(lightT); darkT.addTo(map);
+            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: TỐI (DARK)';
+            document.getElementById('dot-nha').style.background = '#ff3366';
+            document.getElementById('dot-duong').style.background = '#ffffff';
+            document.getElementById('dot-viahe').style.background = '#ffcc00';
+        }
         updateLineStyles();
     }
 
-    // Search
     async function searchLocation() {
-        const q = document.getElementById('searchInput').value;
-        if(!q) return;
+        const input = document.getElementById('searchInput');
+        const query = input.value.trim();
+        if(!query) return;
         try {
-            const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`);
-            const d = await r.json();
-            if(d.length > 0) map.flyTo([d[0].lat, d[0].lon], 16);
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if(data && data.length > 0) map.flyTo([data[0].lat, data[0].lon], 16);
         } catch(e) {}
     }
 
-    // HUD
-    map.on('move zoomend', () => {
-        const c = map.getCenter();
-        document.getElementById('hud-coord').innerText = `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`;
-        document.getElementById('z-val').innerText = map.getZoom().toFixed(1);
-        document.getElementById('zoomSlider').value = map.getZoom();
-        let alt = Math.round(40000000 / Math.pow(2, map.getZoom()));
-        document.getElementById('hud-alt').innerText = alt > 1000 ? (alt/1000).toFixed(1)+'km' : alt+'m';
-    });
-    document.getElementById('zoomSlider').oninput = (e) => map.setZoom(e.target.value);
+    const zSlider = document.getElementById('zoomSlider');
+    const zVal = document.getElementById('z-val');
+    function updateHUD() {
+        let z = map.getZoom(); let center = map.getCenter();
+        zSlider.value = z; zVal.innerText = z.toFixed(1);
+        document.getElementById('hud-coord').innerText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+        let alt = Math.round(40000000 / Math.pow(2, z));
+        document.getElementById('hud-alt').innerText = alt >= 1000 ? (alt/1000).toFixed(1) + 'km' : alt + 'm';
+    }
+    zSlider.addEventListener('input', e => map.setZoom(e.target.value));
+    map.on('move zoomend', updateHUD); updateHUD();
 
-    // Scan Logic
     var geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
     var layers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
     function toggleLayer(type) {
-        if(document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked) map.addLayer(layers[type]);
+        if (document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked) map.addLayer(layers[type]);
         else map.removeLayer(layers[type]);
+    }
+
+    function getLayerStyle(type) {
+        const config = isLightMap ? {
+            nha: { color: '#dc2626', weight: 3, fillOpacity: 0.15 },
+            duong: { color: '#111827', weight: 3, fillOpacity: 0.1 },
+            viahe: { color: '#ea580c', weight: 3, fillOpacity: 0.15 }
+        } : {
+            nha: { color: '#ff3366', weight: 3, fillOpacity: 0.15 }, 
+            duong: { color: '#ffffff', weight: 3, fillOpacity: 0.1 }, 
+            viahe: { color: '#ffcc00', weight: 3, fillOpacity: 0.15 }  
+        };
+        return config[type];
+    }
+
+    function updateLineStyles() {
+        Object.keys(layers).forEach(type => {
+            layers[type].eachLayer(l => l.setStyle(getLayerStyle(type)));
+        });
     }
 
     function resetScan() {
@@ -229,8 +287,8 @@
         updateProgress(0, "SẴN SÀNG NHẬN LỆNH", false);
     }
 
-    // HÀM CẬP NHẬT TIẾN TRÌNH MỚI
-    function updateProgress(percent, text, active = true) {
+    // --- HÀM CẬP NHẬT TIẾN TRÌNH CẢI TIẾN ---
+    function updateProgress(percent, text, isActive = true) {
         const pBar = document.getElementById('progress');
         const pWrap = document.getElementById('progWrap');
         const stt = document.getElementById('stt');
@@ -238,9 +296,9 @@
         pBar.style.width = percent + '%';
         stt.innerText = text;
         
-        if(active) pWrap.classList.add('active');
+        if(isActive) pWrap.classList.add('active');
         else pWrap.classList.remove('active');
-
+        
         if(percent >= 100) {
             stt.style.color = "#10b981";
             pWrap.classList.remove('active');
@@ -252,15 +310,15 @@
     const yieldCPU = () => new Promise(r => setTimeout(r, 5));
 
     async function startMegaScan() {
-        if(typeof turf === 'undefined') return alert("Đợi Core tải xong đã nhé!");
-        
+        if(typeof turf === 'undefined') return alert("Core đang khởi động!");
         resetScan();
-        // BƯỚC 1: NHẢY LÊN 10% NGAY LẬP TỨC VÀ BẬT HIỆU ỨNG CHẠY SÓNG
-        updateProgress(10, "ĐANG KẾT NỐI VỆ TINH...", true);
+        
+        // Nhảy 10% và bật hiệu ứng shimmer ngay lập tức
+        updateProgress(10, "KẾT NỐI VỆ TINH...", true);
 
         const b = map.getBounds();
         const sw = b.getSouthWest(), ne = b.getNorthEast();
-        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
+        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];);out body;>;out skel qt;`;
         
         try {
             const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
@@ -268,48 +326,42 @@
             const nodes = new Map();
             data.elements.forEach(e => { if(e.type === 'node') nodes.set(e.id, [e.lon, e.lat]); });
 
-            let rBufs = [], sBufs = [];
             let ways = data.elements.filter(e => e.type === "way");
-            if(ways.length === 0) return updateProgress(0, "KHÔNG CÓ DỮ LIỆU TẠI ĐÂY!", false);
+            if(ways.length === 0) return updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false);
 
             for (let i = 0; i < ways.length; i++) {
-                const e = ways[i];
-                // CẬP NHẬT TIẾN TRÌNH THEO % THỰC TẾ
+                // Cập nhật % dựa trên số lượng đối tượng đang xử lý
                 if (i % 20 === 0) {
-                    let p = 10 + (i / ways.length) * 50;
-                    updateProgress(p, `QUÉT ĐỊA HÌNH: ${i}/${ways.length}`);
+                    let p = 15 + (i / ways.length) * 60;
+                    updateProgress(p, `DỰNG HÌNH NÉT: ${i}/${ways.length}`);
                     await yieldCPU(); 
                 }
 
+                const e = ways[i];
                 const pts = e.nodes.map(id => nodes.get(id)).filter(p => p);
                 if (pts.length < 3) continue;
 
-                const style = isLightMap ? {color:'#dc2626', weight:3, fillOpacity:0.15} : {color:'#ff3366', weight:3, fillOpacity:0.15};
-
                 if (e.tags.building) {
                     const poly = turf.bboxClip(turf.polygon([pts.concat([pts[0]])]), [sw.lng, sw.lat, ne.lng, ne.lat]);
-                    geoData.nha.push(poly); L.geoJSON(poly, {style: style}).addTo(layers.nha);
+                    geoData.nha.push(poly);
+                    L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha);
                 } else if (e.tags.highway) {
                     const line = turf.lineString(pts);
-                    const w = (e.tags.highway === 'primary') ? 12 : 6;
-                    rBufs.push(turf.bboxClip(turf.buffer(line, w/2, {units:'meters', steps: 2}), [sw.lng, sw.lat, ne.lng, ne.lat]));
-                    sBufs.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters', steps: 2}), [sw.lng, sw.lat, ne.lng, ne.lat]));
+                    const buf = turf.bboxClip(turf.buffer(line, 4, {units:'meters'}), [sw.lng, sw.lat, ne.lng, ne.lat]);
+                    geoData.duong.push(buf);
+                    L.geoJSON(buf, { style: getLayerStyle('duong') }).addTo(layers.duong);
                 }
             }
 
-            updateProgress(70, "ĐANG XỬ LÝ LƯỚI GIAO THÔNG...");
-            // ... (Phần Union giữ nguyên logic v50)
-            updateProgress(100, "TRÍCH XUẤT HOÀN TẤT!", false);
-
-        } catch (err) { updateProgress(0, "LỖI KẾT NỐI MẠNG!", false); }
+            updateProgress(90, "HOÀN TẤT TRÍCH XUẤT...");
+            await yieldCPU();
+            updateProgress(100, "XONG! SẴN SÀNG XUẤT CAD.", false);
+        } catch (err) { updateProgress(0, "LỖI KẾT NỐI!", false); }
     }
 
     async function exportDxfSafe() {
         if(geoData.nha.length === 0) return alert("Chưa có dữ liệu!");
-        updateProgress(90, "ĐANG BIÊN DỊCH CAD...");
-        // Logic DXF v50 giữ nguyên...
-        updateProgress(100, "XUẤT FILE THÀNH CÔNG!", false);
-        // [Phần mã DXF viết tiếp ở đây tương tự các bản trước để đảm bảo xuất được file]
+        updateProgress(95, "ĐANG BIÊN DỊCH CAD...");
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
@@ -324,9 +376,11 @@
             }
         };
         await writeToDxf(geoData.nha, "V21_NHA");
+        await writeToDxf(geoData.duong, "V21_DUONG");
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([dxf], {type:'application/dxf'}));
-        a.download = "NAM_ARCH_V61.dxf"; a.click();
+        a.download = "NAM_ARCH_PRO_STABLE.dxf"; a.click();
+        updateProgress(100, "XUẤT FILE THÀNH CÔNG!", false);
     }
 </script>
 </body>
