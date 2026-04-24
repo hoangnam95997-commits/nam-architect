@@ -2,76 +2,36 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nam Arch Pro - Vệ Tinh 3D</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --main: #2ecc71; --dark: #2c3e50; }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; }
         #map { height: 100vh; width: 100vw; }
-        .control-panel {
-            position: absolute; top: 15px; left: 15px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.95); padding: 20px;
-            border-radius: 15px; width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        h2 { margin: 0 0 10px; font-size: 16px; color: var(--dark); border-left: 4px solid var(--main); padding-left: 10px; }
-        .info { font-size: 11px; color: #666; margin-bottom: 15px; background: #f0f3f1; padding: 10px; border-radius: 8px; }
-        button {
-            width: 100%; padding: 12px; background: var(--main); color: white;
-            border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
-            transition: all 0.3s; box-shadow: 0 4px 0 #27ae60;
-        }
-        button:hover { background: #27ae60; transform: translateY(-2px); }
-        button:active { transform: translateY(1px); box-shadow: 0 2px 0 #27ae60; }
-        #status { margin-top: 12px; font-size: 12px; text-align: center; color: #e67e22; font-weight: 500; }
+        .panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); width: 250px; }
+        button { width: 100%; padding: 10px; background: #2ecc71; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        #status { font-size: 12px; margin-top: 10px; color: #666; }
     </style>
 </head>
 <body>
-
-<div class="control-panel">
-    <h2>NAM ARCHITECT PRO</h2>
-    <div class="info">
-        • Chế độ: <b>Bản đồ Vệ tinh</b><br>
-        • Định dạng: <b>OBJ (3D Solid)</b><br>
-        • <i>Mẹo: Zoom thật gần để tránh lỗi server!</i>
-    </div>
+<div class="panel">
+    <h3>NAM ARCH PRO</h3>
     <button id="btn" onclick="exportData()">XUẤT FILE 3D (.OBJ)</button>
-    <div id="status">Sẵn sàng lấy dữ liệu...</div>
+    <div id="status">Sẵn sàng! Hãy nhấn nút.</div>
 </div>
-
 <div id="map"></div>
-
 <script>
-    // Khởi tạo bản đồ với lớp Vệ tinh Google
-    var map = L.map('map', {
-        center: [10.7933, 106.6800],
-        zoom: 17
-    });
-
-    // Lớp vệ tinh (Dữ liệu giống Google Earth)
-    var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains:['mt0','mt1','mt2','mt3']
-    }).addTo(map);
+    var map = L.map('map').setView([10.7933, 106.6800], 17);
+    L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3']}).addTo(map);
 
     async function exportData() {
         const status = document.getElementById('status');
-        const btn = document.getElementById('btn');
+        status.innerText = "⏳ Đang lấy bất cứ thứ gì có thể vẽ...";
         
-        if (map.getZoom() < 17) {
-            status.innerText = "⚠️ Hãy Zoom gần hơn nữa!";
-            status.style.color = "red";
-            return;
-        }
-
-        btn.disabled = true;
-        status.innerText = "⏳ Đang quét dữ liệu kiến trúc...";
-
         const b = map.getBounds();
         const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
-        const query = `[out:json][timeout:60];(way["building"](${bbox});way["highway"](${bbox});way["natural"="water"](${bbox}););out body;>;out skel qt;`;
+        // Lấy tất cả: Nhà, Đường, Sông, Cây, Vỉa hè...
+        const query = `[out:json][timeout:30];(node(${bbox});way(${bbox});relation(${bbox}););out body;>;out skel qt;`;
         const url = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
 
         try {
@@ -79,16 +39,17 @@
             const wrapper = await res.json();
             const data = JSON.parse(wrapper.contents);
 
-            if (!data.elements || data.elements.length < 5) throw new Error("Vùng trống");
+            if (!data.elements || data.elements.length === 0) {
+                status.innerText = "❌ Vùng này thực sự trắng xóa dữ liệu!";
+                return;
+            }
 
-            status.innerText = "🏗️ Đang dựng khối 3D...";
+            status.innerText = "🏗️ Đang đóng gói file 3D...";
             processToObj(data);
-            status.innerText = "✅ THÀNH CÔNG! Đã tải file.";
-            status.style.color = "green";
+            status.innerText = "✅ Đã tải file thành công!";
         } catch (e) {
-            status.innerText = "❌ Server bận. Zoom gần và thử lại!";
-            status.style.color = "red";
-        } finally { btn.disabled = false; }
+            status.innerText = "❌ Lỗi đường truyền. Thử lại sau 2 giây!";
+        }
     }
 
     function processToObj(data) {
@@ -98,41 +59,23 @@
         const scale = 111319; 
 
         data.elements.filter(el => el.type === "way").forEach(el => {
-            let type = el.tags?.building ? 'BUILD' : (el.tags?.highway ? 'ROAD' : 'OTHER');
-            obj += `g ${type}\n`;
-            
-            let h = type === 'BUILD' ? (parseFloat(el.tags["building:levels"]) || 3) * 3.8 : 0;
             let points = [];
-
             el.nodes.forEach(nid => {
                 let n = data.elements.find(node => node.id === nid);
                 if (n) {
                     let x = (n.lon - origin.lng) * scale * Math.cos(origin.lat * Math.PI / 180);
                     let y = (n.lat - origin.lat) * scale;
                     obj += `v ${x.toFixed(2)} 0 ${(-y).toFixed(2)}\n`;
-                    if (h > 0) obj += `v ${x.toFixed(2)} ${h.toFixed(2)} ${(-y).toFixed(2)}\n`;
-                    points.push(vIdx);
-                    vIdx += (h > 0) ? 2 : 1;
+                    points.push(vIdx++);
                 }
             });
-
-            if (points.length > 2) {
-                if (h > 0) {
-                    for (let i = 0; i < points.length - 1; i++) {
-                        obj += `f ${points[i]} ${points[i]+1} ${points[i+1]+1} ${points[i+1]}\n`;
-                    }
-                    obj += "f " + points.map(i => i + 1).reverse().join(" ") + "\n";
-                    obj += "f " + points.join(" ") + "\n";
-                } else {
-                    obj += "f " + points.join(" ") + "\n";
-                }
-            }
+            if (points.length > 2) obj += "f " + points.join(" ") + "\n";
         });
 
         const blob = new Blob([obj], {type: 'text/plain'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = "Khu_Vuc_3D_Pro.obj";
+        a.download = "Nam_Architect_Site.obj";
         a.click();
     }
 </script>
