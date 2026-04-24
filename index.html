@@ -2,76 +2,85 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v30 - Stable Live & Precision CAD</title>
+    <title>NAM ARCH v32 - Fix Load Error</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
-        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(25, 25, 25, 0.98); --text: #ffffff; }
+        :root { --accent: #00ffcc; --bg: #000; --panel: rgba(25, 25, 25, 0.98); --text: #fff; }
+        .light-mode { --accent: #ff4757; --bg: #fff; --panel: rgba(240, 240, 240, 0.98); --text: #222; }
+        
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-        #map { height: 100vh; width: 100vw; background: #000; }
+        #map { height: 100vh; width: 100vw; }
 
         .sidebar {
-            position: absolute; top: 20px; left: 20px; z-index: 1000; width: 330px;
-            background: var(--panel); border-radius: 15px; padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: absolute; top: 15px; left: 15px; z-index: 1000; width: 300px;
+            background: var(--panel); border-radius: 12px; padding: 20px;
+            border: 1px solid rgba(128,128,128,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        h1 { margin: 0; font-size: 20px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
-        .tagline { font-size: 10px; opacity: 0.5; margin-bottom: 20px; display: block; }
-
-        .group { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 10px; color: var(--accent); }
-        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        h1 { margin: 0; font-size: 18px; color: var(--accent); text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
         
-        input[type="color"] { border: none; width: 35px; height: 35px; border-radius: 6px; cursor: pointer; background: none; }
-
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
         button {
-            width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold;
-            cursor: pointer; transition: 0.2s; margin-top: 8px; font-size: 11px; text-transform: uppercase;
+            padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 9px; text-transform: uppercase;
         }
-        .btn-update { background: #3498db; color: white; }
-        .btn-export { background: var(--accent); color: #000; }
-        button:hover { filter: brightness(1.2); transform: translateY(-1px); }
+        .btn-full { grid-column: span 2; padding: 12px; font-size: 11px; }
+        .btn-blue { background: #0984e3; color: #fff; }
+        .btn-green { background: #26de81; color: #000; }
+        .btn-gray { background: #4b6584; color: #fff; }
+        .btn-main { background: var(--accent); color: #000; }
 
-        .status { font-size: 9px; font-family: monospace; margin-top: 15px; text-align: center; color: var(--accent); }
+        .group { margin-bottom: 10px; background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
+        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
+        input[type="color"] { border: none; width: 28px; height: 28px; cursor: pointer; background: none; }
+
+        #stt { font-size: 9px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h1>NAM ARCH v30</h1>
-        <span class="tagline">Smarter Data & Precision CAD</span>
+        <h1>NAM ARCH v32</h1>
 
-        <div class="group">
-            <button class="btn-update" onclick="loadData()">🔄 CẬP NHẬT DỮ LIỆU VÙNG NÀY</button>
+        <button class="btn-full btn-blue" onclick="loadData()">🚀 QUÉT DỮ LIỆU & HIỆN MÀU</button>
+
+        <div class="btn-group">
+            <button class="btn-gray" onclick="toggleTheme()">🌓 SÁNG / TỐI</button>
+            <button class="btn-green" id="btnPreview" onclick="togglePreview()">👁️ ẨN MÀU</button>
         </div>
 
         <div class="group">
-            <label>MÀU GIAO DIỆN LÀM VIỆC (LIVE)</label>
             <div class="row"><span>Tòa nhà</span><input type="color" id="cNha" value="#ff4d4d" oninput="applyColors()"></div>
-            <div class="row"><span>Lòng đường</span><input type="color" id="cDuong" value="#2d3436" oninput="applyColors()"></div>
+            <div class="row"><span>Lòng đường</span><input type="color" id="cDuong" value="#3d3d3d" oninput="applyColors()"></div>
             <div class="row"><span>Vỉa hè</span><input type="color" id="cViaHe" value="#f1c40f" oninput="applyColors()"></div>
             <div class="row"><span>Cây xanh</span><input type="color" id="cCay" value="#2ecc71" oninput="applyColors()"></div>
             <div class="row"><span>Mặt nước</span><input type="color" id="cNuoc" value="#3498db" oninput="applyColors()"></div>
         </div>
 
-        <button class="btn-export" onclick="exportCAD()">📥 XUẤT CAD 1:1 (CLEAN)</button>
-        <div class="status" id="stt">READY</div>
+        <button class="btn-full btn-main" onclick="exportCAD()">📥 XUẤT CAD 1:1 (LAYER CHUẨN)</button>
+        <div id="stt">CHỜ LỆNH QUÉT...</div>
     </div>
 
     <div id="map"></div>
 
     <script>
         var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 17);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+        var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+        var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
         
-        var groups = {
-            nha: L.layerGroup().addTo(map),
-            duong: L.layerGroup().addTo(map),
-            viahe: L.layerGroup().addTo(map),
-            cay: L.layerGroup().addTo(map),
-            nuoc: L.layerGroup().addTo(map)
-        };
+        var groups = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), cay: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
+        var isPreview = true;
+
+        function toggleTheme() {
+            if(document.body.classList.toggle('light-mode')) { map.removeLayer(darkT); lightT.addTo(map); }
+            else { map.removeLayer(lightT); darkT.addTo(map); }
+        }
+
+        function togglePreview() {
+            isPreview = !isPreview;
+            Object.values(groups).forEach(g => isPreview ? g.addTo(map) : map.removeLayer(g));
+            document.getElementById('btnPreview').innerText = isPreview ? "👁️ ẨN MÀU" : "👁️ HIỆN MÀU";
+        }
 
         function applyColors() {
             groups.nha.eachLayer(l => l.setStyle({ color: document.getElementById('cNha').value, fillColor: document.getElementById('cNha').value, fillOpacity: 0.8, weight: 0.5 }));
@@ -82,17 +91,15 @@
         }
 
         async function loadData() {
-            if (map.getZoom() < 15) return alert("Hãy phóng to bản đồ hơn để tải dữ liệu!");
-            document.getElementById('stt').innerText = "ĐANG TẢI DỮ LIỆU...";
+            if(map.getZoom() < 16) return alert("Vui lòng Zoom sát vào khu đất hơn!");
+            document.getElementById('stt').innerText = "ĐANG TẢI... (ĐỪNG DI CHUYỂN)";
             
             const b = map.getBounds();
             const q = `[out:json][bbox:${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}];(way["building"];way["highway"];way["natural"~"water|wood"];way["landuse"~"grass|forest"];way["leisure"~"park"];);out body;>;out skel qt;`;
             
             try {
                 const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
-                if(!res.ok) throw new Error();
                 const data = await res.json();
-                
                 const nodeMap = new Map();
                 data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
@@ -103,39 +110,33 @@
                     const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n);
                     if (nodes.length < 2) return;
                     const latlngs = nodes.map(n => [n.lat, n.lon]);
-                    const coords = nodes.map(n => [n.lon, n.lat]);
 
-                    if (e.tags?.building) {
-                        L.polygon(latlngs).addTo(groups.nha);
-                    } else if (e.tags?.highway) {
-                        const line = turf.lineString(coords);
-                        const width = (e.tags.highway === 'primary') ? 10 : 6;
-                        rPolys.push(turf.buffer(line, width/2, {units:'meters'}));
-                        wPolys.push(turf.buffer(line, (width/2) + 3, {units:'meters'}));
-                    } else if (e.tags?.natural === 'water') {
-                        L.polygon(latlngs).addTo(groups.nuoc);
-                    } else if (e.tags?.leisure || e.tags?.landuse) {
-                        L.polygon(latlngs).addTo(groups.cay);
+                    if (e.tags?.building) L.polygon(latlngs).addTo(groups.nha);
+                    else if (e.tags?.highway) {
+                        const line = turf.lineString(nodes.map(n => [n.lon, n.lat]));
+                        const w = (e.tags.highway === 'primary') ? 10 : 7;
+                        rPolys.push(turf.buffer(line, w/2, {units:'meters'}));
+                        wPolys.push(turf.buffer(line, (w/2)+3.5, {units:'meters'}));
                     }
+                    else if (e.tags?.natural === 'water') L.polygon(latlngs).addTo(groups.nuoc);
+                    else if (e.tags?.leisure || e.tags?.landuse) L.polygon(latlngs).addTo(groups.cay);
                 });
 
                 if (rPolys.length > 0) {
                     let mR = rPolys.reduce((a, b) => turf.union(a, b));
                     let mW = wPolys.reduce((a, b) => turf.union(a, b));
-                    let cW = turf.difference(mW, mR);
                     L.geoJSON(mR).addTo(groups.duong);
-                    L.geoJSON(cW).addTo(groups.viahe);
+                    L.geoJSON(turf.difference(mW, mR)).addTo(groups.viahe);
                 }
                 applyColors();
-                document.getElementById('stt').innerText = "ĐÃ CẬP NHẬT MÀU SẮC LIVE";
-            } catch (e) { document.getElementById('stt').innerText = "SERVER BẬN, THỬ LẠI SAU 5 GIÂY"; }
+                document.getElementById('stt').innerText = "TẢI XONG! ĐÃ CẬP NHẬT MÀU.";
+            } catch (err) { document.getElementById('stt').innerText = "LỖI: THỬ LẠI SAU 10 GIÂY"; }
         }
 
         function exportCAD() {
-            document.getElementById('stt').innerText = "ĐANG KẾT XUẤT CAD...";
+            document.getElementById('stt').innerText = "ĐANG XUẤT CAD...";
             const center = map.getCenter();
-            const sy = 111319.9;
-            const sx = sy * Math.cos(center.lat * Math.PI / 180);
+            const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
             let dxf = "0\nSECTION\n2\nENTITIES\n";
 
             groups.nha.eachLayer(l => dxf += writeDxf(l.getLatLngs()[0], "CONG_TRINH", center, sx, sy));
@@ -147,16 +148,13 @@
             dxf += "0\nENDSEC\n0\nEOF";
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-            a.download = "NAM_ARCH_V30_CLEAN.dxf";
-            a.click();
-            document.getElementById('stt').innerText = "XUẤT FILE THÀNH CÔNG";
+            a.download = "NAM_ARCH_STABLE_1x1.dxf"; a.click();
+            document.getElementById('stt').innerText = "CAD SẴN SÀNG!";
         }
 
         function writeDxf(pts, layer, center, sx, sy) {
             let s = `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
-            pts.forEach(p => {
-                s += `0\nVERTEX\n8\n${layer}\n10\n${((p.lng - center.lng) * sx).toFixed(3)}\n20\n${((p.lat - center.lat) * sy).toFixed(3)}\n`;
-            });
+            pts.forEach(p => s += `0\nVERTEX\n8\n${layer}\n10\n${((p.lng - center.lng) * sx).toFixed(3)}\n20\n${((p.lat - center.lat) * sy).toFixed(3)}\n`);
             return s + "0\nSEQEND\n";
         }
 
@@ -165,9 +163,7 @@
             let rings = (geo.geometry.type === 'Polygon') ? geo.geometry.coordinates : geo.geometry.coordinates.flat(1);
             rings.forEach(ring => {
                 s += `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
-                ring.forEach(pt => {
-                    s += `0\nVERTEX\n8\n${layer}\n10\n${((pt[0] - center.lng) * sx).toFixed(3)}\n20\n${((pt[1] - center.lat) * sy).toFixed(3)}\n`;
-                });
+                ring.forEach(pt => s += `0\nVERTEX\n8\n${layer}\n10\n${((pt[0] - center.lng) * sx).toFixed(3)}\n20\n${((pt[1] - center.lat) * sy).toFixed(3)}\n`);
                 s += `0\nSEQEND\n`;
             });
             return s;
