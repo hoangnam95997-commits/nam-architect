@@ -3,192 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v51 - Surveyor Masterpiece</title>
+    <title>NAM ARCH PRO v52.1 - Web Fixed</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
     
     <style>
         :root { 
-            --primary: #00f2fe; 
-            --secondary: #4facfe;
-            --bg-dark: #07090f;
-            --panel-bg: rgba(10, 14, 23, 0.85);
-            --text-main: #ffffff;
-            --text-muted: #8b9bb4;
+            --primary: #00f2fe; --secondary: #4facfe;
+            --bg-dark: #07090f; --panel-bg: rgba(10, 14, 23, 0.85);
+            --text-main: #ffffff; --text-muted: #8b9bb4;
             --border: rgba(0, 242, 254, 0.2);
         }
         
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); overflow: hidden; }
-        #map { height: 100vh; width: 100vw; background: #000; }
+        .light-mode {
+            --primary: #0077ff; --bg-dark: #f0f2f5;
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #111827; --text-muted: #4b5563;
+            --border: rgba(0, 0, 0, 0.1);
+        }
+
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); overflow: hidden; transition: 0.3s; }
+        #map { height: 100vh; width: 100vw; background: var(--bg-dark); }
         
-        /* SIDEBAR KÍNH MỜ */
+        /* SIDEBAR */
         .sidebar {
             position: absolute; top: 20px; left: 20px; z-index: 1000; width: 350px;
             background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             border: 1px solid var(--border); border-radius: 24px; padding: 25px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 242, 254, 0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); transition: 0.3s;
+            max-height: 90vh; overflow-y: auto;
         }
+        
+        /* Ẩn thanh cuộn cho đẹp */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
 
         h1 { margin: 0; font-size: 24px; font-weight: 900; background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; color: transparent; text-align: center; letter-spacing: 1px; }
-        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; text-align: center; display: block; margin-bottom: 25px; }
+        .light-mode h1 { background: linear-gradient(to right, #0077ff, #0044ff); -webkit-background-clip: text; }
+        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; text-align: center; display: block; margin-bottom: 20px; }
 
-        /* NÚT BẤM LUNG LINH (GLOW & SHINE) */
+        /* BOX ĐIỀU KHIỂN */
+        .ctrl-box { background: rgba(0,0,0,0.3); border-radius: 14px; padding: 15px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .light-mode .ctrl-box { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.05); }
+        .row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+        .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        
+        /* BẢNG MÀU */
+        input[type="color"] { -webkit-appearance: none; border: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; background: none; transition: 0.2s; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
+
+        /* THANH ZOOM */
+        .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.3); border-radius: 2px; outline: none; margin-top: 5px; }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 10px var(--primary); cursor: pointer; transition: 0.2s; }
+        
+        /* NÚT BẤM */
         .btn-glow {
             width: 100%; padding: 16px; border: none; border-radius: 14px;
             background: linear-gradient(135deg, #00f2fe 0%, #0066ff 100%);
             color: #fff; font-family: 'Inter', sans-serif; font-weight: 900; font-size: 13px;
             text-transform: uppercase; letter-spacing: 2px; cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.4), inset 0 2px 5px rgba(255,255,255,0.3);
-            position: relative; overflow: hidden; transition: all 0.3s ease;
-            margin-bottom: 12px;
+            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.4); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px;
         }
-        /* Hiệu ứng tia sáng quét ngang */
-        .btn-glow::before {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
-            transform: skewX(-25deg); animation: shine 3s infinite;
-        }
-        @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
-        .btn-glow:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(0, 242, 254, 0.7), inset 0 2px 5px rgba(255,255,255,0.5); }
-        .btn-glow:active { transform: translateY(1px); }
-
-        .btn-outline {
-            width: 100%; padding: 14px; border: 1px solid var(--primary); border-radius: 12px;
-            background: rgba(0, 242, 254, 0.05); color: var(--primary); font-weight: 800; font-size: 12px;
-            text-transform: uppercase; cursor: pointer; transition: 0.3s; margin-top: 15px;
-        }
-        .btn-outline:hover { background: rgba(0, 242, 254, 0.15); box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); }
-
-        /* THANH ZOOM 1-100 */
-        .ctrl-box { background: rgba(0,0,0,0.4); border-radius: 14px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
-        .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .light-mode .btn-glow { background: linear-gradient(135deg, #0077ff 0%, #0044ff 100%); box-shadow: 0 10px 30px rgba(0, 119, 255, 0.3); }
+        .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); }
         
-        .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; }
-        .zoom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
-            background: var(--primary); box-shadow: 0 0 15px var(--primary); cursor: pointer; transition: 0.2s;
+        .btn-outline {
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+            background: transparent; color: var(--text-main); font-weight: 800; font-size: 11px;
+            text-transform: uppercase; cursor: pointer; transition: 0.3s; margin-top: 8px;
         }
-        .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+        .btn-outline:hover { background: rgba(128,128,128,0.1); border-color: var(--primary); color: var(--primary); }
 
-        /* THANH TIẾN TRÌNH */
-        .prog-wrap { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin: 15px 0; border: 1px solid rgba(0,242,254,0.1); }
-        #progress { width: 0%; height: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); box-shadow: 0 0 10px var(--primary); transition: width 0.3s ease; }
+        /* TIẾN TRÌNH */
+        .prog-wrap { height: 6px; background: rgba(128,128,128,0.2); border-radius: 3px; overflow: hidden; margin: 12px 0; }
+        #progress { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary); transition: width 0.3s ease; }
         #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 
-        /* HUD - HEADS UP DISPLAY BẢN ĐỒ */
-        .hud {
-            position: absolute; z-index: 999; background: rgba(10, 14, 23, 0.7); backdrop-filter: blur(10px);
-            border: 1px solid var(--border); border-radius: 12px; padding: 10px 15px;
-            font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); text-shadow: 0 0 5px var(--primary);
-        }
+        /* HUD BẢN ĐỒ */
+        .hud { position: absolute; z-index: 999; background: rgba(10, 14, 23, 0.7); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 15px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); pointer-events: none;}
+        .light-mode .hud { background: rgba(255,255,255,0.8); color: var(--primary); border-color: rgba(0,0,0,0.1); }
         .hud-bottom { bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 30px; }
         .hud-top-right { top: 20px; right: 20px; text-align: center; }
-        .hud-top-right img { width: 30px; opacity: 0.8; filter: drop-shadow(0 0 5px var(--primary)); margin-bottom: 5px; }
 
-        /* TÂM NGẮM (CROSSHAIR) */
-        .crosshair {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 40px; height: 40px; z-index: 999; pointer-events: none; opacity: 0.6;
-        }
-        .crosshair::before { content: ''; position: absolute; top: 19px; left: 0; width: 40px; height: 2px; background: var(--primary); box-shadow: 0 0 5px var(--primary); }
-        .crosshair::after { content: ''; position: absolute; top: 0; left: 19px; width: 2px; height: 40px; background: var(--primary); box-shadow: 0 0 5px var(--primary); }
+        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; z-index: 999; pointer-events: none; opacity: 0.6; }
+        .crosshair::before { content: ''; position: absolute; top: 19px; left: 0; width: 40px; height: 2px; background: var(--primary); }
+        .crosshair::after { content: ''; position: absolute; top: 0; left: 19px; width: 2px; height: 40px; background: var(--primary); }
 
-        /* ẨN LAYER MÀU */
         .leaflet-interactive { fill-opacity: 0 !important; stroke-width: 1.5; pointer-events: none; }
-        .light-mode { filter: invert(1) hue-rotate(180deg); }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <h1>NAM ARCH <span>PRO</span></h1>
-    <span class="tagline">SURVEYOR EDITION v51</span>
+    <span class="tagline">WEB EDITION v52.1</span>
 
     <div class="ctrl-box">
-        <div class="row"><span>Độ thu phóng (Zoom)</span><span class="val-hl" id="z-val">16.0</span></div>
+        <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
         <input type="range" id="zoomSlider" min="1" max="100" step="0.5" value="16" class="zoom-slider">
     </div>
 
-    <button class="btn-glow" onclick="startMegaScan()">
-        <span style="position: relative; z-index: 10;">🚀 BẮT ĐẦU QUÉT ĐỊA HÌNH</span>
-    </button>
+    <div class="ctrl-box">
+        <div class="row" style="border-bottom: 1px solid rgba(128,128,128,0.2); padding-bottom: 8px; margin-bottom: 10px;">
+            <span style="color: var(--primary);">🎨 GIAO DIỆN HIỂN THỊ</span>
+        </div>
+        <div class="row"><span>🏢 Tòa Nhà</span><input type="color" id="cNha" value="#ff4757" oninput="updateLiveColors()"></div>
+        <div class="row"><span>🛣️ Lòng Đường</span><input type="color" id="cDuong" value="#ffffff" oninput="updateLiveColors()"></div>
+        <div class="row"><span>🚶 Vỉa Hè</span><input type="color" id="cViaHe" value="#f1c40f" oninput="updateLiveColors()"></div>
+        <div class="row"><span>💧 Mặt Nước</span><input type="color" id="cNuoc" value="#3498db" oninput="updateLiveColors()"></div>
+    </div>
+
+    <button class="btn-glow" onclick="startMegaScan()">🚀 BẮT ĐẦU QUÉT ĐỊA HÌNH</button>
 
     <div class="ctrl-box">
-        <div class="row"><span>Thuật toán v50 Core:</span><span style="color: #00ffcc">BẤT TỬ (ON)</span></div>
+        <div class="row"><span>Trạng thái Core:</span><span id="lib-stt" style="color: #8b9bb4">ĐANG TẢI...</span></div>
         <div class="prog-wrap"><div id="progress"></div></div>
-        <div id="stt">HỆ THỐNG SẴN SÀNG</div>
+        <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
     </div>
 
     <button class="btn-outline" onclick="exportDxfSafe()">📥 XUẤT CAD 1:1 CHUẨN KỸ THUẬT</button>
-    <button class="btn-outline" style="margin-top: 8px; border-color: #555; color: #aaa;" onclick="document.body.classList.toggle('light-mode')">🌓 ĐỔI GIAO DIỆN SÁNG/TỐI</button>
+    <button class="btn-outline" onclick="document.body.classList.toggle('light-mode')">🌓 ĐỔI GIAO DIỆN SÁNG/TỐI</button>
 </div>
 
 <div class="crosshair"></div>
-<div class="hud hud-top-right">
-    <div style="font-size: 16px; font-weight: 900;">▲ N</div>
-    <div>LA BÀN</div>
-</div>
+<div class="hud hud-top-right"><div style="font-size: 16px; font-weight: 900;">▲ N</div><div>LA BÀN</div></div>
 <div class="hud hud-bottom">
-    <div>📍 TỌA ĐỘ TÂM: <span id="hud-coord">10.7933, 106.6800</span></div>
-    <div>🚁 ĐỘ CAO BAY: <span id="hud-alt">610m</span></div>
+    <div>📍 TỌA ĐỘ: <span id="hud-coord">10.7933, 106.6800</span></div>
+    <div>🚁 ĐỘ CAO: <span id="hud-alt">610m</span></div>
 </div>
 
 <div id="map"></div>
 
 <script>
-    // --- KHỞI TẠO BẢN ĐỒ (ZOOM TỚI BẾN 100) ---
+    // --- KIỂM TRA THƯ VIỆN CHUẨN ---
+    setInterval(() => {
+        const el = document.getElementById('lib-stt');
+        if (typeof turf !== 'undefined') { el.innerText = "ONLINE (V6.5)"; el.style.color = "#10b981"; }
+        else { el.innerText = "OFFLINE"; el.style.color = "#ef4444"; }
+    }, 1000);
+
+    // --- KHỞI TẠO BẢN ĐỒ ---
     var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
+    var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
+    var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 });
     
-    // Bản đồ nền giới hạn native zoom 19 để không lỗi ảnh
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
-    
-    // --- VẼ LƯỚI TỌA ĐỘ KỸ THUẬT (GRATICULE) ---
+    // Lưới tọa độ
     L.GridLayer.Graticule = L.GridLayer.extend({
-        createTile: function (coords) {
+        createTile: function () {
             var tile = document.createElement('canvas'); tile.width = tile.height = 256;
-            var ctx = tile.getContext('2d');
-            ctx.strokeStyle = 'rgba(0, 242, 254, 0.15)'; // Màu lưới xanh ngọc viễn tưởng
-            ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke();
-            return tile;
+            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke(); return tile;
         }
     });
     new L.GridLayer.Graticule({maxZoom: 100}).addTo(map);
 
-    // --- CẬP NHẬT HUD & ZOOM LIVER ---
+    // --- HUD & ZOOM ---
     const zSlider = document.getElementById('zoomSlider');
     const zVal = document.getElementById('z-val');
-    const hudCoord = document.getElementById('hud-coord');
-    const hudAlt = document.getElementById('hud-alt');
-
     function updateHUD() {
-        let z = map.getZoom();
-        let center = map.getCenter();
-        zSlider.value = z;
-        zVal.innerText = z.toFixed(1);
-        hudCoord.innerText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
-        // Công thức tính độ cao giả lập
+        let z = map.getZoom(); let center = map.getCenter();
+        zSlider.value = z; zVal.innerText = z.toFixed(1);
+        document.getElementById('hud-coord').innerText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
         let alt = Math.round(40000000 / Math.pow(2, z));
-        hudAlt.innerText = alt >= 1000 ? (alt/1000).toFixed(1) + 'km' : alt + 'm';
+        document.getElementById('hud-alt').innerText = alt >= 1000 ? (alt/1000).toFixed(1) + 'km' : alt + 'm';
     }
-    
     zSlider.addEventListener('input', e => map.setZoom(e.target.value));
-    map.on('move', updateHUD);
-    map.on('zoomend', updateHUD);
-    updateHUD();
+    map.on('move', updateHUD); map.on('zoomend', updateHUD); updateHUD();
 
-    // ==========================================
-    // LÕI THUẬT TOÁN V50 (BẤT TỬ & CHỐNG RỖNG)
-    // KHÔNG THAY ĐỔI ĐỂ ĐẢM BẢO AN TOÀN TUYỆT ĐỐI
-    // ==========================================
+    // --- DỮ LIỆU & LAYER ---
     var geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
     var layers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
+    function updateLiveColors() {
+        const cN = document.getElementById('cNha').value;
+        const cD = document.getElementById('cDuong').value;
+        const cV = document.getElementById('cViaHe').value;
+        const cW = document.getElementById('cNuoc').value;
+        layers.nha.eachLayer(l => l.setStyle({color: cN}));
+        layers.duong.eachLayer(l => l.setStyle({color: cD}));
+        layers.viahe.eachLayer(l => l.setStyle({color: cV}));
+        layers.nuoc.eachLayer(l => l.setStyle({color: cW}));
+    }
+
+    // --- THUẬT TOÁN BẤT TỬ ---
     const yieldCPU = () => new Promise(r => setTimeout(r, 5));
 
     async function chunkedUnion(polygons, type) {
@@ -210,7 +212,7 @@
     }
 
     async function startMegaScan() {
-        if(typeof turf === 'undefined') return alert("Hệ thống Core đang khởi động, đợi chút nhé!");
+        if(typeof turf === 'undefined' || !turf.bboxClip) return alert("Hệ thống Core đang tải hoặc bị lỗi mạng, vui lòng F5 lại trang!");
         
         const b = map.getBounds();
         const sw = b.getSouthWest(), ne = b.getNorthEast();
@@ -219,6 +221,11 @@
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
         
+        const cN = document.getElementById('cNha').value;
+        const cD = document.getElementById('cDuong').value;
+        const cV = document.getElementById('cViaHe').value;
+        const cW = document.getElementById('cNuoc').value;
+
         document.getElementById('progress').style.width = '10%';
         document.getElementById('stt').innerText = "KẾT NỐI VỆ TINH OVERPASS...";
 
@@ -247,9 +254,13 @@
                 if (pts.length < 2) continue;
 
                 if (e.tags.building) {
-                    geoData.nha.push(turf.bboxClip(turf.polygon([pts.concat([pts[0]])]), screenBox));
+                    const poly = turf.bboxClip(turf.polygon([pts.concat([pts[0]])]), screenBox);
+                    geoData.nha.push(poly);
+                    L.geoJSON(poly, {color: cN, weight: 1}).addTo(layers.nha);
                 } else if (e.tags.natural === 'water') {
-                    geoData.nuoc.push(turf.bboxClip(turf.polygon([pts.concat([pts[0]])]), screenBox));
+                    const poly = turf.bboxClip(turf.polygon([pts.concat([pts[0]])]), screenBox);
+                    geoData.nuoc.push(poly);
+                    L.geoJSON(poly, {color: cW, weight: 1}).addTo(layers.nuoc);
                 } else if (e.tags.highway) {
                     const line = turf.lineString(pts);
                     const w = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
@@ -258,16 +269,13 @@
                 }
             }
 
-            geoData.nha.forEach(g => L.geoJSON(g, {color:'#00f2fe', weight: 1}).addTo(layers.nha));
-            geoData.nuoc.forEach(g => L.geoJSON(g, {color:'#4facfe', weight: 1}).addTo(layers.nuoc));
-
             document.getElementById('progress').style.width = '60%';
             
             if (rBufs.length > 0) {
                 document.getElementById('stt').innerText = "ĐANG ĐỤC LỖ LÒNG ĐƯỜNG...";
                 let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
                 geoData.duong.push(mR);
-                L.geoJSON(mR, {color:'#ffffff', weight: 1.5}).addTo(layers.duong);
+                L.geoJSON(mR, {color: cD, weight: 1.5}).addTo(layers.duong);
 
                 document.getElementById('progress').style.width = '80%';
                 document.getElementById('stt').innerText = "ĐANG GHÉP VỈA HÈ V21...";
@@ -277,16 +285,17 @@
                     let viahe = turf.difference(mS, mR);
                     if(viahe) {
                         geoData.viahe.push(viahe);
-                        L.geoJSON(viahe, {color:'#00ffcc', weight: 1}).addTo(layers.viahe);
+                        L.geoJSON(viahe, {color: cV, weight: 1}).addTo(layers.viahe);
                     }
                 } catch(e) { geoData.viahe.push(mS); }
             }
             
             document.getElementById('progress').style.width = '100%';
             document.getElementById('stt').innerText = "HOÀN TẤT! SẴN SÀNG XUẤT CAD.";
-        } catch (err) { alert("Lỗi tải dữ liệu, vui lòng thử lại!"); }
+        } catch (err) { alert("Lỗi tải dữ liệu, khu vực quét có thể quá lớn hoặc lỗi mạng!"); }
     }
 
+    // --- HÀM XUẤT DXF KHÔNG MÀU ---
     function extractRings(geom) {
         let rings = [];
         if (!geom) return rings;
@@ -299,6 +308,8 @@
     }
 
     async function exportDxfSafe() {
+        if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Bạn chưa quét dữ liệu nào!");
+        
         document.getElementById('stt').innerText = "ĐANG COMPILE FILE DXF...";
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
@@ -325,7 +336,7 @@
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-        a.download = "NAM_ARCH_V51_SURVEYOR.dxf"; a.click();
+        a.download = "NAM_ARCH_V52_FINAL.dxf"; a.click();
         document.getElementById('stt').innerText = "XUẤT FILE THÀNH CÔNG!";
     }
 </script>
