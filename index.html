@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - V14 DOUBLE LINE</title>
+    <title>NAM ARCH - V15 FINAL CLEAN</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -10,45 +10,29 @@
         #map { height: 100vh; width: 100vw; }
         .ui { 
             position: absolute; top: 20px; left: 20px; z-index: 1000; 
-            background: rgba(255,255,255,0.98); padding: 25px; 
-            border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 280px; 
+            background: white; padding: 20px; border-radius: 12px; width: 260px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
         button { 
-            width: 100%; padding: 14px; background: #2c3e50; color: white; 
-            border: none; cursor: pointer; border-radius: 50px; 
-            font-weight: bold; font-size: 14px; transition: 0.2s;
+            width: 100%; padding: 12px; background: #00a8ff; color: white; 
+            border: none; cursor: pointer; border-radius: 25px; font-weight: bold;
         }
-        button:hover { background: #1a252f; transform: scale(1.02); }
-        
         .progress-container { 
-            width: 100%; height: 18px; background: #f0f2f5; 
-            border-radius: 50px; margin-top: 15px; display: none; 
-            overflow: hidden;
+            width: 100%; height: 15px; background: #eee; 
+            border-radius: 10px; margin-top: 15px; display: none; overflow: hidden;
         }
         .progress-fill { 
-            width: 0%; height: 100%; border-radius: 50px;
-            background: linear-gradient(90deg, #4facfe 0%, #d4a5ff 100%); 
-            transition: width 0.1s linear;
+            width: 0%; height: 100%; 
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); 
         }
-        
-        .info { font-size: 11px; color: #576574; margin-top: 12px; line-height: 1.6; }
-        #stt { text-align: center; font-weight: 600; margin-top: 8px; font-size: 12px; color: #2ecc71;}
+        #stt { text-align: center; font-size: 12px; margin-top: 8px; color: #444; }
     </style>
 </head>
 <body>
     <div class="ui">
-        <h2 style="margin:0 0 10px; font-size:18px; color:#2c3e50;">NAM CAD PRO v14</h2>
-        <button onclick="exportDoubleLine()">XUẤT CAD 2 NÉT (CLEAN)</button>
-        
-        <div class="progress-container" id="p-bar">
-            <div class="progress-fill" id="p-fill"></div>
-        </div>
-        
-        <div class="info">
-            • <b>Đường:</b> Vẽ 2 lề song song (Double Line)<br>
-            • <b>Cắt vùng:</b> Chỉ lấy đối tượng trong màn hình<br>
-            • <b>Nhà:</b> Polyline khép kín nét đỏ
-        </div>
+        <h3 style="margin:0 0 10px; color:#2f3640;">NAM ARCH v15</h3>
+        <button onclick="exportV15()">XUẤT CAD SẠCH (2 NÉT)</button>
+        <div class="progress-container" id="p-bar"><div class="progress-fill" id="p-fill"></div></div>
         <div id="stt"></div>
     </div>
     <div id="map"></div>
@@ -57,50 +41,46 @@
         var map = L.map('map').setView([10.7933, 106.6800], 17);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(map);
 
-        async function exportDoubleLine() {
+        async function exportV15() {
             const stt = document.getElementById('stt');
             const pFill = document.getElementById('p-fill');
             document.getElementById('p-bar').style.display = 'block';
-            pFill.style.width = "10%";
-            stt.innerText = "Đang lọc dữ liệu màn hình...";
-
+            
             const b = map.getBounds();
-            const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
-            const query = `[out:json][bbox:${bbox}];(way["building"];way["highway"];);out body;>;out skel qt;`;
+            const query = `[out:json][bbox:${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}];(way["building"];way["highway"];);out body;>;out skel qt;`;
             
             try {
                 const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
                 const data = await res.json();
-                
                 const nodeMap = new Map();
                 data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
-                let dxf = "  0\nSECTION\n  2\nHEADER\n  9\n$ACADVER\n  1\nAC1009\n  0\nENDSEC\n  0\nSECTION\n  2\nENTITIES\n";
+                let dxf = "0\nSECTION\n2\nENTITIES\n";
                 const center = map.getCenter();
                 const scale = 111319;
-
                 const ways = data.elements.filter(e => e.type === "way");
+
                 ways.forEach((e, idx) => {
+                    const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n);
+                    // CHỈ VẼ NẾU NẰM TRONG MÀN HÌNH
+                    const allInView = nodes.every(n => b.contains([n.lat, n.lon]));
+                    if (!allInView || nodes.length < 2) return;
+
                     const isBuilding = !!e.tags?.building;
-                    const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => !!n);
-                    
-                    // CHỈ LẤY NÉT NẰM TRONG MÀN HÌNH
-                    const inView = nodes.some(n => b.contains([n.lat, n.lon]));
-                    if (!inView || nodes.length < 2) return;
+                    const w = e.tags.highway === 'primary' ? 6 : 3;
 
                     if (isBuilding) {
-                        dxf += `  0\nPOLYLINE\n  8\nNHA\n 62\n1\n 66\n1\n 70\n1\n`;
+                        dxf += `0\nPOLYLINE\n8\nNHA\n62\n1\n66\n1\n70\n1\n`;
                         nodes.forEach(n => {
                             let x = (n.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
                             let y = (n.lat - center.lat) * scale;
-                            dxf += `  0\nVERTEX\n  8\nNHA\n 10\n${x.toFixed(3)}\n 20\n${y.toFixed(3)}\n`;
+                            dxf += `0\nVERTEX\n8\nNHA\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n`;
                         });
-                        dxf += `  0\nSEQEND\n`;
+                        dxf += `0\nSEQEND\n`;
                     } else {
-                        // VẼ 2 NÉT LỀ ĐƯỜNG (OFFSET VECTOR)
-                        let w = 2.5; // Khoảng cách offset (1 nửa bề rộng đường)
-                        if (e.tags.highway === 'primary') w = 6;
-                        if (e.tags.highway === 'secondary') w = 4;
+                        // VẼ 2 LỀ BẰNG 2 POLYLINE RIÊNG BIỆT (KHÔNG DÙNG LINE RỜI)
+                        const lề_trái = [];
+                        const lề_phải = [];
 
                         for (let i = 0; i < nodes.length - 1; i++) {
                             let n1 = nodes[i], n2 = nodes[i+1];
@@ -111,26 +91,36 @@
 
                             let dx = x2 - x1, dy = y2 - y1;
                             let len = Math.sqrt(dx*dx + dy*dy);
-                            if (len > 0) {
-                                let ox = (-dy / len) * w, oy = (dx / len) * w;
-                                // Vẽ lề trái
-                                dxf += `  0\nLINE\n  8\nDUONG\n 10\n${x1+ox}\n 20\n${y1+oy}\n 11\n${x2+ox}\n 21\n${y2+oy}\n`;
-                                // Vẽ lề phải
-                                dxf += `  0\nLINE\n  8\nDUONG\n 10\n${x1-ox}\n 20\n${y1-oy}\n 11\n${x2-ox}\n 21\n${y2-oy}\n`;
+                            let ox = (-dy / len) * w, oy = (dx / len) * w;
+
+                            if (i === 0) {
+                                lề_trái.push({x: x1 + ox, y: y1 + oy});
+                                lề_phải.push({x: x1 - ox, y: y1 - oy});
                             }
+                            lề_trái.push({x: x2 + ox, y: y2 + oy});
+                            lề_phải.push({x: x2 - ox, y: y2 - oy});
                         }
+
+                        // Xuất lề trái
+                        dxf += `0\nPOLYLINE\n8\nDUONG\n66\n1\n`;
+                        lề_trái.forEach(p => dxf += `0\nVERTEX\n8\nDUONG\n10\n${p.x.toFixed(2)}\n20\n${p.y.toFixed(2)}\n`);
+                        dxf += `0\nSEQEND\n`;
+                        // Xuất lề phải
+                        dxf += `0\nPOLYLINE\n8\nDUONG\n66\n1\n`;
+                        lề_phải.forEach(p => dxf += `0\nVERTEX\n8\nDUONG\n10\n${p.x.toFixed(2)}\n20\n${p.y.toFixed(2)}\n`);
+                        dxf += `0\nSEQEND\n`;
                     }
-                    pFill.style.width = (10 + (idx/ways.length)*90) + "%";
+                    pFill.style.width = (idx/ways.length*100) + "%";
                 });
 
-                dxf += "  0\nENDSEC\n  0\nEOF\n";
+                dxf += "0\nENDSEC\n0\nEOF";
                 const blob = new Blob([dxf], {type: 'application/dxf'});
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = "Nam_Architect_v14_DoubleLine.dxf";
+                a.download = "Nam_V15_Clean_Final.dxf";
                 a.click();
-                stt.innerText = "Xong! Chỉ lấy nét trong khung hình.";
-            } catch (err) { stt.innerText = "Lỗi!"; }
+                stt.innerText = "Xong! Bản vẽ đã được lọc sạch.";
+            } catch (err) { stt.innerText = "Lỗi kết nối!"; }
         }
     </script>
 </body>
