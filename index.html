@@ -2,10 +2,10 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v46 - Stable v21 Wireframe</title>
+    <title>NAM ARCH v47 - Hardcoded v21</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
         :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(30, 30, 30, 0.98); --text: #eee; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
@@ -16,54 +16,44 @@
             border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 45px rgba(0,0,0,0.6);
             backdrop-filter: blur(10px);
         }
-        h1 { margin: 0; font-size: 20px; color: var(--accent); text-align: center; }
+        h1 { margin: 0; font-size: 20px; color: var(--accent); text-align: center; text-transform: uppercase; }
         button {
-            width: 100%; padding: 12px; border: none; border-radius: 12px; font-weight: bold;
-            cursor: pointer; transition: 0.3s; font-size: 11px; text-transform: uppercase; margin-top: 10px;
+            width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold;
+            cursor: pointer; transition: 0.3s; font-size: 11px; text-transform: uppercase; margin-top: 15px;
         }
-        .btn-main { background: #3498db; color: white; border-bottom: 3px solid #2980b9; }
+        .btn-main { background: #3498db; color: white; box-shadow: 0 4px 15px rgba(52,152,219,0.4); }
         .btn-export { background: var(--accent); color: #000; }
         .status-panel { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .progress-bar { height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 10px; }
+        .progress-bar { height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 10px; }
         #progress { width: 0%; height: 100%; background: var(--accent); transition: 0.3s; }
-        #stt { font-size: 10px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; }
-        /* Chỉ hiện nét, không màu */
-        .leaflet-interactive { fill-opacity: 0 !important; stroke-width: 1.5; }
+        #stt { font-size: 11px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; }
+        /* Style chỉ lấy nét theo yêu cầu */
+        .leaflet-interactive { fill-opacity: 0 !important; stroke-width: 1.5; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h1>NAM ARCH v46</h1>
-    <p style="font-size: 9px; text-align:center; opacity:0.6">V21 LOGIC - SCREEN BOUND ONLY</p>
+    <h1>NAM ARCH v47</h1>
+    <p style="font-size: 9px; text-align:center; opacity:0.6; margin-top:5px">V21 PURE WIREFRAME | SCREEN ONLY</p>
 
-    <button class="btn-main" onclick="runSafeScan()">🚀 QUÉT NÉT MÀN HÌNH (16 MẢNG)</button>
+    <button class="btn-main" id="btnRun" onclick="runFinalScan()">🚀 QUÉT NÉT MÀN HÌNH (V21)</button>
 
     <div class="status-panel">
         <div style="font-size: 11px; display: flex; justify-content: space-between;">
-            <span>Thư viện:</span>
-            <span id="lib-stt" style="color: #ff4757;">Đang tải...</span>
+            <span>Trạng thái:</span>
+            <span id="sys-stt" style="color: #00ffcc;">SẴN SÀNG</span>
         </div>
         <div class="progress-bar"><div id="progress"></div></div>
-        <div id="stt">HỆ THỐNG SẴN SÀNG</div>
+        <div id="stt">Chưa bắt đầu</div>
     </div>
 
-    <button class="btn-export" onclick="exportDxfFinal()">📥 XUẤT CAD NÉT 1:1</button>
+    <button class="btn-export" onclick="exportDxfv21()">📥 XUẤT CAD NÉT 1:1</button>
 </div>
 
 <div id="map"></div>
 
 <script>
-    // Kiểm tra thư viện Turf đã tải chưa
-    window.onload = () => {
-        if (typeof turf !== 'undefined') {
-            document.getElementById('lib-stt').innerText = "Đã kết nối";
-            document.getElementById('lib-stt').style.color = "#00ffcc";
-        } else {
-            document.getElementById('lib-stt').innerText = "Lỗi thư viện!";
-        }
-    };
-
     var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 16);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
     
@@ -73,68 +63,70 @@
         viahe: L.layerGroup().addTo(map) 
     };
 
-    async function runSafeScan() {
+    async function runFinalScan() {
         if (typeof turf === 'undefined') {
-            alert("Thư viện Turf.js chưa tải xong. Vui lòng F5 hoặc kiểm tra internet!");
+            alert("Đang nỗ lực kết nối lại thư viện xử lý hình học. Bạn hãy chờ 5 giây rồi bấm lại nhé!");
             return;
         }
 
         const b = map.getBounds();
-        const sw = b.getSouthWest(), ne = b.getNorthEast();
-        const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
+        const screenBox = [b.getSouthWest().lng, b.getSouthWest().lat, b.getNorthEast().lng, b.getNorthEast().lat];
         
         Object.values(groups).forEach(g => g.clearLayers());
-        let done = 0;
+        document.getElementById('progress').style.width = '0%';
+        
         const rows = 4, cols = 4;
-        const latStep = (ne.lat - sw.lat)/rows, lngStep = (ne.lng - sw.lng)/cols;
+        const latStep = (b.getNorthEast().lat - b.getSouthWest().lat) / rows;
+        const lngStep = (b.getNorthEast().lng - b.getSouthWest().lng) / cols;
+        let count = 0;
 
         for(let i=0; i<rows; i++) {
             for(let j=0; j<cols; j++) {
-                const box = [sw.lat + i*latStep, sw.lng + j*lngStep, sw.lat + (i+1)*latStep, sw.lng + (j+1)*lngStep];
-                await fetchAndProcess(box, screenBox);
-                done++;
-                document.getElementById('progress').style.width = (done/16)*100 + '%';
-                document.getElementById('stt').innerText = `TIẾN ĐỘ: ${done}/16`;
+                const tile = [b.getSouthWest().lat + i*latStep, b.getSouthWest().lng + j*lngStep, b.getSouthWest().lat + (i+1)*latStep, b.getSouthWest().lng + (j+1)*lngStep];
+                await processV21(tile, screenBox);
+                count++;
+                document.getElementById('progress').style.width = (count/16)*100 + '%';
+                document.getElementById('stt').innerText = `ĐANG XỬ LÝ: ${count}/16 MẢNG`;
             }
         }
-        document.getElementById('stt').innerText = "✅ QUÉT XONG PHẠM VI MÀN HÌNH";
+        document.getElementById('stt').innerText = "✅ XONG! CHỈ QUÉT TRONG MÀN HÌNH";
     }
 
-    async function fetchAndProcess(box, screenBox) {
-        const q = `[out:json][timeout:30][bbox:${box[0]},${box[1]},${box[2]},${box[3]}];(way["building"];way["highway"];);out body;>;out skel qt;`;
+    async function processV21(tile, clip) {
+        const query = `[out:json][timeout:30][bbox:${tile[0]},${tile[1]},${tile[2]},${tile[3]}];(way["building"];way["highway"];);out body;>;out skel qt;`;
         try {
-            const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
+            const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query));
             const data = await res.json();
-            const nodeMap = new Map();
-            data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
+            const nodes = new Map();
+            data.elements.forEach(e => { if(e.type==='node') nodes.set(e.id, [e.lon, e.lat]); });
 
-            let rBufs = [], sBufs = [];
+            let roadPolys = [], sidePolys = [];
 
             data.elements.filter(e => e.type === "way").forEach(e => {
-                const pts = e.nodes.map(id => nodeMap.get(id)).filter(n => n).map(n => [n.lon, n.lat]);
+                const pts = e.nodes.map(id => nodes.get(id)).filter(p => p);
                 if (pts.length < 2) return;
 
                 if (e.tags.building) {
-                    const p = turf.polygon([pts.concat([pts[0]])]);
-                    L.geoJSON(turf.bboxClip(p, screenBox), {color:'#ff4d4d'}).addTo(groups.nha);
+                    const poly = turf.polygon([pts.concat([pts[0]])]);
+                    L.geoJSON(turf.bboxClip(poly, clip), {color:'#ff4d4d'}).addTo(groups.nha);
                 } else if (e.tags.highway) {
                     const line = turf.lineString(pts);
                     const w = (e.tags.highway === 'primary') ? 10 : 6;
-                    rBufs.push(turf.bboxClip(turf.buffer(line, w/2, {units:'meters'}), screenBox));
-                    sBufs.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters'}), screenBox));
+                    roadPolys.push(turf.bboxClip(turf.buffer(line, w/2, {units:'meters'}), clip));
+                    sidePolys.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters'}), clip));
                 }
             });
 
-            if (rBufs.length > 0) {
-                let mR = rBufs.reduce((a, b) => turf.union(a, b));
-                let mS = sBufs.reduce((a, b) => turf.union(a, b));
+            if (roadPolys.length > 0) {
+                let mR = roadPolys.reduce((a, b) => turf.union(a, b));
+                let mS = sidePolys.reduce((a, b) => turf.union(a, b));
                 L.geoJSON(mR, {color:'#ffffff'}).addTo(groups.duong);
                 L.geoJSON(turf.difference(mS, mR), {color:'#f1c40f'}).addTo(groups.viahe);
             }
-        } catch (e) { console.error("Tile error"); }
+        } catch (err) { console.error("Tile skip"); }
     }
 
-    function exportDxfFinal() {
+    function exportDxfv21() {
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
@@ -158,9 +150,10 @@
         write(groups.viahe, "NET_VIAHE");
         dxf += "0\nENDSEC\n0\nEOF";
         
+        const blob = new Blob([dxf], {type: 'application/dxf'});
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([dxf], {type:'application/dxf'}));
-        a.download = "NAM_V46_FIXED.dxf"; a.click();
+        a.href = URL.createObjectURL(blob);
+        a.download = "NAM_ARCH_V47_FINAL.dxf"; a.click();
     }
 </script>
 </body>
