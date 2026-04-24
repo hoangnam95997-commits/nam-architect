@@ -1,100 +1,235 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v50 - Ultra GIS Engine (V21)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAM ARCH PRO - Final UI Update</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
+    
     <style>
-        :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(20, 20, 20, 0.95); --text: #eee; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-        #map { height: 100vh; width: 100vw; background: #000; }
+        :root { 
+            --primary: #00e5ff; 
+            --primary-hover: #00b3cc;
+            --bg-dark: #0b0c10;
+            --panel-bg: rgba(18, 20, 28, 0.85);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+        
+        /* Chế độ Sáng */
+        .light-mode {
+            --primary: #0077ff;
+            --bg-dark: #f0f2f5;
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #111827;
+            --text-muted: #4b5563;
+            --border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); overflow: hidden; transition: background 0.3s; }
+        #map { height: 100vh; width: 100vw; background: var(--bg-dark); }
+        
+        .sidebar-container { position: absolute; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 10px; align-items: flex-start; }
+
         .sidebar {
-            position: absolute; top: 20px; left: 20px; z-index: 1000; width: 340px;
-            background: var(--panel); border-radius: 15px; padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
+            width: 340px; background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color); border-radius: 20px; padding: 24px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s, background 0.3s;
         }
-        h1 { margin: 0; font-size: 22px; color: var(--accent); text-align: center; }
-        .tagline { font-size: 10px; opacity: 0.7; display: block; text-align: center; margin-bottom: 20px; color: #aaa; }
-        button {
-            width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold;
-            cursor: pointer; transition: 0.2s; font-size: 12px; text-transform: uppercase; margin-bottom: 10px;
+        .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; }
+
+        .toggle-btn {
+            background: var(--panel-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color); color: var(--text-main);
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; font-size: 16px; margin-top: 10px;
         }
-        .btn-main { background: #3498db; color: white; border-bottom: 3px solid #2980b9; }
-        .btn-export { background: var(--accent); color: #000; }
-        .status-box { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05); }
-        .progress-bar { height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 10px; }
-        #progress { width: 0%; height: 100%; background: var(--accent); transition: 0.1s linear; }
-        #stt { font-size: 11px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; font-weight: bold; }
-        .leaflet-interactive { fill-opacity: 0 !important; stroke-width: 1.2; }
+        .toggle-btn:hover { background: rgba(128,128,128,0.1); transform: scale(1.05); }
+
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        h1 { margin: 0; font-size: 22px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
+        h1 span { color: var(--primary); }
+        .tagline { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; display: block; }
+
+        /* KHU VỰC CÔNG CỤ NHANH (UI/UX Toggles) */
+        .quick-tools {
+            background: rgba(128,128,128,0.05); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 15px; margin-bottom: 15px;
+        }
+        .status-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        
+        .btn-theme {
+            background: rgba(128,128,128,0.1); border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 6px 12px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: 700; transition: 0.2s;
+        }
+        .btn-theme:hover { background: rgba(128,128,128,0.2); border-color: var(--primary); color: var(--primary); }
+
+        /* THANH KÉO ZOOM */
+        .zoom-slider {
+            -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px;
+            background: rgba(128,128,128,0.3); outline: none; margin-top: 12px;
+        }
+        .zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 14px; height: 14px;
+            border-radius: 50%; background: var(--primary); cursor: pointer; transition: 0.2s;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+        .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+        button.btn {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
+            text-transform: uppercase; cursor: pointer; transition: all 0.3s ease;
+        }
+        .btn-main { background: linear-gradient(135deg, #00e5ff 0%, #0077ff 100%); color: #000; box-shadow: 0 8px 25px rgba(0, 229, 255, 0.3); }
+        .light-mode .btn-main { background: linear-gradient(135deg, #0077ff 0%, #0044ff 100%); color: #fff; box-shadow: 0 8px 25px rgba(0, 119, 255, 0.3); }
+        .btn-main:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        
+        .btn-export { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); margin-top: 15px; }
+        .btn-export:hover { background: rgba(128,128,128,0.1); border-color: var(--primary); color: var(--primary); }
+
+        .status-box {
+            background: rgba(128,128,128,0.05); border-radius: 12px; padding: 18px; margin: 15px 0; border: 1px solid var(--border-color);
+        }
+        .progress-wrapper { background: rgba(128,128,128,0.2); border-radius: 999px; height: 6px; overflow: hidden; position: relative; margin: 12px 0; }
+        #progress { width: 0%; height: 100%; background: var(--primary); border-radius: 999px; box-shadow: 0 0 10px var(--primary); transition: width 0.3s ease; }
+        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: monospace; font-weight: 700; letter-spacing: 0.5px; }
+        
+        .leaflet-interactive { fill-opacity: 0 !important; stroke-width: 1.2; pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <h1>NAM ARCH v50</h1>
-    <span class="tagline">HỆ THỐNG ASYNC BẤT TỬ | V21 ENGINE</span>
-
-    <button class="btn-main" onclick="startMegaScan()">🚀 BẮT ĐẦU QUÉT VÙNG RỘNG</button>
-
-    <div class="status-box">
-        <div style="font-size: 11px; display: flex; justify-content: space-between;">
-            <span>Chống treo máy:</span><span style="color:#00ffcc">ĐÃ KÍCH HOẠT</span>
+<div class="sidebar-container">
+    <div class="sidebar" id="sidebar">
+        <div class="header">
+            <h1>NAM ARCH <span>PRO</span></h1>
+            <span class="tagline">GIS Engine V50 | UI Update</span>
         </div>
-        <div class="progress-bar"><div id="progress"></div></div>
-        <div id="stt">ĐANG CHỜ LỆNH...</div>
-    </div>
 
-    <button class="btn-export" onclick="exportDxfSafe()">📥 XUẤT CAD 1:1</button>
+        <div class="quick-tools">
+            <div class="status-row">
+                <span>GIAO DIỆN BẢN ĐỒ</span>
+                <button class="btn-theme" onclick="toggleTheme()">🌓 ĐỔI SÁNG/TỐI</button>
+            </div>
+            <div class="status-row" style="margin-top: 15px;">
+                <span>THU PHÓNG (ZOOM)</span>
+                <span id="zoom-val" style="color: var(--primary);">16</span>
+            </div>
+            <input type="range" id="zoomSlider" min="12" max="19" value="16" class="zoom-slider">
+        </div>
+
+        <button class="btn btn-main" onclick="startMegaScan()">🚀 QUÉT VÙNG RỘNG V21</button>
+
+        <div class="status-box">
+            <div class="status-row">
+                <span>Trạng thái Core:</span>
+                <span id="lib-stt" style="color: var(--text-muted);">ĐANG TẢI...</span>
+            </div>
+            <div class="progress-wrapper"><div id="progress"></div></div>
+            <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
+        </div>
+
+        <button class="btn btn-export" onclick="exportDxfSafe()">📥 XUẤT CAD 1:1 CHUẨN MESH</button>
+    </div>
+    
+    <div class="toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện Bảng điều khiển">
+        <svg id="toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </div>
 </div>
 
 <div id="map"></div>
 
 <script>
+    // --- GIAO DIỆN MỞ RỘNG (ẨN/HIỆN SIDEBAR) ---
+    let sidebarOpen = true;
+    function toggleSidebar() {
+        const sb = document.getElementById('sidebar');
+        const icon = document.getElementById('toggle-icon');
+        sidebarOpen = !sidebarOpen;
+        if(sidebarOpen) {
+            sb.classList.remove('hidden');
+            icon.innerHTML = '<polyline points="15 18 9 12 15 6"></polyline>';
+        } else {
+            sb.classList.add('hidden');
+            icon.innerHTML = '<polyline points="9 18 15 12 9 6"></polyline>';
+        }
+    }
+
+    // --- KIỂM TRA HỆ THỐNG ---
+    setInterval(() => {
+        const el = document.getElementById('lib-stt');
+        if (typeof turf !== 'undefined') { el.innerText = "ONLINE"; el.style.color = "var(--success)"; }
+        else { el.innerText = "OFFLINE"; el.style.color = "var(--danger)"; }
+    }, 1000);
+
+    // --- THIẾT LẬP BẢN ĐỒ ---
     var map = L.map('map', { zoomControl: false }).setView([10.7933, 106.6800], 16);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+    var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
+    var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
     
+    // --- CHUYỂN GIAO DIỆN (THEME) ---
+    function toggleTheme() {
+        if(document.body.classList.toggle('light-mode')) {
+            map.removeLayer(darkT); lightT.addTo(map);
+        } else {
+            map.removeLayer(lightT); darkT.addTo(map);
+        }
+    }
+
+    // --- ĐỒNG BỘ THANH ZOOM VỚI BẢN ĐỒ ---
+    const zSlider = document.getElementById('zoomSlider');
+    const zVal = document.getElementById('zoom-val');
+    
+    zSlider.addEventListener('input', function() {
+        map.setZoom(this.value);
+        zVal.innerText = this.value;
+    });
+    
+    map.on('zoomend', function() {
+        zSlider.value = map.getZoom();
+        zVal.innerText = map.getZoom();
+    });
+
+    // --- BIẾN TOÀN CỤC & TẦNG BẢN ĐỒ ---
     var geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
     var mapLayers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
-    // HÀM "THỞ" (Nhường CPU cho trình duyệt để không bị treo)
+    // --- THUẬT TOÁN LÕI V50 (CHỐNG TREO) ---
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 5));
 
-    // THUẬT TOÁN GỘP PHÂN CẤP (Nhanh gấp 50 lần)
     async function chunkedUnion(polygons, type) {
         if (!polygons || polygons.length === 0) return null;
         if (polygons.length === 1) return polygons[0];
-        
         let current = [...polygons];
         let step = 0;
         
         while (current.length > 1) {
             let next = [];
             for (let i = 0; i < current.length; i += 2) {
-                // Nhường CPU mỗi vòng lặp để trình duyệt không chết
                 if (i % 4 === 0) await yieldCPU();
-                
                 if (i + 1 < current.length) {
-                    try {
-                        next.push(turf.union(current[i], current[i+1]));
-                    } catch(e) {
-                        next.push(current[i]); // Nếu lỗi hình học cục bộ, giữ lại đa giác gốc
-                    }
-                } else {
-                    next.push(current[i]);
-                }
+                    try { next.push(turf.union(current[i], current[i+1])); } 
+                    catch(e) { next.push(current[i]); }
+                } else { next.push(current[i]); }
             }
-            current = next;
-            step++;
-            document.getElementById('stt').innerText = `ĐANG TỐI ƯU ${type}... (CẤP ${step})`;
+            current = next; step++;
+            document.getElementById('stt').innerText = `TỐI ƯU ${type}: CẤP ${step}...`;
         }
         return current[0];
     }
 
     async function startMegaScan() {
-        if(typeof turf === 'undefined') return alert("Lỗi tải thư viện Turf.js!");
+        if(typeof turf === 'undefined') return alert("Hệ thống Core chưa tải xong!");
         
         const bounds = map.getBounds();
         const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
@@ -103,7 +238,7 @@
         Object.values(mapLayers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
         document.getElementById('progress').style.width = '10%';
-        document.getElementById('stt').innerText = "ĐANG TẢI DỮ LIỆU TỪ SERVER...";
+        document.getElementById('stt').innerText = "ĐANG LẤY DỮ LIỆU TỪ VỆ TINH...";
 
         const query = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
         
@@ -123,8 +258,8 @@
                 
                 if (processed % 50 === 0) {
                     document.getElementById('progress').style.width = 10 + (processed/totalWays)*40 + '%';
-                    document.getElementById('stt').innerText = `TRÍCH XUẤT GEOMETRY: ${processed}/${totalWays}`;
-                    await yieldCPU(); // Chống treo khi tạo buffer
+                    document.getElementById('stt').innerText = `DỰNG HÌNH KHỐI: ${processed}/${totalWays}`;
+                    await yieldCPU(); 
                 }
 
                 const pts = e.nodes.map(id => nodes.get(id)).filter(p => p);
@@ -143,7 +278,6 @@
                 } else if (e.tags.highway) {
                     const line = turf.lineString(pts);
                     const w = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
-                    // Bước steps thấp (2) giúp giảm đỉnh tọa độ, tăng tốc độ tính toán gấp 10 lần
                     rBufs.push(turf.bboxClip(turf.buffer(line, w/2, {units:'meters', steps: 2}), screenBox));
                     sBufs.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters', steps: 2}), screenBox));
                 }
@@ -151,15 +285,14 @@
 
             document.getElementById('progress').style.width = '60%';
             
-            // Xử lý V21 bằng thuật toán phân cấp bất tử
             if (rBufs.length > 0) {
-                document.getElementById('stt').innerText = "ĐANG XỬ LÝ LÒNG ĐƯỜNG (KHÔNG TREO)...";
+                document.getElementById('stt').innerText = "ĐANG GHÉP NỐI LÒNG ĐƯỜNG...";
                 let mR = await chunkedUnion(rBufs, "ĐƯỜNG");
                 geoData.duong.push(mR);
                 L.geoJSON(mR, {color:'#fff'}).addTo(mapLayers.duong);
 
                 document.getElementById('progress').style.width = '80%';
-                document.getElementById('stt').innerText = "ĐANG TẠO VỈA HÈ (KHÔNG TREO)...";
+                document.getElementById('stt').innerText = "ĐANG TẠO LƯỚI VỈA HÈ...";
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 
                 try {
@@ -168,16 +301,13 @@
                         geoData.viahe.push(viahe);
                         L.geoJSON(viahe, {color:'#f1c40f'}).addTo(mapLayers.viahe);
                     }
-                } catch(e) {
-                    console.log("Difference Error, skipping exact cut");
-                    geoData.viahe.push(mS);
-                }
+                } catch(e) { geoData.viahe.push(mS); }
             }
             
             document.getElementById('progress').style.width = '100%';
-            document.getElementById('stt').innerText = "✅ HOÀN THÀNH. SẴN SÀNG XUẤT CAD!";
+            document.getElementById('stt').innerText = "HOÀN THÀNH. SẴN SÀNG XUẤT FILE!";
 
-        } catch (err) { alert("Lỗi kết nối máy chủ bản đồ!"); }
+        } catch (err) { alert("Lỗi kết nối máy chủ dữ liệu bản đồ!"); }
     }
 
     function extractRings(geom) {
@@ -192,14 +322,14 @@
     }
 
     async function exportDxfSafe() {
-        document.getElementById('stt').innerText = "ĐANG XUẤT CAD...";
+        document.getElementById('stt').innerText = "ĐANG BIÊN DỊCH CAD...";
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
 
         const writeToDxf = async (geoArray, layerName) => {
             for (let i = 0; i < geoArray.length; i++) {
-                if (i % 10 === 0) await yieldCPU(); // Không treo khi tạo file CAD
+                if (i % 10 === 0) await yieldCPU();
                 const rings = extractRings(geoArray[i]);
                 rings.forEach(ring => {
                     if(!ring || ring.length < 2) return;
@@ -218,7 +348,7 @@
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-        a.download = "NAM_V50_GIS_ENGINE.dxf"; a.click();
+        a.download = "NAM_ARCH_PRO.dxf"; a.click();
         document.getElementById('stt').innerText = "XUẤT CAD THÀNH CÔNG!";
     }
 </script>
