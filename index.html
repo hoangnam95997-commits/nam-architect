@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH - V9 PRO CLEAN</title>
+    <title>NAM ARCH - V10 REBORN</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -20,11 +20,11 @@
         }
         button:hover { background: #1a252f; transform: scale(1.02); }
         
-        /* THANH PROGRESS BAR GRADIENT CHUẨN MẪU */
+        /* THANH PROGRESS BAR GRADIENT ĐÚNG MẪU BẠN GỬI */
         .progress-container { 
-            width: 100%; height: 18px; background: #f0f2f5; 
+            width: 100%; height: 20px; background: #f0f2f5; 
             border-radius: 50px; margin-top: 15px; display: none; 
-            overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
         .progress-fill { 
             width: 0%; height: 100%; border-radius: 50px;
@@ -32,23 +32,23 @@
             transition: width 0.1s linear;
         }
         
-        .info { font-size: 11px; color: #576574; margin-top: 12px; line-height: 1.6; }
-        #stt { text-align: center; font-weight: 600; margin-top: 8px; font-size: 12px; color: #2ecc71;}
+        .info { font-size: 11px; color: #576574; margin-top: 12px; line-height: 1.5; }
+        #stt { text-align: center; font-weight: 600; margin-top: 10px; font-size: 13px; color: #2ecc71;}
     </style>
 </head>
 <body>
     <div class="ui">
-        <h2 style="margin:0 0 10px; font-size:18px; color:#2c3e50;">NAM CAD PRO v9</h2>
-        <button id="btn" onclick="exportUltimate()">XUẤT CAD SẠCH NÉT</button>
+        <h2 style="margin:0 0 10px; font-size:18px; color:#2c3e50;">NAM CAD PRO v10</h2>
+        <button onclick="exportClassic()">XUẤT CAD (LỆNH LINE THUẦN)</button>
         
         <div class="progress-container" id="p-bar">
             <div class="progress-fill" id="p-fill"></div>
         </div>
         
         <div class="info">
-            • <b>Đường:</b> Tự động vẽ 2 lề (Double-Line)<br>
-            • <b>Nhà:</b> Polyline khép kín nét đỏ<br>
-            • <b>Fix:</b> Triệt tiêu lỗi "Press Enter"
+            • <b>Thuật toán:</b> Dựa trên bản gốc "1 nét"<br>
+            • <b>Cải tiến:</b> Nhân đôi nét đường + Khép kín nhà<br>
+            • <b>Màu sắc:</b> Nhà (Đỏ) - Đường (Trắng)
         </div>
         <div id="stt"></div>
     </div>
@@ -58,12 +58,12 @@
         var map = L.map('map').setView([10.7933, 106.6800], 17);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(map);
 
-        async function exportUltimate() {
+        async function exportClassic() {
             const stt = document.getElementById('stt');
             const pFill = document.getElementById('p-fill');
             document.getElementById('p-bar').style.display = 'block';
             pFill.style.width = "10%";
-            stt.innerText = "Đang quét dữ liệu...";
+            stt.innerText = "Đang lấy dữ liệu...";
 
             const b = map.getBounds();
             const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
@@ -76,60 +76,65 @@
                 const nodeMap = new Map();
                 data.elements.forEach(el => { if (el.type === 'node') nodeMap.set(el.id, el); });
 
-                let dxf = "  0\nSECTION\n  2\nHEADER\n  9\n$ACADVER\n  1\nAC1009\n  0\nENDSEC\n  0\nSECTION\n  2\nENTITIES\n";
+                // DÙNG HEADER SIÊU TỐI GIẢN (Để không bao giờ bị rỗng)
+                let dxf = "0\nSECTION\n2\nENTITIES\n";
                 const center = map.getCenter();
                 const scale = 111319;
 
                 const ways = data.elements.filter(e => e.type === "way");
                 ways.forEach((e, idx) => {
-                    const isBuilding = !!e.tags?.building;
                     const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => !!n);
                     if (nodes.length < 2) return;
 
-                    if (isBuilding) {
-                        // VẼ NHÀ: POLYLINE R12 KHÉP KÍN
-                        dxf += `  0\nPOLYLINE\n  8\nNHA\n 62\n1\n 66\n1\n 70\n1\n`;
-                        nodes.forEach(n => {
-                            let x = (n.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
-                            let y = (n.lat - center.lat) * scale;
-                            dxf += `  0\nVERTEX\n  8\nNHA\n 10\n${x.toFixed(3)}\n 20\n${y.toFixed(3)}\n`;
-                        });
-                        dxf += `  0\nSEQEND\n`;
-                    } else {
-                        // VẼ ĐƯỜNG: THUẬT TOÁN OFFSET 2 LỀ (DOUBLE LINE)
-                        let w = 2.5; // Mặc định 5m
-                        if (e.tags.highway === 'primary') w = 10;
-                        if (e.tags.highway === 'secondary') w = 6;
+                    const isBuilding = !!e.tags?.building;
+                    const highway = e.tags?.highway;
 
-                        for (let i = 0; i < nodes.length - 1; i++) {
-                            let n1 = nodes[i], n2 = nodes[i+1];
-                            let x1 = (n1.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
-                            let y1 = (n1.lat - center.lat) * scale;
-                            let x2 = (n2.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
-                            let y2 = (n2.lat - center.lat) * scale;
+                    for (let i = 0; i < nodes.length - 1; i++) {
+                        let n1 = nodes[i], n2 = nodes[i+1];
+                        let x1 = (n1.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
+                        let y1 = (n1.lat - center.lat) * scale;
+                        let x2 = (n2.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
+                        let y2 = (n2.lat - center.lat) * scale;
+
+                        if (isBuilding) {
+                            // Vẽ từng đoạn LINE của nhà (Màu đỏ - 62=1)
+                            dxf += `0\nLINE\n8\nNHA\n62\n1\n10\n${x1}\n20\n${y1}\n11\n${x2}\n21\n${y2}\n`;
+                            // Nếu là đoạn cuối, nối về điểm đầu để khép kín
+                            if (i === nodes.length - 2) {
+                                let nStart = nodes[0];
+                                let xs = (nStart.lon - center.lng) * scale * Math.cos(center.lat * Math.PI / 180);
+                                let ys = (nStart.lat - center.lat) * scale;
+                                dxf += `0\nLINE\n8\nNHA\n62\n1\n10\n${x2}\n20\n${y2}\n11\n${xs}\n21\n${ys}\n`;
+                            }
+                        } else if (highway) {
+                            // Vẽ 2 nét đường bằng cách Offset (Màu trắng - 62=7)
+                            let w = 3.0; // Bề rộng mặc định
+                            if (highway === 'primary') w = 10.0;
+                            if (highway === 'secondary') w = 7.0;
 
                             let dx = x2 - x1, dy = y2 - y1;
-                            let dist = Math.sqrt(dx*dx + dy*dy);
-                            if (dist > 0) {
-                                let ox = (-dy / dist) * w, oy = (dx / dist) * w;
-                                // Lề trái
-                                dxf += `  0\nLINE\n  8\nDUONG\n 62\n7\n 10\n${x1+ox}\n 20\n${y1+oy}\n 11\n${x2+ox}\n 21\n${y2+oy}\n`;
-                                // Lề phải
-                                dxf += `  0\nLINE\n  8\nDUONG\n 62\n7\n 10\n${x1-ox}\n 20\n${y1-oy}\n 11\n${x2-ox}\n 21\n${y2-oy}\n`;
+                            let len = Math.sqrt(dx*dx + dy*dy);
+                            if (len > 0) {
+                                let ox = (-dy / len) * (w/2), oy = (dx / len) * (w/2);
+                                // Nét trái
+                                dxf += `0\nLINE\n8\nDUONG\n62\n7\n10\n${x1+ox}\n20\n${y1+oy}\n11\n${x2+ox}\n21\n${y2+oy}\n`;
+                                // Nét phải
+                                dxf += `0\nLINE\n8\nDUONG\n62\n7\n10\n${x1-ox}\n20\n${y1-oy}\n11\n${x2-ox}\n21\n${y2-oy}\n`;
                             }
                         }
                     }
                     pFill.style.width = (10 + (idx/ways.length)*90) + "%";
                 });
 
-                dxf += "  0\nENDSEC\n  0\nEOF\n";
+                dxf += "0\nENDSEC\n0\nEOF";
+                
                 const blob = new Blob([dxf], {type: 'application/dxf'});
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = "Nam_Architect_v9_Clean.dxf";
+                a.download = "Nam_Classic_Fix.dxf";
                 a.click();
                 stt.innerText = "XONG! Gõ Z -> E trong CAD";
-            } catch (err) { stt.innerText = "Lỗi kết nối GIS!"; }
+            } catch (err) { stt.innerText = "Lỗi kết nối!"; }
         }
     </script>
 </body>
