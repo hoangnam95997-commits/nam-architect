@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v53 - Production Ready</title>
+    <title>NAM ARCH PRO v53.1 - Standard UI</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -13,115 +13,112 @@
     
     <style>
         :root { 
-            --primary: #00f2fe; --secondary: #4facfe;
-            --bg-dark: #07090f; --panel-bg: rgba(10, 14, 23, 0.85);
-            --text-main: #ffffff; --text-muted: #8b9bb4;
-            --border: rgba(0, 242, 254, 0.2);
+            --primary: #00e5ff; --secondary: #0077ff;
+            /* ĐÃ FIX: Tông màu Xám Slate chuẩn App chuyên nghiệp thay vì đen thui */
+            --bg-dark: #111827; /* Gray 900 */
+            --panel-bg: rgba(31, 41, 55, 0.95); /* Gray 800 */
+            --box-bg: rgba(17, 24, 39, 0.6); /* Nền các ô điều khiển */
+            --text-main: #f9fafb; --text-muted: #9ca3af;
+            --border: rgba(255, 255, 255, 0.1);
         }
         
         .light-mode {
-            --primary: #005bb5; --bg-dark: #f0f2f5;
-            --panel-bg: rgba(255, 255, 255, 0.95);
+            --primary: #0284c7; --secondary: #0369a1;
+            --bg-dark: #f3f4f6; /* Gray 100 */
+            --panel-bg: rgba(255, 255, 255, 0.98);
+            --box-bg: rgba(243, 244, 246, 0.8);
             --text-main: #111827; --text-muted: #4b5563;
-            --border: rgba(0, 0, 0, 0.15);
+            --border: rgba(0, 0, 0, 0.12);
         }
 
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); overflow: hidden; transition: 0.3s; }
         #map { height: 100vh; width: 100vw; background: var(--bg-dark); }
         
-        /* SEARCH BAR (TÌM KIẾM) */
+        /* SEARCH BAR */
         .search-box {
             position: absolute; top: 20px; right: 20px; z-index: 1000;
             display: flex; background: var(--panel-bg); backdrop-filter: blur(10px);
             border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.3s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s;
         }
-        .search-box input {
-            background: transparent; border: none; padding: 12px 15px; width: 250px;
-            color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 13px; outline: none;
-        }
+        .search-box input { background: transparent; border: none; padding: 12px 15px; width: 250px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
         .search-box input::placeholder { color: var(--text-muted); }
-        .search-box button {
-            background: rgba(0, 242, 254, 0.1); border: none; border-left: 1px solid var(--border);
-            padding: 0 15px; cursor: pointer; color: var(--primary); transition: 0.2s;
-        }
-        .search-box button:hover { background: rgba(0, 242, 254, 0.3); }
+        .search-box button { background: var(--box-bg); border: none; border-left: 1px solid var(--border); padding: 0 15px; cursor: pointer; color: var(--primary); transition: 0.2s; }
+        .search-box button:hover { background: rgba(0, 229, 255, 0.1); }
 
         /* SIDEBAR */
         .sidebar-container { position: absolute; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 10px; align-items: flex-start; }
         .sidebar {
             width: 350px; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--border); border-radius: 24px; padding: 25px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+            border: 1px solid var(--border); border-radius: 20px; padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
             max-height: 90vh; overflow-y: auto;
         }
         .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
         .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; }
 
         .toggle-btn {
-            background: var(--panel-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); color: var(--text-main);
+            background: var(--panel-bg); border: 1px solid var(--border); color: var(--text-main);
             width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; font-size: 16px; margin-top: 10px;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; font-size: 14px; margin-top: 10px;
         }
-        .toggle-btn:hover { background: rgba(128,128,128,0.1); transform: scale(1.05); }
+        .toggle-btn:hover { background: var(--box-bg); transform: scale(1.05); }
 
-        h1 { margin: 0; font-size: 24px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; text-align: center; letter-spacing: 1px; }
-        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; text-align: center; display: block; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; text-align: center; letter-spacing: 0.5px; }
+        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 20px; margin-top: 4px;}
 
-        /* BOX ĐIỀU KHIỂN */
-        .ctrl-box { background: rgba(0,0,0,0.3); border-radius: 14px; padding: 15px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .light-mode .ctrl-box { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.05); }
-        .row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
-        .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        /* BOX ĐIỀU KHIỂN (Sáng sủa hơn) */
+        .ctrl-box { background: var(--box-bg); border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;}
         
         /* BẢNG MÀU & CHECKBOX */
-        .layer-label { cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .layer-label:hover { color: var(--text-main); }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; background: none; transition: 0.2s; }
+        .layer-label { cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; color: var(--text-main); font-size: 12px;}
+        .layer-label input[type="checkbox"] { cursor: pointer; accent-color: var(--primary); }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; background: none; transition: 0.2s; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
 
         /* THANH ZOOM */
         .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.3); border-radius: 2px; outline: none; margin-top: 5px; }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 10px var(--primary); cursor: pointer; transition: 0.2s; }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--primary); cursor: pointer; transition: 0.2s; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
         
         /* NÚT BẤM */
         .btn-glow {
-            width: 100%; padding: 16px; border: none; border-radius: 14px;
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: #fff; font-family: 'Inter', sans-serif; font-weight: 900; font-size: 13px;
+            color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px;
             text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.3); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px;
+            box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px;
         }
-        .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 15px 40px rgba(0, 242, 254, 0.5); }
+        .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); }
         
         .btn-outline {
-            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
-            background: transparent; color: var(--text-main); font-weight: 800; font-size: 11px;
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+            background: var(--box-bg); color: var(--text-main); font-weight: 700; font-size: 11px;
             text-transform: uppercase; cursor: pointer; transition: 0.3s; margin-top: 8px;
         }
-        .btn-outline:hover { background: rgba(128,128,128,0.1); border-color: var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: rgba(128,128,128,0.15); border-color: var(--primary); color: var(--primary); }
 
         /* TIẾN TRÌNH */
         .prog-wrap { height: 6px; background: rgba(128,128,128,0.2); border-radius: 3px; overflow: hidden; margin: 12px 0; }
-        #progress { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary); transition: width 0.3s ease; }
-        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+        #progress { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease; }
+        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase;}
 
-        /* TỐI ƯU HUD */
+        /* HUD BOTTOM */
         .hud-bottom { 
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999;
-            background: rgba(10, 14, 23, 0.75); backdrop-filter: blur(10px); border: 1px solid var(--border); 
-            border-radius: 12px; padding: 12px 25px; display: flex; gap: 30px;
-            font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); 
+            border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px;
+            font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
-        .light-mode .hud-bottom { background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.1); }
         .hud-item { display: flex; align-items: center; gap: 8px; }
         .hud-val { color: var(--text-main); font-weight: 700; }
 
-        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; z-index: 999; pointer-events: none; opacity: 0.5; }
-        .crosshair::before { content: ''; position: absolute; top: 19px; left: 0; width: 40px; height: 2px; background: var(--primary); }
-        .crosshair::after { content: ''; position: absolute; top: 0; left: 19px; width: 2px; height: 40px; background: var(--primary); }
+        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; z-index: 999; pointer-events: none; opacity: 0.5; }
+        .crosshair::before { content: ''; position: absolute; top: 14px; left: 0; width: 30px; height: 2px; background: var(--primary); }
+        .crosshair::after { content: ''; position: absolute; top: 0; left: 14px; width: 2px; height: 30px; background: var(--primary); }
 
         .leaflet-interactive { fill-opacity: 0 !important; stroke-width: 1.5; pointer-events: none; }
     </style>
@@ -129,14 +126,14 @@
 <body>
 
 <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Tìm kiếm địa điểm (Ví dụ: Hà Nội)..." onkeypress="if(event.key === 'Enter') searchLocation()">
+    <input type="text" id="searchInput" placeholder="Tìm kiếm địa điểm..." onkeypress="if(event.key === 'Enter') searchLocation()">
     <button onclick="searchLocation()" title="Tìm kiếm">🔍</button>
 </div>
 
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">PRODUCTION READY v53</span>
+        <span class="tagline">STANDARD UI v53.1</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -144,8 +141,8 @@
         </div>
 
         <div class="ctrl-box">
-            <div class="row" style="border-bottom: 1px solid rgba(128,128,128,0.2); padding-bottom: 8px; margin-bottom: 10px;">
-                <span style="color: var(--primary);" title="Chọn màu và ẩn/hiện layer">🎨 GIAO DIỆN & QUẢN LÝ LAYER</span>
+            <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px;">
+                <span style="color: var(--primary); text-transform: uppercase; font-size: 11px;">🎨 Quản lý Layer & Màu sắc</span>
             </div>
             <div class="row">
                 <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> 🏢 Tòa Nhà</label>
@@ -169,15 +166,15 @@
 
         <div class="ctrl-box">
             <div class="row">
-                <span title="Hệ thống tự động nhả luồng CPU để chống treo máy khi quét vùng rộng">Thuật toán v50 Core:</span>
-                <span id="lib-stt" style="color: #8b9bb4">ĐANG TẢI...</span>
+                <span title="Hệ thống tự động nhả luồng CPU để chống treo máy">Trạng thái Core:</span>
+                <span id="lib-stt" style="color: var(--text-muted)">ĐANG TẢI...</span>
             </div>
             <div class="prog-wrap"><div id="progress"></div></div>
             <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
         </div>
 
         <button class="btn-outline" onclick="exportDxfSafe()" title="Phím tắt: Ctrl + E">📥 XUẤT CAD CHUẨN (CTRL + E)</button>
-        <button class="btn-outline" onclick="document.body.classList.toggle('light-mode')">🌓 ĐỔI GIAO DIỆN SÁNG/TỐI</button>
+        <button class="btn-outline" style="border-color: var(--text-muted); color: var(--text-muted);" onclick="document.body.classList.toggle('light-mode')">🌓 ĐỔI GIAO DIỆN SÁNG/TỐI</button>
     </div>
     
     <div class="toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện Bảng điều khiển (Phím tắt: M)">
@@ -204,11 +201,9 @@
         document.getElementById('toggle-icon').innerText = sidebarOpen ? '◀' : '▶';
     }
 
-    // --- HỆ THỐNG PHÍM TẮT (HOTKEYS) ---
+    // --- HOTKEYS ---
     document.addEventListener('keydown', e => {
-        // Bỏ qua nếu đang gõ chữ trong ô tìm kiếm
         if (e.target.tagName === 'INPUT') return;
-        
         if (e.code === 'Space') { e.preventDefault(); startMegaScan(); }
         if (e.ctrlKey && e.code === 'KeyE') { e.preventDefault(); exportDxfSafe(); }
         if (e.code === 'KeyM') { e.preventDefault(); toggleSidebar(); }
@@ -216,7 +211,7 @@
 
     setInterval(() => {
         const el = document.getElementById('lib-stt');
-        if (typeof turf !== 'undefined') { el.innerText = "ONLINE (BẤT TỬ)"; el.style.color = "#10b981"; }
+        if (typeof turf !== 'undefined') { el.innerText = "ONLINE (V6.5)"; el.style.color = "#10b981"; }
         else { el.innerText = "OFFLINE"; el.style.color = "#ef4444"; }
     }, 1000);
 
@@ -228,29 +223,25 @@
     L.GridLayer.Graticule = L.GridLayer.extend({
         createTile: function () {
             var tile = document.createElement('canvas'); tile.width = tile.height = 256;
-            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke(); return tile;
         }
     });
     new L.GridLayer.Graticule({maxZoom: 100}).addTo(map);
 
-    // --- TÌM KIẾM ĐỊA ĐIỂM (GEOCODER) ---
+    // --- TÌM KIẾM ---
     async function searchLocation() {
         const input = document.getElementById('searchInput');
         const query = input.value.trim();
         if(!query) return;
-        
         input.placeholder = "Đang tìm kiếm...";
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data = await res.json();
-            if(data && data.length > 0) {
-                map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
-            } else {
-                alert("Không tìm thấy địa điểm này!");
-            }
+            if(data && data.length > 0) map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
+            else alert("Không tìm thấy địa điểm này!");
         } catch(e) { alert("Lỗi kết nối khi tìm kiếm!"); }
-        input.placeholder = "Tìm kiếm địa điểm (Ví dụ: Hà Nội)...";
+        input.placeholder = "Tìm kiếm địa điểm...";
     }
 
     // --- HUD & ZOOM ---
@@ -266,15 +257,13 @@
     zSlider.addEventListener('input', e => map.setZoom(e.target.value));
     map.on('move', updateHUD); map.on('zoomend', updateHUD); updateHUD();
 
-    // --- DỮ LIỆU & LAYER ---
+    // --- LAYER & MÀU SẮC ---
     var geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
     var layers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
-    // ẨN/HIỆN LAYER
     function toggleLayer(type) {
         const isChecked = document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked;
-        if (isChecked) map.addLayer(layers[type]);
-        else map.removeLayer(layers[type]);
+        if (isChecked) map.addLayer(layers[type]); else map.removeLayer(layers[type]);
     }
 
     function updateLiveColors() {
@@ -288,7 +277,7 @@
         layers.nuoc.eachLayer(l => l.setStyle({color: cW}));
     }
 
-    // --- THUẬT TOÁN LÕI V50 BẤT TỬ ---
+    // --- THUẬT TOÁN LÕI V50 ---
     const yieldCPU = () => new Promise(r => setTimeout(r, 5));
 
     async function chunkedUnion(polygons, type) {
@@ -325,7 +314,7 @@
         const cW = document.getElementById('cNuoc').value;
 
         document.getElementById('progress').style.width = '10%';
-        document.getElementById('stt').innerText = "KẾT NỐI VỆ TINH OVERPASS...";
+        document.getElementById('stt').innerText = "KẾT NỐI VỆ TINH...";
 
         const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
         
@@ -344,7 +333,7 @@
                 count++;
                 if (count % 50 === 0) {
                     document.getElementById('progress').style.width = 10 + (count/total)*40 + '%';
-                    document.getElementById('stt').innerText = `XÂY LƯỚI KHÔNG GIAN: ${count}/${total}`;
+                    document.getElementById('stt').innerText = `XÂY LƯỚI: ${count}/${total}`;
                     await yieldCPU(); 
                 }
 
@@ -370,13 +359,13 @@
             document.getElementById('progress').style.width = '60%';
             
             if (rBufs.length > 0) {
-                document.getElementById('stt').innerText = "ĐANG ĐỤC LỖ LÒNG ĐƯỜNG...";
+                document.getElementById('stt').innerText = "ĐANG TẠO LÒNG ĐƯỜNG...";
                 let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
                 geoData.duong.push(mR);
                 L.geoJSON(mR, {color: cD, weight: 1.5}).addTo(layers.duong);
 
                 document.getElementById('progress').style.width = '80%';
-                document.getElementById('stt').innerText = "ĐANG GHÉP VỈA HÈ V21...";
+                document.getElementById('stt').innerText = "ĐANG TẠO VỈA HÈ...";
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 
                 try {
@@ -390,7 +379,7 @@
             
             document.getElementById('progress').style.width = '100%';
             document.getElementById('stt').innerText = "HOÀN TẤT! SẴN SÀNG XUẤT CAD.";
-        } catch (err) { alert("Lỗi tải dữ liệu, khu vực quét có thể quá lớn hoặc lỗi mạng!"); }
+        } catch (err) { alert("Lỗi tải dữ liệu. Hãy thu nhỏ phạm vi một chút hoặc thử lại!"); }
     }
 
     // --- HÀM XUẤT DXF THEO LAYER ĐÃ CHỌN ---
@@ -408,7 +397,7 @@
     async function exportDxfSafe() {
         if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Bạn chưa quét dữ liệu nào!");
         
-        document.getElementById('stt').innerText = "ĐANG COMPILE FILE DXF...";
+        document.getElementById('stt').innerText = "ĐANG GHI FILE DXF...";
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
@@ -426,7 +415,6 @@
             }
         };
 
-        // Chỉ xuất những Layer mà người dùng đang bật (Checked)
         if(document.getElementById('showNha').checked) await writeToDxf(geoData.nha, "V21_NHA");
         if(document.getElementById('showDuong').checked) await writeToDxf(geoData.duong, "V21_DUONG");
         if(document.getElementById('showViahe').checked) await writeToDxf(geoData.viahe, "V21_VIAHE");
