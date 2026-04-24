@@ -2,60 +2,46 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>NAM ARCH v43 - Ultimate Hybrid</title>
+    <title>NAM ARCH v44 - Screen Bound v21</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <style>
         :root { --accent: #00ffcc; --bg: #121212; --panel: rgba(28, 28, 28, 0.98); --text: #eee; }
         .light-mode { --accent: #ff4757; --bg: #f5f6fa; --panel: rgba(255, 255, 255, 0.98); --text: #2f3542; }
-        
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         #map { height: 100vh; width: 100vw; background: #000; }
-
-        /* GIAO DIỆN SIDEBAR ĐẦY ĐỦ */
         .sidebar {
             position: absolute; top: 20px; left: 20px; z-index: 1000; width: 320px;
-            background: var(--panel); border-radius: 20px; padding: 25px;
+            background: var(--panel); border-radius: 20px; padding: 22px;
             border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 45px rgba(0,0,0,0.6);
             backdrop-filter: blur(10px);
         }
-        h1 { margin: 0; font-size: 22px; color: var(--accent); text-align: center; letter-spacing: -0.5px; }
-        .tagline { font-size: 9px; opacity: 0.6; display: block; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
-
-        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 22px; color: var(--accent); text-align: center; }
+        .tagline { font-size: 9px; opacity: 0.6; display: block; text-align: center; margin-bottom: 20px; }
         button {
-            padding: 12px; border: none; border-radius: 12px; font-weight: bold;
-            cursor: pointer; transition: 0.3s; font-size: 11px; text-transform: uppercase;
+            width: 100%; padding: 12px; border: none; border-radius: 12px; font-weight: bold;
+            cursor: pointer; transition: 0.3s; font-size: 11px; text-transform: uppercase; margin-bottom: 8px;
         }
-        .btn-main { background: #3498db; color: white; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
-        .btn-main:hover { background: #2980b9; transform: translateY(-2px); }
+        .btn-main { background: #3498db; color: white; border-bottom: 3px solid #2980b9; }
         .btn-export { background: var(--accent); color: #000; }
         .btn-theme { background: #57606f; color: white; }
-
-        /* BẢNG MÀU LIVE V21 */
         .color-panel { background: rgba(128,128,128,0.1); padding: 15px; border-radius: 15px; margin-top: 10px; border: 1px solid rgba(128,128,128,0.2); }
-        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: 500; }
-        input[type="color"] { border: none; width: 35px; height: 35px; cursor: pointer; background: none; transition: 0.2s; }
-        input[type="color"]:hover { transform: scale(1.1); }
-
-        /* THANH TIẾN TRÌNH */
-        .progress-wrapper { margin-top: 20px; }
-        .progress-bar { height: 8px; background: #333; border-radius: 4px; overflow: hidden; }
+        .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
+        input[type="color"] { border: none; width: 35px; height: 35px; cursor: pointer; background: none; }
+        .progress-bar { height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 15px; }
         #progress { width: 0%; height: 100%; background: var(--accent); transition: 0.4s; }
-        #stt { font-size: 10px; text-align: center; margin-top: 10px; color: var(--accent); font-family: 'Courier New', monospace; font-weight: bold; }
+        #stt { font-size: 10px; text-align: center; margin-top: 10px; color: var(--accent); font-family: monospace; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h1>NAM ARCH v43</h1>
-    <span class="tagline">Hybrid Engine | Core v21 Algorithm</span>
+    <h1>NAM ARCH v44</h1>
+    <span class="tagline">SCREEN-BOUND ONLY | CORE V21</span>
 
-    <div class="btn-group">
-        <button class="btn-theme" onclick="toggleTheme()">🌓 ĐỔI GIAO DIỆN (SÁNG/TỐI)</button>
-        <button class="btn-main" onclick="runHybridScan()">🚀 QUÉT DIỆN TÍCH LỚN (SONG SONG)</button>
-    </div>
+    <button class="btn-theme" onclick="toggleTheme()">🌓 ĐỔI GIAO DIỆN (SÁNG/TỐI)</button>
+    <button class="btn-main" onclick="runScreenScan()">🚀 QUÉT TRONG MÀN HÌNH (16 MẢNG)</button>
 
     <div class="color-panel">
         <div class="row"><span>Tòa nhà</span><input type="color" id="cNha" value="#ff4d4d" oninput="liveUpdate()"></div>
@@ -65,12 +51,10 @@
         <div class="row"><span>Mặt nước</span><input type="color" id="cNuoc" value="#0984e3" oninput="liveUpdate()"></div>
     </div>
 
-    <div class="progress-wrapper">
-        <div class="progress-bar"><div id="progress"></div></div>
-        <div id="stt">HỆ THỐNG V21 SẴN SÀNG</div>
-    </div>
+    <div class="progress-bar"><div id="progress"></div></div>
+    <div id="stt">HỆ THỐNG SẴN SÀNG</div>
 
-    <button class="btn-export" style="margin-top:20px; width:100%" onclick="exportFullCAD()">📥 XUẤT CAD 1:1 (MESH LAYERS)</button>
+    <button class="btn-export" style="margin-top:20px" onclick="exportCAD()">📥 XUẤT CAD 1:1 (MESH)</button>
 </div>
 
 <div id="map"></div>
@@ -80,13 +64,7 @@
     var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png').addTo(map);
     var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
     
-    var groups = { 
-        nha: L.layerGroup().addTo(map), 
-        duong: L.layerGroup().addTo(map), 
-        viahe: L.layerGroup().addTo(map), 
-        cay: L.layerGroup().addTo(map), 
-        nuoc: L.layerGroup().addTo(map) 
-    };
+    var groups = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), cay: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
     function toggleTheme() {
         if(document.body.classList.toggle('light-mode')) { map.removeLayer(darkT); lightT.addTo(map); }
@@ -94,13 +72,7 @@
     }
 
     function liveUpdate() {
-        const c = { 
-            n: document.getElementById('cNha').value, 
-            d: document.getElementById('cDuong').value, 
-            v: document.getElementById('cViaHe').value, 
-            g: document.getElementById('cCay').value, 
-            w: document.getElementById('cNuoc').value 
-        };
+        const c = { n: document.getElementById('cNha').value, d: document.getElementById('cDuong').value, v: document.getElementById('cViaHe').value, g: document.getElementById('cCay').value, w: document.getElementById('cNuoc').value };
         groups.nha.eachLayer(l => l.setStyle({ color: c.n, fillColor: c.n, fillOpacity: 0.8, weight: 0.5 }));
         groups.duong.eachLayer(l => l.setStyle({ color: c.d, fillColor: c.d, fillOpacity: 1, weight: 0 }));
         groups.viahe.eachLayer(l => l.setStyle({ color: c.v, fillColor: c.v, fillOpacity: 0.8, weight: 0 }));
@@ -108,42 +80,35 @@
         groups.nuoc.eachLayer(l => l.setStyle({ color: c.w, fillColor: c.w, fillOpacity: 0.8, weight: 0 }));
     }
 
-    async function runHybridScan() {
-        const b = map.getBounds();
-        const sw = b.getSouthWest(), ne = b.getNorthEast();
-        const rows = 4, cols = 4; // Chia 16 mảng
-        const latS = (ne.lat - sw.lat)/rows, lngS = (ne.lng - sw.lng)/cols;
+    async function runScreenScan() {
+        const bounds = map.getBounds();
+        const sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+        // Giới hạn màn hình để Clip dữ liệu
+        const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
+        
+        const rows = 4, cols = 4;
+        const latStep = (ne.lat - sw.lat) / rows;
+        const lngStep = (ne.lng - sw.lng) / cols;
 
         Object.values(groups).forEach(g => g.clearLayers());
         document.getElementById('progress').style.width = '0%';
         let done = 0;
 
-        // Chạy song song 4 luồng để tăng tốc
-        let tasks = [];
         for(let i=0; i<rows; i++) {
             for(let j=0; j<cols; j++) {
-                tasks.push([sw.lat + i*latS, sw.lng + j*lngS, sw.lat + (i+1)*latS, sw.lng + (j+1)*lngS]);
-            }
-        }
-
-        const worker = async (list) => {
-            for(let box of list) {
-                await processV21Tile(box);
+                const box = [sw.lat + i*latStep, sw.lng + j*lngStep, sw.lat + (i+1)*latStep, sw.lng + (j+1)*lngStep];
+                await fetchV21Screen(box, screenBox);
                 done++;
                 document.getElementById('progress').style.width = (done/16)*100 + '%';
-                document.getElementById('stt').innerText = `TIẾN ĐỘ: ${done}/16 MẢNG (V21 COMPUTE)`;
+                document.getElementById('stt').innerText = `QUÉT MÀN HÌNH: ${done}/16`;
             }
-        };
-
-        const chunks = [tasks.slice(0,4), tasks.slice(4,8), tasks.slice(8,12), tasks.slice(12,16)];
-        await Promise.all(chunks.map(c => worker(c)));
-        
+        }
         liveUpdate();
-        document.getElementById('stt').innerText = "✅ HOÀN THÀNH QUÉT DIỆN TÍCH LỚN";
+        document.getElementById('stt').innerText = "✅ HOÀN THÀNH QUÉT TRONG PHẠM VI";
     }
 
-    async function processV21Tile(box) {
-        const q = `[out:json][timeout:40][bbox:${box[0]},${box[1]},${box[2]},${box[3]}];(way["building"];way["highway"];way["natural"~"water|wood"];way["landuse"~"grass|forest"];way["leisure"~"park"];);out body;>;out skel qt;`;
+    async function fetchV21Screen(box, clipBbox) {
+        const q = `[out:json][timeout:30][bbox:${box[0]},${box[1]},${box[2]},${box[3]}];(way["building"];way["highway"];way["natural"~"water|wood"];way["landuse"~"grass|forest"];way["leisure"~"park"];);out body;>;out skel qt;`;
         try {
             const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
             const data = await res.json();
@@ -154,45 +119,47 @@
             data.elements.filter(e => e.type === "way").forEach(e => {
                 const nodes = e.nodes.map(id => nodeMap.get(id)).filter(n => n);
                 if (nodes.length < 2) return;
-                const pts = nodes.map(n => [n.lat, n.lon]);
-
-                if (e.tags?.building) L.polygon(pts, {weight: 0.5}).addTo(groups.nha);
-                else if (e.tags?.highway) {
+                
+                // Thuật toán v21
+                if (e.tags?.building) {
+                    const poly = turf.polygon([nodes.map(n => [n.lon, n.lat]).concat([[nodes[0].lon, nodes[0].lat]])]);
+                    const clipped = turf.bboxClip(poly, clipBbox);
+                    if(clipped.geometry.coordinates.length > 0) L.geoJSON(clipped).addTo(groups.nha);
+                } else if (e.tags?.highway) {
                     const line = turf.lineString(nodes.map(n => [n.lon, n.lat]));
-                    const w = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 10 : 6;
-                    // THUẬT TOÁN V21
-                    rPolys.push(turf.buffer(line, w/2, {units:'meters', steps: 4}));
-                    wPolys.push(turf.buffer(line, (w/2)+3.5, {units:'meters', steps: 4}));
-                } else if (e.tags?.natural === 'water') L.polygon(pts, {weight: 0}).addTo(groups.nuoc);
-                else if (e.tags?.leisure || e.tags?.landuse || e.tags?.natural === 'wood') L.polygon(pts, {weight: 0}).addTo(groups.cay);
+                    const w = (e.tags.highway === 'primary') ? 10 : 6;
+                    rPolys.push(turf.bboxClip(turf.buffer(line, w/2, {units:'meters'}), clipBbox));
+                    wPolys.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters'}), clipBbox));
+                } else if (e.tags?.natural === 'water') {
+                    const poly = turf.polygon([nodes.map(n => [n.lon, n.lat]).concat([[nodes[0].lon, nodes[0].lat]])]);
+                    L.geoJSON(turf.bboxClip(poly, clipBbox)).addTo(groups.nuoc);
+                }
             });
 
-            // THUẬT TOÁN ĐỤC LỖ V21
             if (rPolys.length > 0) {
                 let mR = rPolys.reduce((a, b) => turf.union(a, b));
                 let mW = wPolys.reduce((a, b) => turf.union(a, b));
-                L.geoJSON(mR, {weight:0}).addTo(groups.duong);
-                L.geoJSON(turf.difference(mW, mR), {weight:0}).addTo(groups.viahe);
+                L.geoJSON(mR).addTo(groups.duong);
+                L.geoJSON(turf.difference(mW, mR)).addTo(groups.viahe);
             }
-        } catch (e) { console.warn("Mảng lỗi, tự động bỏ qua..."); }
+        } catch (e) { console.log("Skip"); }
     }
 
-    function exportFullCAD() {
-        document.getElementById('stt').innerText = "ĐANG XUẤT CAD MẢNG KHỐI...";
+    function exportCAD() {
+        document.getElementById('stt').innerText = "XUẤT CAD 1:1...";
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
 
-        const writeMesh = (layerGroup, name) => {
+        const writePoly = (layerGroup, name) => {
             layerGroup.eachLayer(l => {
                 const geo = l.toGeoJSON();
-                let rings = (geo.geometry.type === 'Polygon') ? [geo.geometry.coordinates] : geo.geometry.coordinates;
-                if(geo.geometry.type === 'MultiPolygon') rings = geo.geometry.coordinates.flat(1);
+                let rings = (geo.features) ? geo.features[0].geometry.coordinates : geo.geometry.coordinates;
+                if (!Array.isArray(rings[0][0])) rings = [rings];
                 
                 rings.forEach(ring => {
-                    if (Array.isArray(ring[0][0])) ring = ring[0]; // Fix lồng mảng
                     dxf += `0\nPOLYLINE\n8\n${name}\n66\n1\n70\n1\n`;
-                    ring.forEach(pt => {
+                    (Array.isArray(ring[0][0]) ? ring[0] : ring).forEach(pt => {
                         dxf += `0\nVERTEX\n8\n${name}\n10\n${((pt[0] - center.lng) * sx).toFixed(3)}\n20\n${((pt[1] - center.lat) * sy).toFixed(3)}\n`;
                     });
                     dxf += "0\nSEQEND\n";
@@ -200,17 +167,16 @@
             });
         };
 
-        writeMesh(groups.nha, "A_NHA");
-        writeMesh(groups.duong, "A_DUONG");
-        writeMesh(groups.viahe, "A_VIA_HE");
-        writeMesh(groups.nuoc, "A_NUOC");
-        writeMesh(groups.cay, "A_CAY_XANH");
+        writePoly(groups.nha, "A_NHA");
+        writePoly(groups.duong, "A_DUONG");
+        writePoly(groups.viahe, "A_VIA_HE");
+        writePoly(groups.nuoc, "A_NUOC");
 
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type:'application/dxf'}));
-        a.download = "NAM_V43_ULTIMATE.dxf"; a.click();
-        document.getElementById('stt').innerText = "XUẤT CAD THÀNH CÔNG!";
+        a.download = "NAM_V44_SCREEN_CLIP.dxf"; a.click();
+        document.getElementById('stt').innerText = "XUẤT XONG!";
     }
 </script>
 </body>
