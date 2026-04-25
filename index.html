@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v70 - Clean Solid Engine</title>
+    <title>NAM ARCH PRO v71 - Smart Layering Engine</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -94,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V70 - CLEAN SOLID ENGINE</span>
+        <span class="tagline">V71 - SMART LAYERING ENGINE</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -138,7 +138,7 @@
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe(false)">📥 XUẤT 2D</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Solid Block - Chống treo máy">🏙️ XUẤT 3D SOLID</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Solid Block - Đã tối ưu tốc độ">🏙️ XUẤT 3D MẶT</button>
             </div>
         </div>
     </div>
@@ -292,26 +292,6 @@
 
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 0));
 
-    async function chunkedUnion(polygons, type) {
-        if (!polygons || polygons.length === 0) return null;
-        if (polygons.length === 1) return polygons[0];
-        
-        let current = polygons.map(p => { try { return turf.cleanCoords(p); } catch(e) { return p; } });
-        let step = 0;
-        while (current.length > 1) {
-            let next = [];
-            for (let i = 0; i < current.length; i += 2) {
-                if (i % 2 === 0) await yieldCPU(); 
-                if (i + 1 < current.length) {
-                    try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); }
-                } else next.push(current[i]);
-            }
-            current = next; step++;
-            document.getElementById('stt').innerText = `GỘP MẶT PHẲNG ${type}: BƯỚC ${step}`;
-        }
-        return current[0];
-    }
-
     function makeClosedPolygon(pts) {
         let ring = pts.map(p => [p[0], p[1]]);
         if (ring[0][0] !== ring[ring.length-1][0] || ring[0][1] !== ring[ring.length-1][1]) ring.push([...ring[0]]);
@@ -357,12 +337,18 @@
             let ways = data.elements.filter(e => e.type === "way");
             if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
 
-            let rBufs = [], sBufs = [];
+            // CẢNH BÁO DATA QUÁ LỚN
+            if(ways.length > 8000) {
+                if(!confirm(`Khu vực này có hơn ${ways.length} đối tượng. Bạn có muốn tiếp tục? (Nên Zoom gần lại để map nhẹ hơn)`)) {
+                    updateProgress(0, "ĐÃ HỦY QUÉT.", false);
+                    return;
+                }
+            }
 
             for (let i = 0; i < ways.length; i++) {
                 const e = ways[i];
-                if (i % 50 === 0) {
-                    updateProgress(15 + (i / ways.length) * 40, `ĐANG QUÉT MẢNG KHỐI: ${i}/${ways.length}`, true);
+                if (i % 100 === 0) {
+                    updateProgress(15 + (i / ways.length) * 80, `ĐANG QUÉT MẢNG KHỐI: ${i}/${ways.length}`, true);
                     await yieldCPU(); 
                 }
 
@@ -392,37 +378,40 @@
                     L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong);
                 }
                 else if (e.tags.highway) {
+                    // ĐÃ FIX: TRẢ LẠI SỰ ĐỘC LẬP CHO TỪNG CON ĐƯỜNG, KHÔNG GỘP KHỐI ĐỂ TRÁNH LỖI (SELF-INTERSECTING)
                     const line = turf.lineString(pts);
                     const wDuong = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
                     const wViahe = wDuong + 6; 
                     
                     try {
-                        rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters', steps: 2}), screenBox));
-                        sBufs.push(turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters', steps: 2}), screenBox));
+                        const polyDuong = turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters', steps: 2}), screenBox);
+                        const polyViahe = turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters', steps: 2}), screenBox);
+                        
+                        geoData.duong.push(polyDuong);
+                        geoData.viahe.push(polyViahe);
+                        
+                        L.geoJSON(polyViahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe);
+                        L.geoJSON(polyDuong, { style: getLayerStyle('duong') }).addTo(layers.duong);
                     } catch(err) {}
                 }
             }
 
-            if (rBufs.length > 0) {
-                updateProgress(60, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true);
-                let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
-                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
-
-                updateProgress(80, "ĐANG CẮT MẶT VỈA HÈ...", true);
-                let mS = await chunkedUnion(sBufs, "VỈA HÈ");
-                try {
-                    let viahe = turf.difference(mS, mR);
-                    if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
-                } catch(e) { 
-                    if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
-                }
-            }
-            
             updateProgress(100, "QUÉT XONG! SẴN SÀNG XUẤT FILE.", false);
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    // --- THUẬT TOÁN ĐAN LƯỚI TẠO MẶT 3D (Z-FIGHTING FIX & HIDDEN EDGES) ---
+    function extractRings(geom) {
+        let rings = [];
+        if (!geom) return rings;
+        if (geom.type === 'Feature') return extractRings(geom.geometry);
+        if (geom.type === 'FeatureCollection') { geom.features.forEach(f => rings.push(...extractRings(f))); return rings; }
+        if (geom.type === 'Polygon') rings.push(...geom.coordinates);
+        else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(poly => rings.push(...poly));
+        else if (geom.type === 'GeometryCollection') geom.geometries.forEach(g => rings.push(...extractRings(g)));
+        return rings;
+    }
+
+    // --- THUẬT TOÁN ĐAN LƯỚI TẠO MẶT 3D (Tessellation) ---
     async function create3DFaces(geoArray, layerName, baseZ, isBuilding) {
         let faceDXF = "";
         const center = map.getCenter();
@@ -431,14 +420,14 @@
         const tx = (pt) => ((pt[0] - center.lng) * sx).toFixed(3);
         const ty = (pt) => ((pt[1] - center.lat) * sy).toFixed(3);
 
-        // BÍ QUYẾT: Dùng DXF Group Code 70=15 để TÀNG HÌNH các nếp gấp tam giác bên trong
-        const writeTriangle = (p1, p2, p3, zVal, hiddenEdges = false) => {
+        // BÍ QUYẾT: Dùng DXF Group Code 70=15 để ẨN các nếp gấp tam giác bên trong (Giúp mặt phẳng sạch sẽ)
+        const writeTriangle = (p1, p2, p3, zVal) => {
             let str = `0\n3DFACE\n8\n${layerName}\n`;
             str += `10\n${tx(p1)}\n20\n${ty(p1)}\n30\n${zVal}\n`;
             str += `11\n${tx(p2)}\n20\n${ty(p2)}\n30\n${zVal}\n`;
             str += `12\n${tx(p3)}\n20\n${ty(p3)}\n30\n${zVal}\n`;
             str += `13\n${tx(p3)}\n20\n${ty(p3)}\n30\n${zVal}\n`;
-            if (hiddenEdges) str += `70\n15\n`; // Lệnh tàng hình gân tam giác, chỉ để lại mặt phẳng mịn!
+            str += `70\n15\n`; // Lệnh tàng hình gân tam giác
             return str;
         };
 
@@ -453,10 +442,10 @@
 
         let total = geoArray.length;
         for (let i = 0; i < total; i++) {
-            // YIELD CPU ĐỂ KHÔNG BỊ TREO MÁY NHƯ VER TRƯỚC
-            if (i % 5 === 0) {
+            // YIELD CPU LIÊN TỤC ĐỂ CHỐNG TREO MÁY
+            if (i % 20 === 0) {
                 let p = 10 + (i / total) * 80;
-                updateProgress(p, `TẠO MẶT 3D SOLID [${layerName}]: ${i}/${total}`, true);
+                updateProgress(p, `TẠO MẶT SOLID [${layerName}]: ${i}/${total}`, true);
                 await yieldCPU(); 
             }
 
@@ -469,7 +458,7 @@
             else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(c => polysToTessellate.push(c));
             
             for(let coords of polysToTessellate) {
-                // VẼ ĐƯỜNG BO SẮC NÉT Ở VÒNG NGOÀI CÙNG (ĐỂ GIỮ HÌNH DÁNG KHỐI)
+                // Vẽ Viền Sắc Nét Ở Vòng Ngoài Cùng (Polyline kín)
                 let outerRing = coords[0];
                 faceDXF += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${outerRing.length}\n70\n1\n38\n${baseZ}\n`;
                 outerRing.forEach(pt => { faceDXF += `10\n${tx(pt)}\n20\n${ty(pt)}\n`; });
@@ -479,7 +468,7 @@
                     outerRing.forEach(pt => { faceDXF += `10\n${tx(pt)}\n20\n${ty(pt)}\n`; });
                 }
 
-                // TẠO MẶT (SÀN / MÁI) BẰNG CÁCH ĐAN LƯỚI TÀNG HÌNH GÂN
+                // Băm lưới tam giác để Đóng Mặt Sàn và Mái (Chỉ hiện mặt, ẩn nét lưới)
                 try {
                     let poly = turf.polygon(coords);
                     let cleaned = turf.cleanCoords(poly);
@@ -488,14 +477,14 @@
                     tessellated.features.forEach(tri => {
                         let pts = tri.geometry.coordinates[0];
                         if(pts.length >= 3) {
-                            faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ, true); 
-                            if (isBuilding && height > 0) faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ + height, true);
+                            faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ); 
+                            if (isBuilding && height > 0) faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ + height);
                         }
                     });
                 } catch(e) {}
             }
 
-            // DỰNG TƯỜNG (CHỈ DÀNH CHO TÒA NHÀ)
+            // Dựng Tường bao quanh (Nếu là nhà)
             if (isBuilding && height > 0) {
                 for(let coords of polysToTessellate) {
                     let outerRing = coords[0]; 
@@ -514,7 +503,7 @@
         let dxf = "";
         const writeLines = async (dataArray, layerName) => {
             for (let i = 0; i < dataArray.length; i++) {
-                if (i % 20 === 0) await yieldCPU();
+                if (i % 50 === 0) await yieldCPU();
                 const geom = dataArray[i].geometry || dataArray[i];
                 let polys = [];
                 if (geom.type === 'Polygon') polys.push(geom.coordinates);
