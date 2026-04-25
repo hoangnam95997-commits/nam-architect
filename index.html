@@ -12,18 +12,20 @@
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
     
     <style id="custom-ui">
-        /* ========================================================================= */
-        /* --- /* ========================================================================= */
-/* BẢNG MÀU LIQUID GLASS (Chuẩn 100% theo ảnh thiết kế) */
+       /* ========================================================================= */
+/* BẢNG MÀU LIQUID GLASS & AURORA (CHUẨN THEO ẢNH REFERENCE) */
 :root { 
-    --bg-base: #060913; /* Nền xanh đen cực sâu */
-    --glass-panel: rgba(18, 23, 36, 0.55);
+    --bg-base: #0b0e14; /* Nền xanh đen cực sâu, chuẩn UI Kit */
+    --glass-panel: rgba(15, 18, 28, 0.7); /* Bảng kính tối màu */
     --glass-border: rgba(255, 255, 255, 0.08);
     
-    /* Gradient Nút bấm */
-    --cyan-blue: linear-gradient(135deg, #00e5ff, #0055ff);
-    --purple-magenta: linear-gradient(135deg, #8a2be2, #ff007b);
-    --cyan-purple: linear-gradient(135deg, #00e5ff, #8a2be2);
+    /* Gradient Nút bấm Thủy tinh lỏng */
+    --cyan-blue: linear-gradient(135deg, rgba(0, 243, 255, 0.8), rgba(0, 85, 255, 0.8));
+    --purple-pink: linear-gradient(135deg, rgba(179, 80, 255, 0.8), rgba(255, 0, 123, 0.8));
+    
+    /* Màu Glow (Phát sáng) */
+    --glow-cyan: rgba(0, 243, 255, 0.5);
+    --glow-pink: rgba(255, 0, 123, 0.5);
     
     --text-main: #ffffff;
     --text-muted: #8b95a5;
@@ -35,146 +37,181 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); 
 .ui-layer { position: relative; z-index: 1000; pointer-events: none; }
 .ui-layer > * { pointer-events: auto; }
 
-/* 1. THANH TÌM KIẾM */
-.search-box { position: absolute; top: 24px; right: 24px; display: flex; background: var(--glass-panel); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); transition: 0.3s;}
-.search-box:focus-within { border-color: #00e5ff; box-shadow: 0 0 20px rgba(0, 229, 255, 0.2), inset 0 0 10px rgba(0, 229, 255, 0.1); }
-.search-box input { background: transparent; border: none; padding: 14px 20px; width: 280px; color: var(--text-main); font-size: 14px; outline: none; }
-.search-box button { background: rgba(255,255,255,0.02); border: none; border-left: 1px solid var(--glass-border); padding: 0 20px; color: #00e5ff; font-weight: 700; cursor: pointer; transition: 0.3s; }
-.search-box button:hover { background: rgba(0, 229, 255, 0.1); text-shadow: 0 0 8px #00e5ff; }
+/* THEME SÁNG (Dành cho công tắc Ngày/Đêm) */
+body.theme-light { --bg-base: #f0f4f8; --glass-panel: rgba(255, 255, 255, 0.8); --glass-border: rgba(255,255,255,0.8); --text-main: #1e293b; --text-muted: #64748b; }
 
-/* 2. BẢNG SIDEBAR KÍNH MỜ */
+/* 1. THANH TÌM KIẾM */
+.search-box { position: absolute; top: 24px; right: 24px; display: flex; background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.3s;}
+.search-box:focus-within { border-color: #00f3ff; box-shadow: 0 0 15px var(--glow-cyan), inset 0 0 8px rgba(0,243,255,0.2); }
+.search-box input { background: transparent; border: none; padding: 14px 20px; width: 280px; color: var(--text-main); font-size: 14px; outline: none; }
+.search-box input::placeholder { color: var(--text-muted); }
+.search-box button { background: rgba(255,255,255,0.02); border: none; border-left: 1px solid var(--glass-border); padding: 0 20px; color: #00f3ff; font-weight: 700; cursor: pointer; transition: 0.3s; }
+.search-box button:hover { background: rgba(0, 243, 255, 0.1); text-shadow: 0 0 8px #00f3ff; }
+
+/* 2. BẢNG SIDEBAR */
 .sidebar-container { position: absolute; top: 24px; left: 24px; display: flex; gap: 15px; align-items: flex-start; }
-.sidebar { width: 380px; background: var(--glass-panel); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.15); border-radius: 32px; padding: 28px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.1); max-height: calc(100vh - 48px); overflow-y: auto; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.sidebar { width: 360px; background: var(--glass-panel); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.15); border-left: 1px solid rgba(255,255,255,0.15); border-radius: 32px; padding: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.7); max-height: calc(100vh - 48px); overflow-y: auto; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 .sidebar::-webkit-scrollbar { width: 0; }
 .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; }
 
 .toggle-btn { background: var(--glass-panel); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s; margin-top: 10px; }
-.toggle-btn:hover { background: rgba(0, 229, 255, 0.1); border-color: #00e5ff; box-shadow: 0 0 15px #00e5ff; }
+.toggle-btn:hover { border-color: #00f3ff; box-shadow: 0 0 15px var(--glow-cyan); }
 
-/* 3. ĐẦU MỤC & TEXT */
-.brand-header { margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
-h1 { margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main); text-shadow: 0 4px 15px rgba(0,0,0,0.8); }
-.tagline { font-size: 11px; font-weight: 600; color: #00e5ff; margin-top: 4px; letter-spacing: 1px; text-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+/* 3. TIÊU ĐỀ & KHUNG CARD */
+.brand-header { margin-bottom: 24px; display: flex; flex-direction: column; align-items: center; position: relative;}
+h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+.brand-header::after { content: ''; width: 30px; height: 3px; background: #00f3ff; border-radius: 3px; margin-top: 8px; box-shadow: 0 0 10px #00f3ff;}
+.tagline { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 6px; letter-spacing: 1px; }
 
-.panel-card { margin-bottom: 25px; background: rgba(0,0,0,0.25); padding: 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.03); box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);}
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.panel-card { margin-bottom: 24px; }
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;}
 .panel-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
-.val-hl { color: #00e5ff; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; text-shadow: 0 0 10px rgba(0, 229, 255, 0.6); }
+.val-hl { color: #00f3ff; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; text-shadow: 0 0 8px var(--glow-cyan); }
 
-.core-badge { font-size: 11px; font-weight: 700; color: #00e5ff; display: flex; align-items: center; gap: 8px; background: rgba(0, 229, 255, 0.1); padding: 4px 12px; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.3); }
-.pulse-dot { width: 6px; height: 6px; background: #00e5ff; border-radius: 50%; box-shadow: 0 0 8px #00e5ff; animation: pulse 2s infinite; }
+/* 4. THANH SLIDER THỦY TINH */
+.zoom-slider { -webkit-appearance: none; width: 100%; height: 8px; background: #07090f; border-radius: 4px; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.05); }
+.zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 12px #00f3ff, inset 0 2px 4px rgba(0,0,0,0.3); border: 4px solid #00f3ff; transition: 0.3s; }
+.zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-/* 4. THANH SLIDER */
-.zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: #000; border-radius: 5px; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.1); }
-.zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #00e5ff; cursor: pointer; box-shadow: 0 0 15px #00e5ff, inset 0 2px 4px rgba(255,255,255,0.8); border: 3px solid #fff; transition: 0.3s; }
-
-/* 5. CÔNG TẮC HOLLOW GLOW (Như Switch trong ảnh) */
-.layer-list { display: flex; flex-direction: column; gap: 14px; }
-.layer-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-.layer-left { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: var(--text-muted); transition: 0.3s; }
-.layer-item:hover .layer-left { color: var(--text-main); }
-.color-dot { width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 10px currentColor; }
+/* 5. DANH SÁCH LỚP & CÔNG TẮC HOLLOW GLOW (KHẮC PHỤC LỖI TRONG ẢNH) */
+.layer-list { display: flex; flex-direction: column; gap: 12px; }
+.layer-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 8px 12px; border-radius: 12px; transition: 0.3s; background: rgba(0,0,0,0.2); border: 1px solid transparent;}
+.layer-item:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.05); }
+.layer-left { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 500; color: var(--text-muted); transition: 0.3s; }
+.color-dot { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); }
 
 .layer-item input[type="checkbox"] { display: none; }
-.toggle-switch { width: 44px; height: 24px; background: transparent; border-radius: 20px; border: 2px solid rgba(255,255,255,0.2); position: relative; transition: 0.4s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
-.toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #8b95a5; border-radius: 50%; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+/* Nền rỗng, tối màu */
+.toggle-switch { width: 44px; height: 24px; background: #0b0e14; border-radius: 20px; border: 2px solid rgba(255,255,255,0.1); position: relative; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.6); }
+/* Cục trượt màu xám tối */
+.toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #64748b; border-radius: 50%; transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
-/* Bật lên thì phát sáng viền Neon */
-.layer-item input[type="checkbox"]:checked + .toggle-switch { border-color: #00e5ff; box-shadow: 0 0 12px rgba(0, 229, 255, 0.5), inset 0 0 8px rgba(0, 229, 255, 0.3); }
-.layer-item input[type="checkbox"]:checked + .toggle-switch::after { transform: translateX(20px); background: #fff; box-shadow: 0 0 10px #fff; }
+/* TRẠNG THÁI BẬT: Rỗng ruột + Phát sáng viền Neon + Cục trượt trắng tinh */
+.layer-item input[type="checkbox"]:checked + .toggle-switch { 
+    border-color: #00f3ff; 
+    box-shadow: 0 0 12px var(--glow-cyan), inset 0 0 8px rgba(0, 243, 255, 0.2); 
+    background: transparent; 
+}
+.layer-item input[type="checkbox"]:checked + .toggle-switch::after { 
+    transform: translateX(20px); background: #ffffff; box-shadow: 0 0 8px #ffffff; 
+}
 .layer-item input[type="checkbox"]:checked ~ .layer-left { color: var(--text-main); }
 
-/* 6. CÔNG TẮC VŨ TRỤ NGÀY/ĐÊM (Vẫn giữ logic Mây/Sao của bạn) */
-.theme-toggle { position: relative; width: 100%; height: 50px; border-radius: 25px; cursor: pointer; margin-top: 25px; background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; box-shadow: inset 0 4px 10px rgba(0,0,0,0.8); transition: 0.5s; overflow: hidden; }
-.theme-toggle.dark-mode { border-color: #8a2be2; box-shadow: 0 0 20px rgba(138, 43, 226, 0.3), inset 0 0 15px rgba(138, 43, 226, 0.2); }
-.theme-toggle.light-mode { border-color: #ff7e67; background: #fff; box-shadow: 0 0 20px rgba(255, 126, 103, 0.4), inset 0 0 15px rgba(255, 126, 103, 0.2); }
+/* CÔNG TẮC VŨ TRỤ NGÀY/ĐÊM (Giữ logic cũ, đổi màu cho hợp Theme) */
+.theme-toggle { position: relative; width: 100%; height: 44px; border-radius: 22px; cursor: pointer; margin-top: 20px; background: #0b0e14; border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-shadow: inset 0 4px 8px rgba(0,0,0,0.6); transition: 0.5s; overflow: hidden; }
+.theme-toggle.dark-mode { border-color: #b350ff; box-shadow: 0 0 15px rgba(179, 80, 255, 0.3), inset 0 0 10px rgba(179, 80, 255, 0.2); }
+.theme-toggle.light-mode { border-color: #ff9d00; background: #fff; box-shadow: 0 0 15px rgba(255, 157, 0, 0.4), inset 0 0 10px rgba(255, 157, 0, 0.2); }
 
-.theme-thumb { position: absolute; top: 4px; width: 38px; height: 38px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; }
-.theme-toggle.dark-mode .theme-thumb { left: 4px; box-shadow: 0 0 15px #8a2be2; }
-.theme-toggle.light-mode .theme-thumb { left: calc(100% - 42px); box-shadow: 0 0 15px #ff7e67; transform: rotate(360deg); }
+.theme-thumb { position: absolute; top: 3px; width: 34px; height: 34px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; }
+.theme-toggle.dark-mode .theme-thumb { left: 3px; box-shadow: 0 0 12px #b350ff; }
+.theme-toggle.light-mode .theme-thumb { left: calc(100% - 37px); box-shadow: 0 0 12px #ff9d00; transform: rotate(360deg); }
 
-.theme-text { font-size: 13px; font-weight: 700; z-index: 2; pointer-events: none; transition: 0.3s; }
-.theme-toggle.dark-mode .t-dark { color: #fff; text-shadow: 0 0 8px #8a2be2; }
-.theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
-.theme-toggle.light-mode .t-dark { color: rgba(0,0,0,0.2); }
-.theme-toggle.light-mode .t-light { color: #ff7e67; text-shadow: 0 0 8px #ff7e67; }
+.theme-text { font-size: 11px; font-weight: 800; z-index: 2; pointer-events: none; transition: 0.3s; letter-spacing: 1px;}
+.theme-toggle.dark-mode .t-dark { color: #fff; text-shadow: 0 0 8px #b350ff; } .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
+.theme-toggle.light-mode .t-dark { color: rgba(0,0,0,0.2); } .theme-toggle.light-mode .t-light { color: #ff9d00; text-shadow: 0 0 8px #ff9d00; }
 
 .decor { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .stars { opacity: 1; transition: 0.5s; } .theme-toggle.light-mode .stars { opacity: 0; }
 .star { position: absolute; background: #fff; border-radius: 50%; box-shadow: 0 0 5px #fff; animation: twinkle 1s infinite alternate; }
-.s1 { width: 2px; height: 2px; top: 15px; right: 40px; } .s2 { width: 3px; height: 3px; top: 25px; right: 25px; animation-delay: 0.5s;}
+.s1 { width: 2px; height: 2px; top: 12px; right: 40px; } .s2 { width: 3px; height: 3px; top: 20px; right: 25px; animation-delay: 0.5s;}
 .clouds { opacity: 0; transition: 0.5s; transform: translateY(5px); } .theme-toggle.light-mode .clouds { opacity: 1; transform: translateY(0); }
 .cloud { position: absolute; background: #fff; border-radius: 50%; opacity: 0.7; filter: blur(2px); }
-.c1 { width: 25px; height: 25px; top: 12px; left: 35px; } .c2 { width: 15px; height: 15px; top: 22px; left: 55px; }
+.c1 { width: 25px; height: 25px; top: 8px; left: 35px; } .c2 { width: 15px; height: 15px; top: 18px; left: 55px; }
+@keyframes twinkle { from {opacity: 0.2;} to {opacity: 1;} }
 
-/* 7. NÚT BẤM LIQUID GLASS (Cốt lõi tạo nên vẻ đẹp của hình ảnh) */
+/* ======================================================== */
+/* 6. NÚT LIQUID GLASS (CẤU TRÚC CHUẨN XÁC THEO ẢNH)          */
+/* ======================================================== */
 .btn-liquid {
-    width: 100%; padding: 18px; border-radius: 50px; /* Bo tròn dạng viên thuốc */
-    border: none; outline: none;
-    font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;
+    width: 100%; padding: 16px; 
+    border-radius: 50px; /* Bo tròn hoàn toàn dạng viên thuốc */
+    border: 1px solid rgba(255,255,255,0.15); /* Viền mỏng như kính */
+    outline: none;
+    font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;
     color: #fff; cursor: pointer; position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
 }
 
-/* Lớp Highlight cắt cong 3D trên đỉnh nút */
+/* LỚP PHẢN QUANG CẮT CONG (Ánh sáng trên đỉnh) */
 .btn-liquid::before {
-    content: ''; position: absolute; top: 2px; left: 2%; right: 2%; height: 45%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%);
-    border-radius: 50px 50px 100px 100px; z-index: -1; pointer-events: none;
+    content: ''; position: absolute; 
+    top: 2px; left: 3px; right: 3px; 
+    height: 45%; /* Cắt đúng nửa trên */
+    /* Công thức tạo độ cắt sắc nét */
+    border-radius: 50px 50px 100px 100px / 50px 50px 20px 20px; 
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
+    z-index: -1; pointer-events: none;
 }
-/* Hiệu ứng ấn nút */
+
+/* HIỆU ỨNG TẠO ĐỘ CĂNG MỌNG (Bóng đen ở đáy) */
+.btn-liquid::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 50%;
+    border-radius: 0 0 50px 50px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, transparent 100%);
+    z-index: -2; pointer-events: none;
+}
+
 .btn-liquid:active { transform: translateY(2px); }
 
-/* Nút Quét (Cyan to Blue) */
+/* Nút Quét (Dải Cyan -> Blue theo ảnh) */
 .btn-cyan {
     background: var(--cyan-blue);
-    box-shadow: 0 12px 30px rgba(0, 119, 255, 0.5), inset 0 -4px 10px rgba(0, 40, 150, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+    /* Lớp shadow phức tạp: Hào quang ngoài + Khối 3D + Bóng chìm ở đáy */
+    box-shadow: 
+        0 10px 25px var(--glow-cyan), 
+        inset 0 2px 3px rgba(255,255,255,0.6), 
+        inset 0 -5px 10px rgba(0, 40, 150, 0.8);
 }
-.btn-cyan:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0, 119, 255, 0.7), inset 0 -4px 10px rgba(0, 40, 150, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.8); filter: brightness(1.1); }
-.btn-cyan:active { box-shadow: 0 5px 15px rgba(0, 119, 255, 0.4), inset 0 4px 10px rgba(0,0,0,0.4); }
+.btn-cyan:hover { 
+    transform: translateY(-2px); filter: brightness(1.15);
+    box-shadow: 0 15px 35px rgba(0, 243, 255, 0.7), inset 0 2px 3px rgba(255,255,255,0.8), inset 0 -5px 10px rgba(0, 40, 150, 0.8); 
+}
 
-.btn-group { display: flex; gap: 15px; margin-top: 15px; }
+.btn-group { display: flex; gap: 12px; margin-top: 15px; }
 
-/* Nút Export/Reset (Purple to Magenta) */
+/* Nút Export/Reset (Dải Purple -> Magenta theo ảnh) */
 .btn-magenta {
-    flex: 1; font-size: 13px;
-    background: var(--purple-magenta);
-    box-shadow: 0 12px 30px rgba(255, 0, 123, 0.4), inset 0 -4px 10px rgba(100, 0, 50, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+    flex: 1; font-size: 12px;
+    background: var(--purple-pink);
+    box-shadow: 
+        0 8px 20px var(--glow-pink), 
+        inset 0 2px 3px rgba(255,255,255,0.6), 
+        inset 0 -5px 10px rgba(100, 0, 50, 0.8);
 }
-.btn-magenta:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(255, 0, 123, 0.6), inset 0 -4px 10px rgba(100, 0, 50, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.8); filter: brightness(1.1); }
-.btn-magenta:active { box-shadow: 0 5px 15px rgba(255, 0, 123, 0.4), inset 0 4px 10px rgba(0,0,0,0.4); }
+.btn-magenta:hover { 
+    transform: translateY(-2px); filter: brightness(1.15);
+    box-shadow: 0 12px 30px rgba(255, 0, 123, 0.7), inset 0 2px 3px rgba(255,255,255,0.8), inset 0 -5px 10px rgba(100, 0, 50, 0.8); 
+}
 
-/* Theme Sáng: Chuyển màu nhạt đi một chút */
-body.theme-light .btn-cyan { background: linear-gradient(135deg, #00d2ff, #3a7bd5); box-shadow: 0 10px 25px rgba(58, 123, 213, 0.4); }
-body.theme-light .btn-magenta { background: linear-gradient(135deg, #b350ff, #ff4d94); box-shadow: 0 10px 25px rgba(255, 77, 148, 0.4); }
+/* Theme Sáng (Pastel) */
+body.theme-light .btn-cyan { background: linear-gradient(135deg, #00d2ff, #3a7bd5); box-shadow: 0 10px 25px rgba(58, 123, 213, 0.4), inset 0 2px 3px rgba(255,255,255,0.8), inset 0 -5px 10px rgba(0,0,0,0.2); }
+body.theme-light .btn-magenta { background: linear-gradient(135deg, #b350ff, #ff4d94); box-shadow: 0 10px 25px rgba(255, 77, 148, 0.4), inset 0 2px 3px rgba(255,255,255,0.8), inset 0 -5px 10px rgba(0,0,0,0.2); }
 
-/* 8. THANH TIẾN TRÌNH LOADER 3D */
-.prog-container { margin-top: 30px; text-align: center;}
+/* 7. THANH TIẾN TRÌNH */
+.prog-container { margin-top: 25px; text-align: center;}
 .prog-wrap { 
-    height: 16px; background: #070a12; border-radius: 20px; padding: 3px; position: relative; 
-    box-shadow: inset 0 4px 8px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.05); border: 1px solid rgba(0,0,0,0.5); 
+    height: 14px; background: #070a12; border-radius: 10px; padding: 2px; position: relative; 
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.05); border: 1px solid rgba(0,0,0,0.5); 
 }
 #progress { 
-    width: 0%; height: 100%; border-radius: 10px; 
-    background: linear-gradient(90deg, #00f0ff, #8a2be2, #ff007b); background-size: 200% 100%; animation: liquidFlow 2s linear infinite; 
-    box-shadow: 0 0 15px rgba(255, 0, 123, 0.6), inset 0 2px 4px rgba(255,255,255,0.6), inset 0 -2px 4px rgba(0,0,0,0.4); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%; height: 100%; border-radius: 8px; 
+    background: linear-gradient(90deg, #00f3ff, #b350ff, #ff007b); background-size: 200% 100%; animation: liquidFlow 2s linear infinite; 
+    box-shadow: 0 0 15px rgba(255, 0, 123, 0.6), inset 0 2px 3px rgba(255,255,255,0.6); transition: width 0.4s ease;
 }
 @keyframes liquidFlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
 #stt { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-top: 12px; text-transform: uppercase; letter-spacing: 2px; }
 
-/* 9. HUD BOTTOM */
-.hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--glass-panel); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 14px 40px; display: flex; gap: 40px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); box-shadow: 0 15px 40px rgba(0,0,0,0.6); z-index: 1000;}
-.hud-val { color: #fff; font-weight: 800; text-shadow: 0 0 10px #00e5ff; transition: 0.5s;}
+/* 8. HUD TỌA ĐỘ */
+.hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--glass-panel); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 12px 35px; display: flex; gap: 35px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 1000;}
+.hud-val { color: #fff; font-weight: 800; text-shadow: 0 0 10px #00f3ff; transition: 0.5s;}
+body.theme-light .hud-bottom { background: rgba(255,255,255,0.8); color: #64748b; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+body.theme-light .hud-val { color: #1e293b; text-shadow: none; }
 
-@keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(0.9); opacity: 1; } }
-/* ========================================================================= */ --- */
-        /* Tạm thời mình chỉ để vài dòng reset cơ bản để hiển thị khung */
-        body { margin: 0; font-family: 'Inter', sans-serif; background: #07090f; color: white; overflow: hidden;}
-        #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; z-index: 1;}
-        .ui-layer { position: relative; z-index: 1000; }
-        /* ========================================================================= */
+.core-badge { font-size: 10px; font-weight: 800; color: #00e5ff; display: flex; align-items: center; gap: 8px; background: rgba(0, 229, 255, 0.1); padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(0, 229, 255, 0.2); }
+/* ========================================================================= */
     </style>
 </head>
 <body>
