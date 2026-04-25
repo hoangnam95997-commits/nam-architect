@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v95 - V82 Engine & Neon UI</title>
+    <title>NAM ARCH PRO v96 - Liquid Glass UI</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -14,193 +14,218 @@
     
     <style>
         :root { 
-            --bg-base: #020617; 
-            --surface-1: #0f172a;
-            --surface-2: rgba(30, 41, 59, 0.6);
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border: rgba(148, 163, 184, 0.2);
-            --radius-lg: 20px;
-            --radius-md: 12px;
+            /* TONE MÀU LIQUID GLASS THEO ẢNH */
+            --bg-base: #07090f; /* Nền xanh đen cực sâu */
+            --glass-bg: rgba(14, 19, 31, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
             
-            /* TONE MÀU ĐỒNG BỘ: NEON CYAN & NEON TÍM (Từ tên App) */
-            --neon-cyan: #00f3ff;
-            --neon-purple: #9d00ff;
-            --neon-glow: rgba(0, 243, 255, 0.6);
-            --neon-gradient: linear-gradient(135deg, #00f3ff 0%, #9d00ff 100%);
+            --liquid-cyan: #00f3ff;
+            --liquid-blue: #0066ff;
+            --liquid-magenta: #ff007f;
+            --liquid-purple: #9d00ff;
+            --liquid-peach: #ff8a76;
+            
+            --text-main: #ffffff;
+            --text-muted: #8b95a5;
         }
 
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; transition: background 0.5s ease; }
         #map { height: 100vh; width: 100vw; background: var(--bg-base); }
         
-        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.4); transition: all 0.3s ease;}
-        .search-box input { background: transparent; border: none; padding: 12px 16px; width: 280px; color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
-        .search-box button { background: rgba(255,255,255,0.05); border: none; border-left: 1px solid var(--border); padding: 0 20px; cursor: pointer; color: var(--neon-cyan); font-weight: 700; transition: 0.2s; }
-        .search-box button:hover { background: var(--neon-gradient); color: #fff; box-shadow: 0 0 15px var(--neon-glow); }
+        /* THEME SÁNG DỰA TRÊN TONE PASTEL AURORA */
+        body.theme-light { --bg-base: #f0f4f8; --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(255,255,255,0.8); --text-main: #1e293b; --text-muted: #64748b; }
+        body.theme-light .search-box { background: rgba(255,255,255,0.8); border-color: #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        body.theme-light .search-box input { color: #1e293b; }
+        body.theme-light .sidebar { box-shadow: 0 20px 50px rgba(0,0,0,0.1); border-color: rgba(255,255,255,1); }
+
+        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease;}
+        .search-box:focus-within { border-color: var(--liquid-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.1); }
+        body.theme-light .search-box:focus-within { border-color: var(--liquid-peach); box-shadow: 0 0 15px rgba(255, 138, 118, 0.3); }
+        .search-box input { background: transparent; border: none; padding: 12px 18px; width: 280px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-box button { background: rgba(255,255,255,0.02); border: none; border-left: 1px solid var(--glass-border); padding: 0 20px; cursor: pointer; color: var(--liquid-cyan); font-weight: 700; transition: 0.2s; }
+        body.theme-light .search-box button { color: var(--liquid-peach); }
+        .search-box button:hover { background: rgba(0, 243, 255, 0.1); text-shadow: 0 0 8px var(--liquid-cyan); }
 
         .sidebar-container { position: absolute; top: 24px; left: 24px; z-index: 1000; display: flex; gap: 12px; align-items: flex-start; }
-        .sidebar { width: 360px; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); max-height: calc(100vh - 48px); overflow-y: auto; }
+        
+        /* BẢNG ĐIỀU KHIỂN LIQUID GLASS */
+        .sidebar { 
+            width: 360px; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 30px; /* Bo tròn lớn theo Liquid style */
+            padding: 24px; 
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.1); 
+            max-height: calc(100vh - 48px); overflow-y: auto; 
+        }
         .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
-        .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 6px; }
+        .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .toggle-btn { background: var(--surface-1); border: 1px solid var(--border); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4); transition: 0.2s; margin-top: 8px; }
-        .toggle-btn:hover { background: var(--surface-2); transform: scale(1.05); border-color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-glow); }
+        .toggle-btn { background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); color: var(--text-main); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.2s; margin-top: 15px; }
+        .toggle-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); border-color: var(--liquid-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.4); }
 
-        .brand-header { margin-bottom: 24px; text-align: center; }
-        h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px; background: var(--neon-gradient); -webkit-background-clip: text; color: transparent; text-shadow: 0 0 30px rgba(0, 243, 255, 0.4); transition: 0.5s; }
-        body.theme-light h1 { background: linear-gradient(90deg, #ff9d00, #ff007f); -webkit-background-clip: text; text-shadow: 0 0 30px rgba(255, 157, 0, 0.4); }
-        .tagline { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; display: block; margin-top: 4px; }
+        .brand-header { margin-bottom: 24px; display: flex; flex-direction: column; align-items: center; position: relative;}
+        .brand-header::after { content: ''; width: 30px; height: 3px; background: var(--liquid-cyan); border-radius: 3px; margin-top: 10px; box-shadow: 0 0 10px var(--liquid-cyan);}
+        body.theme-light .brand-header::after { background: var(--liquid-peach); box-shadow: 0 0 10px var(--liquid-peach);}
+        h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
+        .tagline { font-size: 11px; font-weight: 500; color: var(--text-muted); margin-top: 4px; }
 
-        .panel-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px; }
-        .panel-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
+        .panel-card { margin-bottom: 20px; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .panel-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
 
-        .val-hl { color: var(--neon-cyan); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; background: rgba(0, 243, 255, 0.1); padding: 2px 10px; border-radius: 6px; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); transition: 0.5s;}
-        body.theme-light .val-hl { color: #ff9d00; background: rgba(255, 157, 0, 0.15); box-shadow: 0 0 15px rgba(255, 157, 0, 0.3); }
+        .val-hl { color: var(--liquid-cyan); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; text-shadow: 0 0 8px rgba(0, 243, 255, 0.5); transition: 0.5s;}
+        body.theme-light .val-hl { color: var(--liquid-peach); text-shadow: 0 0 8px rgba(255, 138, 118, 0.5); }
 
-        .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: #000; border-radius: 3px; outline: none; margin-top: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 20px var(--neon-cyan); border: 4px solid var(--neon-cyan); transition: 0.3s; }
-        body.theme-light .zoom-slider::-webkit-slider-thumb { box-shadow: 0 0 20px #ff9d00; border-color: #ff9d00; }
+        /* THANH SLIDER LIQUID */
+        .zoom-slider { -webkit-appearance: none; width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; outline: none; margin-top: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05); }
+        body.theme-light .zoom-slider { background: #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 15px var(--liquid-cyan), 0 2px 5px rgba(0,0,0,0.5); border: 5px solid var(--liquid-cyan); transition: 0.3s; }
+        body.theme-light .zoom-slider::-webkit-slider-thumb { box-shadow: 0 0 15px var(--liquid-peach); border-color: var(--liquid-peach); }
+        .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-        .layer-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px;}
-        .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.03); border-radius: 10px; transition: 0.2s; cursor: pointer; }
-        .layer-item:hover { background: rgba(255,255,255,0.05); border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.1); }
-        .color-dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+        /* LAYER LIST (CÔNG TẮC HOLLOW GLOW THEO ẢNH) */
+        .layer-list { display: flex; flex-direction: column; gap: 12px; }
+        .layer-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .layer-left { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: var(--text-muted); transition: 0.3s;}
+        .layer-item:hover .layer-left { color: var(--text-main); }
+        .color-dot { width: 12px; height: 12px; border-radius: 50%; }
         
         .layer-item input[type="checkbox"] { display: none; }
-        .toggle-switch { width: 40px; height: 22px; background: #000; border-radius: 20px; position: relative; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); }
-        .toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #334155; border-radius: 50%; transition: 0.3s; }
-        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: var(--neon-gradient); box-shadow: 0 0 15px var(--neon-glow); }
-        body.theme-light .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: linear-gradient(135deg, #ff9d00, #ff007f); box-shadow: 0 0 15px rgba(255, 157, 0, 0.4); }
-        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { transform: translateX(18px); background: #fff; box-shadow: 0 0 10px #fff; }
-
-        /* CÔNG TẮC VŨ TRỤ HOLOGRAPHIC */
-        .glass-toggle-container {
-            position: relative; width: 100%; height: 50px; border-radius: 25px; cursor: pointer; margin-top: 15px; overflow: hidden; transition: 0.5s; border: 1px solid rgba(255,255,255,0.1);
+        /* Style Hollow Glow Toggle */
+        .toggle-switch { width: 46px; height: 24px; background: rgba(0,0,0,0.4); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); position: relative; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        body.theme-light .toggle-switch { background: #e2e8f0; border-color: #cbd5e1; }
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #64748b; border-radius: 50%; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Trạng thái BẬT */
+        .layer-item input[type="checkbox"]:checked + .layer-left { color: var(--text-main); }
+        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { 
+            border-color: var(--liquid-cyan); 
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.4), inset 0 0 8px rgba(0, 243, 255, 0.2); 
+            background: transparent;
         }
-        .glass-toggle-container.dark-mode { background: #020617; box-shadow: inset 0 5px 15px rgba(0,0,0,0.8); }
-        .glass-toggle-container.light-mode { background: linear-gradient(180deg, #60a5fa, #93c5fd); border-color: #fff; box-shadow: inset 0 5px 15px rgba(0,0,0,0.2); }
-
-        .glass-thumb {
-            position: absolute; top: 5px; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; z-index: 10; transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        body.theme-light .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { 
+            border-color: var(--liquid-peach); 
+            box-shadow: 0 0 12px rgba(255, 138, 118, 0.4); 
         }
-        .glass-toggle-container.dark-mode .glass-thumb { left: 5px; background: radial-gradient(circle at 30% 30%, #f1f5f9, #94a3b8); box-shadow: 0 0 20px rgba(0, 243, 255, 0.6), inset -2px -2px 5px rgba(0,0,0,0.2); }
-        .glass-toggle-container.light-mode .glass-thumb { left: calc(100% - 45px); background: radial-gradient(circle at 30% 30%, #fff7ed, #fbbf24); box-shadow: 0 0 25px #fbbf24, inset -2px -2px 5px rgba(0,0,0,0.2); transform: rotate(360deg); }
+        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { 
+            transform: translateX(22px); background: #fff; box-shadow: 0 0 8px #fff; 
+        }
 
-        .bg-decorations { position: absolute; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .clouds { opacity: 0; transform: translateY(10px); transition: 0.5s; }
-        .glass-toggle-container.light-mode .clouds { opacity: 1; transform: translateY(0); }
-        .cloud { position: absolute; background: #fff; border-radius: 50%; filter: blur(3px); opacity: 0.8;}
-        .c1 { width: 30px; height: 30px; top: 10px; left: 20px; }
-        .c2 { width: 20px; height: 20px; top: 20px; left: 40px; }
+        /* ======================================================== */
+        /* CÔNG TẮC NGÀY/ĐÊM THEO PHONG CÁCH HOLLOW GLOW            */
+        /* ======================================================== */
+        .theme-toggle {
+            position: relative; width: 100%; height: 48px; border-radius: 24px; cursor: pointer; margin-top: 20px;
+            background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.5); transition: 0.4s;
+        }
+        .theme-toggle.dark-mode { border-color: var(--liquid-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2), inset 0 0 15px rgba(0, 243, 255, 0.1); }
+        .theme-toggle.light-mode { border-color: var(--liquid-peach); background: #fff; box-shadow: 0 0 15px rgba(255, 138, 118, 0.3), inset 0 0 15px rgba(255, 138, 118, 0.1); }
+
+        .theme-thumb {
+            position: absolute; top: 4px; width: 36px; height: 36px; border-radius: 50%;
+            background: #fff; box-shadow: 0 0 10px #fff; display: flex; align-items: center; justify-content: center; font-size: 18px;
+            transition: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5;
+        }
+        .theme-toggle.dark-mode .theme-thumb { left: 4px; box-shadow: 0 0 15px var(--liquid-cyan); }
+        .theme-toggle.light-mode .theme-thumb { left: calc(100% - 40px); box-shadow: 0 0 15px var(--liquid-peach); transform: rotate(360deg); }
+
+        .theme-text { font-size: 12px; font-weight: 700; z-index: 2; pointer-events: none; transition: 0.3s; }
+        .theme-toggle.dark-mode .t-dark { color: #fff; text-shadow: 0 0 8px var(--liquid-cyan); }
+        .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.3); }
+        .theme-toggle.light-mode .t-dark { color: rgba(0,0,0,0.3); }
+        .theme-toggle.light-mode .t-light { color: var(--liquid-peach); text-shadow: 0 0 8px var(--liquid-peach); }
+
+        /* Mây và sao trang trí trong rãnh */
+        .decor { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
         .stars { opacity: 1; transition: 0.5s; }
-        .glass-toggle-container.light-mode .stars { opacity: 0; }
+        .theme-toggle.light-mode .stars { opacity: 0; }
         .star { position: absolute; background: #fff; border-radius: 50%; box-shadow: 0 0 5px #fff; animation: twinkle 1s infinite alternate; }
-        .s1 { width: 2px; height: 2px; top: 15px; right: 30px; }
-        .s2 { width: 3px; height: 3px; top: 25px; right: 50px; }
-        @keyframes twinkle { from { opacity: 0.3; } to { opacity: 1; } }
-
-        .toggle-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-around; padding: 0 20px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 4; pointer-events: none; transition: 0.5s; }
-        .glass-toggle-container.dark-mode .txt-dark { color: #fff; text-shadow: 0 0 10px var(--neon-cyan); opacity: 1; margin-left: 20px;}
-        .glass-toggle-container.dark-mode .txt-light { color: rgba(255,255,255,0.2); opacity: 0.5; }
-        .glass-toggle-container.light-mode .txt-dark { color: rgba(0,0,0,0.3); opacity: 0.5; margin-left: 20px;}
-        .glass-toggle-container.light-mode .txt-light { color: #fff; text-shadow: 0 0 10px #ff9d00; opacity: 1; }
-
-        /* NÚT THỦY TINH & NEON GLOW CỰC MẠNH */
-        .btn-glass {
-            padding: 16px 10px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2);
-            font-family: 'Inter', sans-serif; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-            color: #fff; position: relative; overflow: hidden;
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            transition: all 0.2s ease; text-shadow: 0 2px 5px rgba(0,0,0,0.8); z-index: 1;
-        }
+        .s1 { width: 2px; height: 2px; top: 12px; right: 40px; } .s2 { width: 3px; height: 3px; top: 25px; right: 20px; animation-delay: 0.5s;}
         
-        .btn-glass::before {
-            content: ''; position: absolute; top: 2px; left: 5%; width: 90%; height: 40%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
-            border-radius: 20px 20px 80px 80px; z-index: 2; pointer-events: none;
+        .clouds { opacity: 0; transition: 0.5s; transform: translateY(5px); }
+        .theme-toggle.light-mode .clouds { opacity: 1; transform: translateY(0); }
+        .cloud { position: absolute; background: #fff; border-radius: 50%; opacity: 0.6; filter: blur(2px); }
+        .c1 { width: 25px; height: 25px; top: 10px; left: 30px; } .c2 { width: 15px; height: 15px; top: 20px; left: 50px; }
+        @keyframes twinkle { from {opacity: 0.2;} to {opacity: 1;} }
+
+        /* ======================================================== */
+        /* LIQUID BUTTONS (KHỐI THỦY TINH THEO ẢNH HƯỚNG DẪN)       */
+        /* ======================================================== */
+        .btn-liquid {
+            width: 100%; padding: 16px; border-radius: 20px; border: none;
+            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;
+            color: #fff; cursor: pointer; position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
         }
+        /* Lớp phản quang thủy tinh lỏng */
+        .btn-liquid::before {
+            content: ''; position: absolute; top: 1px; left: 1px; right: 1px; height: 45%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 20px 20px 100px 100px; z-index: -1; pointer-events: none;
+        }
+
+        /* NÚT QUÉT: Dải màu Xanh Cyan -> Xanh Dương */
+        .btn-cyan {
+            background: linear-gradient(135deg, var(--liquid-cyan), var(--liquid-blue));
+            box-shadow: 0 10px 25px rgba(0, 243, 255, 0.4), inset 0 -3px 10px rgba(0,0,0,0.3);
+        }
+        .btn-cyan:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 243, 255, 0.6), inset 0 -3px 10px rgba(0,0,0,0.2); filter: brightness(1.1); }
+        .btn-cyan:active { transform: translateY(2px); box-shadow: 0 5px 10px rgba(0, 243, 255, 0.4), inset 0 3px 10px rgba(0,0,0,0.4); }
         
-        .btn-glass:active { 
-            transform: translateY(3px); 
-            box-shadow: inset 0 5px 15px rgba(0,0,0,0.8), 0 0 30px var(--neon-cyan); 
-            border-color: #fff;
-        }
+        /* Chế độ Sáng: Đổi nút Quét sang dải màu Vàng Cam Holographic */
+        body.theme-light .btn-cyan { background: linear-gradient(135deg, #fbbf24, #f472b6); box-shadow: 0 10px 25px rgba(251, 191, 36, 0.4); }
+        body.theme-light .btn-cyan:hover { box-shadow: 0 15px 30px rgba(251, 191, 36, 0.6); }
 
-        .btn-glass-scan {
-            width: 100%; font-size: 14px; margin-bottom: 20px;
-            background: var(--neon-gradient); opacity: 0.85;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.2);
-        }
-        .btn-glass-scan:hover {
-            transform: translateY(-2px); opacity: 1;
-            box-shadow: 0 10px 25px var(--neon-glow), inset 0 0 20px rgba(255,255,255,0.4);
-            text-shadow: 0 0 10px #fff;
-        }
-        body.theme-light .btn-glass-scan { background: linear-gradient(135deg, #ff9d00, #ff007f); }
-        body.theme-light .btn-glass-scan:hover { box-shadow: 0 10px 25px rgba(255, 157, 0, 0.6); }
-
-        .btn-glass-reset {
-            flex: 1; padding: 12px; border-radius: 15px; font-size: 11px;
-            background: rgba(157, 0, 255, 0.3);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .btn-glass-reset:hover {
-            background: rgba(157, 0, 255, 0.6);
-            box-shadow: 0 8px 20px rgba(157, 0, 255, 0.4);
-            transform: translateY(-2px);
-        }
-        body.theme-light .btn-glass-reset { background: rgba(255, 0, 127, 0.3); }
-        body.theme-light .btn-glass-reset:hover { background: rgba(255, 0, 127, 0.6); box-shadow: 0 8px 20px rgba(255, 0, 127, 0.4); }
-
-        .btn-export-group { display: flex; gap: 10px; }
+        .btn-group { display: flex; gap: 12px; margin-top: 15px; }
         
-        .btn-glass-cad {
-            flex: 1; background: linear-gradient(135deg, rgba(0, 243, 255, 0.3), rgba(157, 0, 255, 0.3)); box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        /* NÚT XUẤT/RESET: Dải màu Hồng -> Tím */
+        .btn-magenta {
+            flex: 1; font-size: 13px;
+            background: linear-gradient(135deg, var(--liquid-purple), var(--liquid-magenta));
+            box-shadow: 0 8px 20px rgba(255, 0, 127, 0.4), inset 0 -3px 8px rgba(0,0,0,0.3);
         }
-        .btn-glass-cad:hover { 
-            transform: translateY(-2px); 
-            background: linear-gradient(135deg, rgba(0, 243, 255, 0.6), rgba(157, 0, 255, 0.6)); 
-            box-shadow: 0 10px 25px var(--neon-glow);
-        }
+        .btn-magenta:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(255, 0, 127, 0.6), inset 0 -3px 8px rgba(0,0,0,0.2); filter: brightness(1.1); }
+        .btn-magenta:active { transform: translateY(2px); box-shadow: 0 4px 10px rgba(255, 0, 127, 0.4), inset 0 3px 8px rgba(0,0,0,0.4); }
 
-        .btn-glass-3d {
-            flex: 1; background: linear-gradient(135deg, rgba(157, 0, 255, 0.3), rgba(0, 243, 255, 0.3)); box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-        }
-        .btn-glass-3d:hover { 
-            transform: translateY(-2px); 
-            background: linear-gradient(135deg, rgba(157, 0, 255, 0.6), rgba(0, 243, 255, 0.6)); 
-            box-shadow: 0 10px 25px rgba(157, 0, 255, 0.6);
-        }
-        body.theme-light .btn-glass-cad, body.theme-light .btn-glass-3d { background: linear-gradient(135deg, rgba(255, 157, 0, 0.3), rgba(255, 0, 127, 0.3)); }
-        body.theme-light .btn-glass-cad:hover, body.theme-light .btn-glass-3d:hover { background: linear-gradient(135deg, rgba(255, 157, 0, 0.6), rgba(255, 0, 127, 0.6)); box-shadow: 0 10px 25px rgba(255, 157, 0, 0.6); }
+        /* Chế độ Sáng: Đổi dải màu Xanh Ngọc -> Xanh Dương nhẹ */
+        body.theme-light .btn-magenta { background: linear-gradient(135deg, #22d3ee, #818cf8); box-shadow: 0 8px 20px rgba(34, 211, 238, 0.4); }
+        body.theme-light .btn-magenta:hover { box-shadow: 0 12px 25px rgba(34, 211, 238, 0.6); }
 
-        /* THANH TIẾN TRÌNH LOADER 3D SIÊU VIP (Khắc phục theo ảnh Loader_.jpg) */
-        .prog-container { margin-top: 20px; }
+        /* THANH TIẾN TRÌNH */
+        .prog-container { margin-top: 25px; }
         .prog-wrap { 
-            height: 20px; background: #0b1120; border-radius: 20px; padding: 3px; position: relative; 
-            box-shadow: inset 0 4px 6px rgba(0,0,0,0.9), inset 0 -2px 3px rgba(255,255,255,0.1), 0 2px 5px rgba(0,0,0,0.5); border: 1px solid rgba(0, 243, 255, 0.1); 
+            height: 14px; background: rgba(0,0,0,0.6); border-radius: 10px; padding: 2px; position: relative; 
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05); 
         }
-        body.theme-light .prog-wrap { background: #e2e8f0; border-color: #cbd5e1; box-shadow: inset 0 4px 6px rgba(0,0,0,0.2), inset 0 -2px 3px #fff, 0 2px 5px rgba(0,0,0,0.1); }
+        body.theme-light .prog-wrap { background: #e2e8f0; border-color: #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         
         #progress { 
-            width: 0%; height: 100%; border-radius: 10px; background: var(--neon-gradient); background-size: 200% 100%; animation: auroraFlow 2s linear infinite; 
-            box-shadow: 0 0 15px var(--neon-cyan), inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.4); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%; height: 100%; border-radius: 8px; 
+            background: linear-gradient(90deg, var(--liquid-cyan), var(--liquid-magenta)); background-size: 200% 100%; animation: liquidFlow 2s linear infinite; 
+            box-shadow: 0 0 15px var(--liquid-cyan), inset 0 2px 3px rgba(255,255,255,0.4); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body.theme-light #progress { background: linear-gradient(90deg, #ff9d00, #ff007f); box-shadow: 0 0 15px #ff9d00, inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.4); }
-        @keyframes auroraFlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        body.theme-light #progress { background: linear-gradient(90deg, #fbbf24, #22d3ee); box-shadow: 0 0 15px rgba(251, 191, 36, 0.5); }
+        @keyframes liquidFlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
         #stt { font-size: 11px; text-align: center; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* HUD TỌA ĐỘ TRONG TRẺO */
-        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 10px 30px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
-        .hud-val { color: var(--neon-cyan); font-weight: 800; text-shadow: 0 0 10px rgba(0, 243, 255, 0.4); transition: 0.5s;}
-        body.theme-light .hud-bottom { background: rgba(255,255,255,0.7); color: #475569; }
-        body.theme-light .hud-val { color: #ff9d00; text-shadow: 0 0 10px rgba(255, 157, 0, 0.4); }
+        /* HUD TỌA ĐỘ */
+        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 30px; padding: 10px 30px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        body.theme-light .hud-bottom { background: rgba(255,255,255,0.8); color: #64748b; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .hud-val { color: var(--liquid-cyan); font-weight: 800; text-shadow: 0 0 10px rgba(0, 243, 255, 0.4); transition: 0.5s;}
+        body.theme-light .hud-val { color: var(--liquid-peach); text-shadow: 0 0 10px rgba(255, 138, 118, 0.4); }
         
-        .core-badge { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 243, 255, 0.4); }
+        .core-badge { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; color: var(--liquid-cyan); text-shadow: 0 0 10px rgba(0, 243, 255, 0.4); }
+        body.theme-light .core-badge { color: var(--liquid-peach); text-shadow: 0 0 10px rgba(255, 138, 118, 0.4); }
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(0.9); opacity: 1; } }
     </style>
@@ -216,8 +241,8 @@
     <div class="sidebar" id="sidebar">
         
         <div class="brand-header">
-            <h1>NAM ARCH <span>PRO</span></h1>
-            <span class="tagline">V95 • V82 CORE & NEON SYNC</span>
+            <h1>NAM ARCH</h1>
+            <span class="tagline">V96 • LIQUID GLASS UI</span>
         </div>
 
         <div class="panel-card">
@@ -230,75 +255,80 @@
 
         <div class="panel-card">
             <div class="panel-header">
-                <span class="panel-title">Quản Lý Phân Lớp</span>
-                <div id="coreBadge" class="core-badge"><div class="pulse-dot"></div> ONLINE</div>
+                <span class="panel-title">Quản Lý Lớp Hiển Thị</span>
+                <div id="coreBadge" class="core-badge"><div class="pulse-dot"></div> V82 CORE</div>
             </div>
             
             <div class="layer-list">
                 <label class="layer-item">
+                    <div class="layer-left"><span class="color-dot" style="background:#ff007f;"></span> Tòa Nhà</div>
                     <input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')">
-                    <div class="layer-left"><span class="color-dot" id="dot-nha" style="color:#f472b6; background:#f472b6;"></span> Tòa Nhà</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
+                    <div class="layer-left"><span class="color-dot" style="background:#f8fafc;"></span> Lòng Đường</div>
                     <input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')">
-                    <div class="layer-left"><span class="color-dot" id="dot-duong" style="color:#f8fafc; background:#f8fafc;"></span> Lòng Đường</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
+                    <div class="layer-left"><span class="color-dot" style="background:#fbbf24;"></span> Vỉa Hè</div>
                     <input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')">
-                    <div class="layer-left"><span class="color-dot" id="dot-viahe" style="color:#fbbf24; background:#fbbf24;"></span> Vỉa Hè</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
+                    <div class="layer-left"><span class="color-dot" style="background:#00f3ff;"></span> Sông Hồ</div>
                     <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
-                    <div class="layer-left"><span class="color-dot" id="dot-nuoc" style="color:#22d3ee; background:#22d3ee;"></span> Sông Hồ</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
+                    <div class="layer-left"><span class="color-dot" style="background:#00ff88;"></span> Cây Xanh</div>
                     <input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')">
-                    <div class="layer-left"><span class="color-dot" id="dot-cay" style="color:#4ade80; background:#4ade80;"></span> Cây Xanh</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
+                    <div class="layer-left"><span class="color-dot" style="background:#8b95a5;"></span> Ô Phố Nền</div>
                     <input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')">
-                    <div class="layer-left"><span class="color-dot" id="dot-dat" style="color:#94a3b8; background:#94a3b8;"></span> Lấp Vùng Trống</div>
                     <div class="toggle-switch"></div>
                 </label>
             </div>
             
-            <div class="glass-toggle-container dark-mode" id="themeToggleBtn" onclick="toggleMapTheme()">
-                <div class="bg-decorations clouds"><div class="cloud c1"></div><div class="cloud c2"></div></div>
-                <div class="bg-decorations stars"><div class="star s1"></div><div class="star s2"></div></div>
-                <div class="toggle-text"><span class="txt-dark">NỀN TỐI</span><span class="txt-light">NỀN SÁNG</span></div>
-                <div class="glass-thumb" id="themeThumbIcon">🌙</div>
+            <div class="theme-toggle dark-mode" id="themeToggleBtn" onclick="toggleMapTheme()">
+                <div class="decor clouds"><div class="cloud c1"></div><div class="cloud c2"></div></div>
+                <div class="decor stars"><div class="star s1"></div><div class="star s2"></div></div>
+                <div class="theme-text t-dark">ĐÊM</div>
+                <div class="theme-text t-light">NGÀY</div>
+                <div class="theme-thumb" id="themeThumbIcon">🌙</div>
             </div>
         </div>
 
-        <button class="btn-glass btn-glass-scan" onclick="startMegaScan()">
+        <button class="btn-liquid btn-cyan" onclick="startMegaScan()">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
-            QUÉT ĐỊA HÌNH (SPACE)
+            QUÉT ĐỊA HÌNH V82
         </button>
 
-        <div class="panel-card" style="padding: 12px 18px;">
-            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                <button class="btn-glass btn-glass-reset" onclick="resetScan()">
-                    LÀM MỚI DỮ LIỆU
-                </button>
-            </div>
-            
-            <div class="btn-export-group">
-                <button class="btn-glass btn-glass-cad" onclick="export2DDXF()">2D CAD</button>
-                <button class="btn-glass btn-glass-3d" onclick="export3DDAE()">3D DAE</button>
-            </div>
+        <div class="btn-group">
+            <button class="btn-liquid btn-magenta" onclick="resetScan()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                LÀM MỚI
+            </button>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-liquid btn-magenta" onclick="export2DDXF()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                2D CAD
+            </button>
+            <button class="btn-liquid btn-magenta" onclick="export3DDAE()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                3D DAE
+            </button>
+        </div>
 
-            <div class="prog-container">
-                <div class="prog-wrap" id="progWrap"><div id="progress"></div></div>
-                <div id="stt">READY FOR SCAN...</div>
-            </div>
+        <div class="prog-container">
+            <div class="prog-wrap"><div id="progress"></div></div>
+            <div id="stt">READY FOR ACTION...</div>
         </div>
     </div>
-    
     <div class="toggle-btn" onclick="toggleSidebar()"><span id="toggle-icon">◀</span></div>
 </div>
 
@@ -339,7 +369,7 @@
         let zoom = map.getZoom();
         
         let step = zoom >= 18 ? 0.0005 : (zoom >= 16 ? 0.002 : (zoom >= 14 ? 0.01 : 0.05));
-        let gridColor = isLightMap ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+        let gridColor = isLightMap ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
         
         let startLat = Math.floor(bounds.getSouth() / step) * step;
         let endLat = Math.ceil(bounds.getNorth() / step) * step;
@@ -347,14 +377,10 @@
         let endLng = Math.ceil(bounds.getEast() / step) * step;
 
         for(let lat = startLat; lat <= endLat; lat += step) {
-            L.polyline([[lat, bounds.getWest()], [lat, bounds.getEast()]], {
-                color: gridColor, weight: 1, dashArray: '4, 4'
-            }).addTo(graticuleLayer);
+            L.polyline([[lat, bounds.getWest()], [lat, bounds.getEast()]], { color: gridColor, weight: 1, dashArray: '4, 4', interactive: false }).addTo(graticuleLayer);
         }
         for(let lng = startLng; lng <= endLng; lng += step) {
-            L.polyline([[bounds.getSouth(), lng], [bounds.getNorth(), lng]], {
-                color: gridColor, weight: 1, dashArray: '4, 4'
-            }).addTo(graticuleLayer);
+            L.polyline([[bounds.getSouth(), lng], [bounds.getNorth(), lng]], { color: gridColor, weight: 1, dashArray: '4, 4', interactive: false }).addTo(graticuleLayer);
         }
     }
     map.on('move zoomend', drawGraticule); 
@@ -369,25 +395,11 @@
         if(isLightMap) {
             map.removeLayer(darkT); 
             lightT.addTo(map);
-            document.getElementById('dot-nha').style.background = '#dc2626';
-            document.getElementById('dot-duong').style.background = '#1e293b';
-            document.getElementById('dot-viahe').style.background = '#ea580c';
-            document.getElementById('dot-nuoc').style.background = '#0284c7';
-            document.getElementById('dot-cay').style.background = '#16a34a';
-            document.getElementById('dot-dat').style.background = '#94a3b8';
-            
             toggleBtn.classList.replace('dark-mode', 'light-mode');
             thumbIcon.innerText = '☀️';
         } else {
             map.removeLayer(lightT); 
             darkT.addTo(map);
-            document.getElementById('dot-nha').style.background = '#f472b6';
-            document.getElementById('dot-duong').style.background = '#f8fafc';
-            document.getElementById('dot-viahe').style.background = '#fbbf24';
-            document.getElementById('dot-nuoc').style.background = '#22d3ee';
-            document.getElementById('dot-cay').style.background = '#4ade80';
-            document.getElementById('dot-dat').style.background = '#94a3b8';
-            
             toggleBtn.classList.replace('light-mode', 'dark-mode');
             thumbIcon.innerText = '🌙';
         }
@@ -442,20 +454,13 @@
     }
 
     function getLayerStyle(type) {
-        const config = isLightMap ? {
-            nha: { color: '#dc2626', weight: 2, fillOpacity: 0.15 },
-            duong: { color: '#1e293b', weight: 2, fillOpacity: 0.1 },
-            viahe: { color: '#ea580c', weight: 2, fillOpacity: 0.15 },
-            nuoc: { color: '#0284c7', weight: 2, fillOpacity: 0.15 },
-            cayxanh: { color: '#16a34a', weight: 2, fillOpacity: 0.15 },
-            dattrong: { color: '#94a3b8', weight: 2, fillOpacity: 0.1 }
-        } : {
-            nha: { color: '#f472b6', weight: 2, fillOpacity: 0.15 }, 
-            duong: { color: '#f8fafc', weight: 2, fillOpacity: 0.1 }, 
+        const config = {
+            nha: { color: '#ff007f', weight: 2, fillOpacity: 0.15 }, 
+            duong: { color: '#ffffff', weight: 2, fillOpacity: 0.1 }, 
             viahe: { color: '#fbbf24', weight: 2, fillOpacity: 0.15 }, 
-            nuoc: { color: '#22d3ee', weight: 2, fillOpacity: 0.15 },
-            cayxanh: { color: '#4ade80', weight: 2, fillOpacity: 0.15 },
-            dattrong: { color: '#94a3b8', weight: 2, fillOpacity: 0.1 }  
+            nuoc: { color: '#00f3ff', weight: 2, fillOpacity: 0.15 },
+            cayxanh: { color: '#00ff88', weight: 2, fillOpacity: 0.15 },
+            dattrong: { color: '#8b95a5', weight: 2, fillOpacity: 0.1 }  
         };
         return config[type];
     }
@@ -469,7 +474,7 @@
         const stt = document.getElementById('stt');
         pBar.style.width = percent + '%';
         stt.innerText = text;
-        stt.style.color = (percent >= 100) ? (isLightMap ? "#ff9d00" : "var(--neon-cyan)") : (isLightMap ? "#ff007f" : "var(--neon-purple)");
+        stt.style.color = (percent >= 100) ? (isLightMap ? "#fbbf24" : "var(--liquid-cyan)") : (isLightMap ? "#ff8a76" : "var(--liquid-purple)");
     }
 
     function resetScan() {
@@ -663,8 +668,7 @@
             if (mOpho) {
                 turf.flatten(mOpho).features.forEach(f => {
                     geoData.o_pho.push(f);
-                    // Hiển thị mờ mờ trên web để bạn thấy nó đục lỗ chuẩn cỡ nào
-                    L.geoJSON(f, { color: '#64748b', weight: 1, fillOpacity: 0.15 }).addTo(layers.dattrong);
+                    L.geoJSON(f, { color: '#8b95a5', weight: 1, fillOpacity: 0.15 }).addTo(layers.dattrong);
                 });
             }
             
