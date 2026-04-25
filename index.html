@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v73 - Perfect Solid Engine</title>
+    <title>NAM ARCH PRO v74 - Native DAE Engine</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -63,7 +63,7 @@
         .prog-wrap.active #progress { animation: progressFlow 2s linear infinite; }
         @keyframes progressFlow { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
 
-        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px;}
+        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px; line-height: 1.4;}
 
         .hud-bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .hud-item { display: flex; align-items: center; gap: 8px; }
@@ -94,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V73 - TRUE SOLID & NORMALS</span>
+        <span class="tagline">V74 - NATIVE DAE ENGINE</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -138,7 +138,7 @@
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()">📥 2D CAD (.DXF)</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DOBJ()" title="Chuẩn mặt Trắng, chống Z-Fighting">🏙️ TẢI 3D (.OBJ)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()" title="Chuẩn SketchUp, Chuẩn tỷ lệ 1:1">🏙️ TẢI 3D (.DAE)</button>
             </div>
         </div>
     </div>
@@ -301,7 +301,7 @@
         while (current.length > 1) {
             let next = [];
             for (let i = 0; i < current.length; i += 2) {
-                if (i % 5 === 0) await yieldCPU(); 
+                if (i % 2 === 0) await yieldCPU(); 
                 if (i + 1 < current.length) {
                     try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); }
                 } else next.push(current[i]);
@@ -358,7 +358,7 @@
             if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
 
             if(ways.length > 8000) {
-                if(!confirm(`Khu vực này có hơn ${ways.length} đối tượng. Bạn có muốn tiếp tục?`)) {
+                if(!confirm(`Khu vực này có hơn ${ways.length} đối tượng. Việc xuất file có thể lâu. Bạn có muốn tiếp tục?`)) {
                     updateProgress(0, "ĐÃ HỦY QUÉT.", false);
                     return;
                 }
@@ -428,32 +428,36 @@
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    // --- THUẬT TOÁN ĐỈNH CAO: BĂM LƯỚI & ÉP HƯỚNG PHÁP TUYẾN (NORMALS) ---
-    async function export3DOBJ() {
+    // --- NATIVE COLLADA (.DAE) EXPORTER ---
+    // Tạo trực tiếp file XML DAE tương thích 100% SketchUp (Không cần phần mềm chuyển đổi)
+    async function export3DDAE() {
         let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length;
         if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
         
-        updateProgress(10, "ĐANG BIÊN DỊCH MÔ HÌNH .OBJ (SOLID)...", true);
-        
-        let objLines = ["# NAM ARCH PRO 3D MODEL - V73 TRUE SOLID ENGINE"];
-        let vIdx = 1; 
+        updateProgress(10, "ĐANG BIÊN DỊCH MÔ HÌNH .DAE (COLLADA)...", true);
         
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
-        const tx = (pt) => ((pt[0] - center.lng) * sx).toFixed(3);
-        const ty = (pt) => ((pt[1] - center.lat) * sy).toFixed(3);
+        const tx = (pt) => ((pt[0] - center.lng) * sx);
+        const ty = (pt) => ((pt[1] - center.lat) * sy);
 
-        // HÀM TOÁN HỌC ĐỂ KIỂM TRA MẶT TRÁI/PHẢI
+        let positions = [];
+        let indices = [];
+        let vIdx = 0;
+
+        const addVertex = (x, y, z) => {
+            positions.push(`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`);
+            indices.push(vIdx++);
+        };
+
         function getCCWTriangle(p1, p2, p3) {
             let cross = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0]);
-            // Nếu cross < 0, mặt đang quay xuống dưới. Đảo lại để nó ngửa lên trời (Mặt Trắng)
             if (cross < 0) return [p1, p3, p2];
             return [p1, p2, p3];
         }
 
         const writeTriangles = (coords, zVal, reverseNormal = false) => {
             try {
-                // Rewind để chuẩn hóa chiều quay
                 let poly = turf.rewind(turf.polygon(coords), {reverse: false});
                 let clean = turf.cleanCoords(poly);
                 let tess = turf.tesselate(clean);
@@ -462,17 +466,12 @@
                     let pts = tri.geometry.coordinates[0];
                     if (pts.length < 3) return;
                     
-                    // Ép tất cả các mặt hướng LÊN TRỜI (CCW)
                     let [p1, p2, p3] = getCCWTriangle(pts[0], pts[1], pts[2]);
-                    
-                    // Riêng mặt sàn của tòa nhà thì ép hướng XUỐNG ĐẤT (CW) để thành khối đặc
                     if (reverseNormal) [p1, p2, p3] = [p1, p3, p2];
 
-                    objLines.push(`v ${tx(p1)} ${ty(p1)} ${zVal}`);
-                    objLines.push(`v ${tx(p2)} ${ty(p2)} ${zVal}`);
-                    objLines.push(`v ${tx(p3)} ${ty(p3)} ${zVal}`);
-                    objLines.push(`f ${vIdx} ${vIdx+1} ${vIdx+2}`);
-                    vIdx += 3;
+                    addVertex(tx(p1), ty(p1), zVal);
+                    addVertex(tx(p2), ty(p2), zVal);
+                    addVertex(tx(p3), ty(p3), zVal);
                 });
             } catch(e) {}
         };
@@ -481,20 +480,20 @@
             let pts = ring;
             if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts = [...pts, pts[0]];
             for(let i=0; i<pts.length-1; i++) {
-                objLines.push(`v ${tx(pts[i])} ${ty(pts[i])} ${zBottom}`);
-                objLines.push(`v ${tx(pts[i+1])} ${ty(pts[i+1])} ${zBottom}`);
-                objLines.push(`v ${tx(pts[i+1])} ${ty(pts[i+1])} ${zTop}`);
-                objLines.push(`v ${tx(pts[i])} ${ty(pts[i])} ${zTop}`);
-                // Vẽ tường: Ép hướng pháp tuyến ra NGOÀI (v1 v2 v3 v4 -> f 1 2 3 4)
-                objLines.push(`f ${vIdx} ${vIdx+1} ${vIdx+2} ${vIdx+3}`);
-                vIdx += 4;
+                let p1 = pts[i]; let p2 = pts[i+1];
+                // Tam giác 1
+                addVertex(tx(p1), ty(p1), zBottom);
+                addVertex(tx(p2), ty(p2), zBottom);
+                addVertex(tx(p2), ty(p2), zTop);
+                // Tam giác 2
+                addVertex(tx(p1), ty(p1), zBottom);
+                addVertex(tx(p2), ty(p2), zTop);
+                addVertex(tx(p1), ty(p1), zTop);
             }
         };
 
-        const writeLayerToOBJ = async (dataArray, layerName, baseZ, isBuilding) => {
+        const processLayer = async (dataArray, layerName, baseZ, isBuilding) => {
             if(dataArray.length === 0) return;
-            objLines.push(`g ${layerName}`);
-            
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 20 === 0) {
                     let p = 10 + (i / dataArray.length) * 80;
@@ -505,18 +504,12 @@
                 const item = dataArray[i];
                 const geom = item.geometry || item;
                 const h = item.height || 0;
-
                 let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
 
                 polys.forEach(coords => {
-                    // Vẽ các mặt hướng LÊN (Mặt đất, mặt đường, mặt mái nhà)
                     writeTriangles(coords, isBuilding && h > 0 ? baseZ + h : baseZ, false);
-                    
                     if (isBuilding && h > 0) {
-                        // Vẽ mặt sàn nhà hướng XUỐNG (Để tạo thành khối đặc kín bưng)
                         writeTriangles(coords, baseZ, true);
-                        
-                        // Vẽ tường bao xung quanh hướng ra NGOÀI
                         let poly = turf.rewind(turf.polygon(coords), {reverse: false});
                         poly.geometry.coordinates.forEach(ring => writeWalls(ring, baseZ, baseZ + h));
                     }
@@ -524,21 +517,53 @@
             }
         };
 
-        // KHOẢNG CÁCH Z-STACKING KHỦNG (Mỗi lớp cách nhau 0.2m) ĐỂ CHỐNG 100% Z-FIGHTING
-        if(document.getElementById('showNuoc').checked) await writeLayerToOBJ(geoData.nuoc, "LAYER_NUOC", -0.4, false);
-        if(document.getElementById('showDat').checked) await writeLayerToOBJ(geoData.dattrong, "LAYER_DATTRONG", 0, false);
-        if(document.getElementById('showCay').checked) await writeLayerToOBJ(geoData.cayxanh, "LAYER_CAYXANH", 0.2, false);
-        if(document.getElementById('showDuong').checked) await writeLayerToOBJ(geoData.duong, "LAYER_DUONG", 0.4, false);
-        if(document.getElementById('showViahe').checked) await writeLayerToOBJ(geoData.viahe, "LAYER_VIAHE", 0.6, false);
-        if(document.getElementById('showNha').checked) await writeLayerToOBJ(geoData.nha, "LAYER_NHA", 0.6, true);
+        if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "NUOC", -0.4, false);
+        if(document.getElementById('showDat').checked) await processLayer(geoData.dattrong, "DATTRONG", 0, false);
+        if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, "CAYXANH", 0.2, false);
+        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.4, false);
+        if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "VIAHE", 0.6, false);
+        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.6, true);
 
-        const finalOBJ = objLines.join('\n');
+        updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true);
+        await yieldCPU();
+
+        // Xây dựng chuỗi XML Collada
+        const daeXML = `<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>
+  <library_geometries>
+    <geometry id="geom-0" name="CityMesh">
+      <mesh>
+        <source id="geom-0-positions">
+          <float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array>
+          <technique_common>
+            <accessor source="#geom-0-positions-array" count="${positions.length}" stride="3">
+              <param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-0-vertices"><input semantic="POSITION" source="#geom-0-positions"/></vertices>
+        <triangles count="${indices.length / 3}">
+          <input semantic="VERTEX" source="#geom-0-vertices" offset="0"/>
+          <p>${indices.join(' ')}</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="CityNode" name="CityNode"><instance_geometry url="#geom-0"/></node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene><instance_visual_scene url="#Scene"/></scene>
+</COLLADA>`;
+
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([finalOBJ], {type: 'text/plain'}));
-        a.download = "NAM_ARCH_SOLID_CITY.obj"; 
+        a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'}));
+        a.download = "NAM_ARCH_3D_CITY.dae"; 
         a.click();
         
-        updateProgress(100, "XUẤT MÔ HÌNH .OBJ THÀNH CÔNG!", false);
+        updateProgress(100, "XUẤT MÔ HÌNH .DAE THÀNH CÔNG!", false);
     }
 
     async function export2DDXF() {
