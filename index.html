@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v60 - Cyber Core</title>
+    <title>NAM ARCH PRO v62 - Cyber Progress Stable</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -57,10 +57,31 @@
         .btn-outline { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
         .btn-outline:hover { background: rgba(128,128,128,0.15); }
 
-        .prog-wrap { height: 6px; background: rgba(128,128,128,0.2); border-radius: 3px; overflow: hidden; margin: 12px 0; }
-        #progress { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease; }
-        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; line-height: 1.4;}
+        /* =========================================
+           THANH TIẾN TRÌNH CYBER FIX LỖI ĐỨNG IM
+           ========================================= */
+        .prog-container { margin: 15px 0; }
+        .prog-wrap { 
+            height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; 
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative;
+        }
+        
+        #progress { 
+            width: 0%; height: 100%; 
+            /* Gradient y hệt ảnh bạn gửi */
+            background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); 
+            background-size: 200% 100%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+        }
 
+        /* Hiệu ứng sọc chạy ngang khi đang kích hoạt */
+        .prog-wrap.active #progress { animation: progressFlow 2s linear infinite; }
+        @keyframes progressFlow { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
+
+        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px;}
+
+        /* HUD & BADGE (Giữ nguyên v60) */
         .hud-bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .hud-item { display: flex; align-items: center; gap: 8px; }
         .hud-val { color: var(--text-main); font-weight: 700; }
@@ -71,53 +92,12 @@
         
         .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
 
-        /* =========================================
-           HIỆU ỨNG CYBER CORE THEO ẢNH CỦA BẠN
-           ========================================= */
-        .core-badge {
-            display: flex; align-items: center; gap: 8px;
-            padding: 4px 12px; border-radius: 20px;
-            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
-            transition: all 0.3s ease;
-        }
-
-        /* Trạng thái Đang Tải (Phát sáng 3 màu xoay) */
-        .core-badge.loading {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.2), inset 0 0 8px rgba(0, 229, 255, 0.1);
-        }
-
-        .cyber-spinner {
-            width: 14px; height: 14px; border-radius: 50%;
-            background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff);
-            animation: spin 1s linear infinite;
-            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0);
-            mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0);
-            filter: drop-shadow(0 0 4px rgba(255, 0, 255, 0.8));
-        }
-
-        .core-badge.loading .stt-text {
-            background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff);
-            background-size: 300% 100%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientText 2s linear infinite;
-        }
-
-        /* Trạng thái Sẵn Sàng (Xanh lá Matrix) */
-        .core-badge.online {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            color: #10b981;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), inset 0 0 5px rgba(16, 185, 129, 0.2);
-            text-shadow: 0 0 5px #10b981;
-        }
-
+        .core-badge { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; transition: all 0.3s ease; }
+        .core-badge.loading { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
+        .cyber-spinner { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff); animation: spin 1s linear infinite; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0); }
+        .core-badge.loading .stt-text { background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientText 2s linear infinite; }
+        .core-badge.online { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); text-shadow: 0 0 5px #10b981; }
         .core-badge.online .cyber-spinner { display: none; }
-        .core-badge.offline { color: #ef4444; border: 1px solid #ef4444; background: rgba(239,68,68,0.1); }
-        .core-badge.offline .cyber-spinner { display: none; }
-
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes gradientText { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
     </style>
@@ -132,7 +112,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V60 - CYBER CORE EDITION</span>
+        <span class="tagline">V62 - CYBER PROGRESS STABLE</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -164,15 +144,18 @@
         <div class="ctrl-box" style="padding-bottom: 10px;">
             <div class="row">
                 <span title="Chống treo máy">Hệ thống Core:</span>
-                
                 <div id="coreBadge" class="core-badge loading">
                     <div class="cyber-spinner"></div>
                     <span class="stt-text" id="lib-stt">ĐANG TẢI...</span>
                 </div>
-
             </div>
-            <div class="prog-wrap"><div id="progress"></div></div>
-            <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
+            
+            <div class="prog-container">
+                <div class="prog-wrap" id="progWrap">
+                    <div id="progress"></div>
+                </div>
+                <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
+            </div>
         </div>
 
         <div style="display: flex; gap: 10px;">
@@ -194,7 +177,7 @@
 <div id="map"></div>
 
 <script>
-    // --- KHỞI TẠO ---
+    // --- KHỞI TẠO UI & HOTKEYS ---
     let sidebarOpen = true;
     function toggleSidebar() {
         const sb = document.getElementById('sidebar');
@@ -210,19 +193,15 @@
         if (e.code === 'KeyM') { e.preventDefault(); toggleSidebar(); }
     });
 
-    // CẬP NHẬT TRẠNG THÁI CYBER BADGE
     setInterval(() => {
         const el = document.getElementById('lib-stt');
         const badge = document.getElementById('coreBadge');
         if (typeof turf !== 'undefined') { 
-            el.innerText = "ONLINE (V6.5)"; 
-            badge.className = "core-badge online";
-        } else { 
-            el.innerText = "ĐANG TẢI..."; 
-            badge.className = "core-badge loading";
+            el.innerText = "ONLINE (V6.5)"; badge.className = "core-badge online";
         }
     }, 1000);
 
+    // --- MAP SETUP ---
     var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
     var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
     var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 100, maxNativeZoom: 19 });
@@ -293,15 +272,15 @@
 
     function getLayerStyle(type) {
         const config = isLightMap ? {
-            nha: { color: '#dc2626', weight: 3, fillColor: '#dc2626', fillOpacity: 0.15 },
-            duong: { color: '#111827', weight: 3, fillColor: '#111827', fillOpacity: 0.1 },
-            viahe: { color: '#ea580c', weight: 3, fillColor: '#ea580c', fillOpacity: 0.15 },
-            nuoc: { color: '#0284c7', weight: 3, fillColor: '#0284c7', fillOpacity: 0.15 }
+            nha: { color: '#dc2626', weight: 3, fillOpacity: 0.15 },
+            duong: { color: '#111827', weight: 3, fillOpacity: 0.1 },
+            viahe: { color: '#ea580c', weight: 3, fillOpacity: 0.15 },
+            nuoc: { color: '#0284c7', weight: 3, fillOpacity: 0.15 }
         } : {
-            nha: { color: '#ff3366', weight: 3, fillColor: '#ff3366', fillOpacity: 0.15 }, 
-            duong: { color: '#ffffff', weight: 3, fillColor: '#ffffff', fillOpacity: 0.1 }, 
-            viahe: { color: '#ffcc00', weight: 3, fillColor: '#ffcc00', fillOpacity: 0.15 }, 
-            nuoc: { color: '#00e5ff', weight: 3, fillColor: '#00e5ff', fillOpacity: 0.15 }  
+            nha: { color: '#ff3366', weight: 3, fillOpacity: 0.15 }, 
+            duong: { color: '#ffffff', weight: 3, fillOpacity: 0.1 }, 
+            viahe: { color: '#ffcc00', weight: 3, fillOpacity: 0.15 }, 
+            nuoc: { color: '#00e5ff', weight: 3, fillOpacity: 0.15 }  
         };
         return config[type];
     }
@@ -313,11 +292,31 @@
         layers.nuoc.eachLayer(l => l.setStyle(getLayerStyle('nuoc')));
     }
 
+    // --- HÀM CẬP NHẬT TIẾN TRÌNH V62 ---
+    function updateProgress(percent, text, isActive = true) {
+        const pBar = document.getElementById('progress');
+        const pWrap = document.getElementById('progWrap');
+        const stt = document.getElementById('stt');
+        
+        pBar.style.width = percent + '%';
+        stt.innerText = text;
+        
+        // Bật/tắt hiệu ứng ánh sáng chạy ngang (Shimmer)
+        if(isActive) pWrap.classList.add('active');
+        else pWrap.classList.remove('active');
+        
+        if(percent >= 100) {
+            stt.style.color = "#10b981"; // Xanh thành công
+            pWrap.classList.remove('active');
+        } else {
+            stt.style.color = "var(--primary)"; // Màu mặc định
+        }
+    }
+
     function resetScan() {
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
-        document.getElementById('progress').style.width = '0%';
-        document.getElementById('stt').innerText = "ĐÃ XÓA. SẴN SÀNG QUÉT VÙNG MỚI!";
+        updateProgress(0, "ĐÃ XÓA. SẴN SÀNG QUÉT VÙNG MỚI!", false);
         document.getElementById('stt').style.color = "var(--text-main)";
     }
 
@@ -351,14 +350,12 @@
         if(typeof turf === 'undefined' || !turf.bboxClip) return alert("Hệ thống Core đang tải, đợi chút nhé!");
         
         resetScan();
+        // Nhảy vọt lên 10% ngay lập tức để người dùng không tưởng bị đơ
+        updateProgress(10, "KẾT NỐI VỆ TINH OVERPASS...", true);
 
         const b = map.getBounds();
         const sw = b.getSouthWest(), ne = b.getNorthEast();
         const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
-
-        document.getElementById('progress').style.width = '10%';
-        document.getElementById('stt').innerText = "ĐANG TẢI DỮ LIỆU VỆ TINH...";
-        document.getElementById('stt').style.color = "var(--primary)";
 
         const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
         
@@ -369,17 +366,21 @@
             data.elements.forEach(e => { if(e.type === 'node') nodes.set(e.id, [e.lon, e.lat]); });
 
             let rBufs = [], sBufs = [];
-            let total = data.elements.filter(e => e.type === "way").length;
-            if(total === 0) return document.getElementById('stt').innerText = "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!";
+            let ways = data.elements.filter(e => e.type === "way");
+            
+            if(ways.length === 0) {
+                updateProgress(0, "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!", false);
+                document.getElementById('stt').style.color = "#ef4444";
+                return;
+            }
 
-            let count = 0;
-
-            for (const e of data.elements) {
-                if (e.type !== "way") continue;
-                count++;
-                if (count % 50 === 0) {
-                    document.getElementById('progress').style.width = 10 + (count/total)*40 + '%';
-                    document.getElementById('stt').innerText = `DỰNG HÌNH NÉT: ${count}/${total}`;
+            for (let i = 0; i < ways.length; i++) {
+                const e = ways[i];
+                
+                // Thanh chạy mượt theo % đối tượng
+                if (i % 30 === 0) {
+                    let percent = 10 + (i / ways.length) * 50; 
+                    updateProgress(percent, `TRÍCH XUẤT NÉT: ${i}/${ways.length}`, true);
                     await yieldCPU(); 
                 }
 
@@ -401,16 +402,13 @@
                     sBufs.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters', steps: 2}), screenBox));
                 }
             }
-
-            document.getElementById('progress').style.width = '60%';
             
             if (rBufs.length > 0) {
-                document.getElementById('stt').innerText = "XỬ LÝ NÉT LÒNG ĐƯỜNG...";
+                updateProgress(70, "XỬ LÝ NÉT LÒNG ĐƯỜNG...", true);
                 let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
                 if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
 
-                document.getElementById('progress').style.width = '80%';
-                document.getElementById('stt').innerText = "XỬ LÝ NÉT VỈA HÈ...";
+                updateProgress(85, "XỬ LÝ NÉT VỈA HÈ...", true);
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 
                 try {
@@ -421,10 +419,11 @@
                 }
             }
             
-            document.getElementById('progress').style.width = '100%';
-            document.getElementById('stt').innerText = "HOÀN TẤT! SẴN SÀNG XUẤT CAD.";
-            document.getElementById('stt').style.color = "#10b981"; 
-        } catch (err) { alert("Lỗi mạng hoặc tải dữ liệu!"); }
+            updateProgress(100, "HOÀN TẤT! SẴN SÀNG XUẤT CAD.", false);
+        } catch (err) { 
+            updateProgress(0, "LỖI TẢI DỮ LIỆU (QUÁ LỚN HOẶC RỚT MẠNG)!", false);
+            document.getElementById('stt').style.color = "#ef4444";
+        }
     }
 
     function extractRings(geom) {
@@ -441,8 +440,7 @@
     async function exportDxfSafe() {
         if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Bạn chưa quét dữ liệu nào!");
         
-        document.getElementById('stt').innerText = "ĐANG GHI FILE DXF...";
-        document.getElementById('stt').style.color = "var(--primary)";
+        updateProgress(90, "ĐANG GHI FILE DXF...", true);
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
@@ -468,9 +466,9 @@
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-        a.download = "NAM_ARCH_PRO_V60.dxf"; a.click();
-        document.getElementById('stt').innerText = "XUẤT FILE CAD THÀNH CÔNG!";
-        document.getElementById('stt').style.color = "#10b981";
+        a.download = "NAM_ARCH_PRO_V62.dxf"; a.click();
+        
+        updateProgress(100, "XUẤT FILE CAD THÀNH CÔNG!", false);
     }
 </script>
 </body>
