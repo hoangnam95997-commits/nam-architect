@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v69 - Anti-Crash Engine</title>
+    <title>NAM ARCH PRO v70 - Clean Solid Engine</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -94,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V69 - ANTI-CRASH ENGINE</span>
+        <span class="tagline">V70 - CLEAN SOLID ENGINE</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -137,8 +137,8 @@
         <div style="display: flex; flex-direction: column; gap: 8px;">
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe(false)">📥 XUẤT 2D (NÉT)</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Solid Block - Chống treo máy">🏙️ XUẤT 3D (MẶT KHỐI)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe(false)">📥 XUẤT 2D</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Solid Block - Chống treo máy">🏙️ XUẤT 3D SOLID</button>
             </div>
         </div>
     </div>
@@ -290,7 +290,6 @@
         document.getElementById('stt').style.color = "var(--text-main)";
     }
 
-    // YIELD CPU MẠNH HƠN ĐỂ CHỐNG CRASH BẢN ĐỒ LỚN
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 0));
 
     async function chunkedUnion(polygons, type) {
@@ -302,7 +301,6 @@
         while (current.length > 1) {
             let next = [];
             for (let i = 0; i < current.length; i += 2) {
-                // Nhả CPU liên tục để trình duyệt không báo "Unresponsive"
                 if (i % 2 === 0) await yieldCPU(); 
                 if (i + 1 < current.length) {
                     try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); }
@@ -358,14 +356,6 @@
 
             let ways = data.elements.filter(e => e.type === "way");
             if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
-            
-            // CẢNH BÁO DATA QUÁ LỚN
-            if(ways.length > 5000) {
-                if(!confirm(`Cảnh báo: Khu vực này có hơn ${ways.length} đối tượng. Việc quét và xuất 3D có thể tốn nhiều phút. Bạn có muốn tiếp tục? (Nên Zoom lại gần để map nhẹ hơn)`)) {
-                    updateProgress(0, "ĐÃ HỦY QUÉT.", false);
-                    return;
-                }
-            }
 
             let rBufs = [], sBufs = [];
 
@@ -432,18 +422,7 @@
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    function extractRings(geom) {
-        let rings = [];
-        if (!geom) return rings;
-        if (geom.type === 'Feature') return extractRings(geom.geometry);
-        if (geom.type === 'FeatureCollection') { geom.features.forEach(f => rings.push(...extractRings(f))); return rings; }
-        if (geom.type === 'Polygon') rings.push(...geom.coordinates);
-        else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(poly => rings.push(...poly));
-        else if (geom.type === 'GeometryCollection') geom.geometries.forEach(g => rings.push(...extractRings(g)));
-        return rings;
-    }
-
-    // THUẬT TOÁN ĐAN LƯỚI TẠO MẶT (TESSELLATION) CHỐNG ĐƠ MÁY BẰNG CÁCH YIELD CPU
+    // --- THUẬT TOÁN ĐAN LƯỚI TẠO MẶT 3D (Z-FIGHTING FIX & HIDDEN EDGES) ---
     async function create3DFaces(geoArray, layerName, baseZ, isBuilding) {
         let faceDXF = "";
         const center = map.getCenter();
@@ -452,12 +431,14 @@
         const tx = (pt) => ((pt[0] - center.lng) * sx).toFixed(3);
         const ty = (pt) => ((pt[1] - center.lat) * sy).toFixed(3);
 
-        const writeTriangle = (p1, p2, p3, zVal) => {
+        // BÍ QUYẾT: Dùng DXF Group Code 70=15 để TÀNG HÌNH các nếp gấp tam giác bên trong
+        const writeTriangle = (p1, p2, p3, zVal, hiddenEdges = false) => {
             let str = `0\n3DFACE\n8\n${layerName}\n`;
             str += `10\n${tx(p1)}\n20\n${ty(p1)}\n30\n${zVal}\n`;
             str += `11\n${tx(p2)}\n20\n${ty(p2)}\n30\n${zVal}\n`;
             str += `12\n${tx(p3)}\n20\n${ty(p3)}\n30\n${zVal}\n`;
             str += `13\n${tx(p3)}\n20\n${ty(p3)}\n30\n${zVal}\n`;
+            if (hiddenEdges) str += `70\n15\n`; // Lệnh tàng hình gân tam giác, chỉ để lại mặt phẳng mịn!
             return str;
         };
 
@@ -472,10 +453,10 @@
 
         let total = geoArray.length;
         for (let i = 0; i < total; i++) {
-            // NHẢ CPU MỖI 5 OBJECT ĐỂ TRÌNH DUYỆT KHÔNG BỊ "UNRESPONSIVE"
+            // YIELD CPU ĐỂ KHÔNG BỊ TREO MÁY NHƯ VER TRƯỚC
             if (i % 5 === 0) {
                 let p = 10 + (i / total) * 80;
-                updateProgress(p, `TẠO MẶT 3D [${layerName}]: ${i}/${total}`, true);
+                updateProgress(p, `TẠO MẶT 3D SOLID [${layerName}]: ${i}/${total}`, true);
                 await yieldCPU(); 
             }
 
@@ -487,8 +468,18 @@
             if (geom.type === 'Polygon') polysToTessellate.push(geom.coordinates);
             else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(c => polysToTessellate.push(c));
             
-            // 1. MẶT SÀN (VÀ MÁI)
             for(let coords of polysToTessellate) {
+                // VẼ ĐƯỜNG BO SẮC NÉT Ở VÒNG NGOÀI CÙNG (ĐỂ GIỮ HÌNH DÁNG KHỐI)
+                let outerRing = coords[0];
+                faceDXF += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${outerRing.length}\n70\n1\n38\n${baseZ}\n`;
+                outerRing.forEach(pt => { faceDXF += `10\n${tx(pt)}\n20\n${ty(pt)}\n`; });
+                
+                if (isBuilding && height > 0) {
+                    faceDXF += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${outerRing.length}\n70\n1\n38\n${baseZ + height}\n`;
+                    outerRing.forEach(pt => { faceDXF += `10\n${tx(pt)}\n20\n${ty(pt)}\n`; });
+                }
+
+                // TẠO MẶT (SÀN / MÁI) BẰNG CÁCH ĐAN LƯỚI TÀNG HÌNH GÂN
                 try {
                     let poly = turf.polygon(coords);
                     let cleaned = turf.cleanCoords(poly);
@@ -497,19 +488,14 @@
                     tessellated.features.forEach(tri => {
                         let pts = tri.geometry.coordinates[0];
                         if(pts.length >= 3) {
-                            faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ);
-                            if (isBuilding && height > 0) faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ + height);
+                            faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ, true); 
+                            if (isBuilding && height > 0) faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ + height, true);
                         }
                     });
-                } catch(e) {
-                    let r = coords[0];
-                    faceDXF += `0\nPOLYLINE\n8\n${layerName}_ERR\n66\n1\n70\n1\n`;
-                    r.forEach(pt => { faceDXF += `0\nVERTEX\n8\n${layerName}_ERR\n10\n${tx(pt)}\n20\n${ty(pt)}\n30\n${baseZ}\n`; });
-                    faceDXF += "0\nSEQEND\n";
-                }
+                } catch(e) {}
             }
 
-            // 2. TƯỜNG BAO (CHỈ TÒA NHÀ)
+            // DỰNG TƯỜNG (CHỈ DÀNH CHO TÒA NHÀ)
             if (isBuilding && height > 0) {
                 for(let coords of polysToTessellate) {
                     let outerRing = coords[0]; 
@@ -536,9 +522,8 @@
                 
                 polys.forEach(coords => {
                     coords.forEach(ring => {
-                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
-                        ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n30\n0\n`; });
-                        dxf += "0\nSEQEND\n";
+                        dxf += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${ring.length}\n70\n1\n38\n0\n`;
+                        ring.forEach(pt => { dxf += `10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
                     });
                 });
             }
@@ -565,7 +550,7 @@
         if (!is3D) {
             dxf += await export2D(center, sx, sy);
         } else {
-            // XUẤT 3D BẰNG 3DFACE (Có nhả CPU để chống treo)
+            // CAO ĐỘ THỰC TẾ: Chống nhấp nháy chồng mặt phẳng trong SketchUp
             if(document.getElementById('showNuoc').checked) dxf += await create3DFaces(geoData.nuoc, "V21_NUOC", -0.1, false);
             if(document.getElementById('showDat').checked) dxf += await create3DFaces(geoData.dattrong, "V21_DATTRONG", 0, false);
             if(document.getElementById('showCay').checked) dxf += await create3DFaces(geoData.cayxanh, "V21_CAYXANH", 0.05, false);
