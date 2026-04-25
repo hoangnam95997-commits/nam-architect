@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v79 - Strict Isolation Engine</title>
+    <title>NAM ARCH PRO v80 - Ultimate Boolean Topology</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -95,7 +95,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V79 - STRICT ISOLATION ENGINE</span>
+        <span class="tagline">V80 - ULTIMATE BOOLEAN TOPOLOGY</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -115,7 +115,7 @@
                 <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> Vỉa Hè</label>
                 <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> Sông Hồ</label>
                 <label class="layer-label"><input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')"> <span class="color-dot" id="dot-cay" style="background:#16a34a;"></span> Cây Xanh</label>
-                <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')" title="Kiểm soát cả khu đất và tấm thảm nền bản đồ"> <span class="color-dot" id="dot-dat" style="background:#4b5563;"></span> Nền & Đất Trống</label>
+                <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')"> <span class="color-dot" id="dot-dat" style="background:#4b5563;"></span> Nền & Đất Trống</label>
             </div>
         </div>
 
@@ -139,7 +139,7 @@
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()">📥 2D CAD (.DXF)</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()" title="Cô lập Layer 100%">🏙️ TẢI 3D (.DAE)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()" title="Tự động đục lỗ nền, Không chồng mặt">🏙️ TẢI 3D (.DAE)</button>
             </div>
         </div>
     </div>
@@ -336,9 +336,6 @@
         const sw = b.getSouthWest(), ne = b.getNorthEast();
         const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
         
-        // Tạo THẢM NỀN nhưng không vẽ lên bản đồ Leaflet để tránh rác mắt
-        geoData.thamban_do.push(turf.bboxPolygon(screenBox));
-        
         const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];
         (
             nwr["building"];
@@ -369,7 +366,7 @@
                 }
             }
 
-            let rBufs = [], sBufs = [];
+            let rBufs = [], sBufs = [], rawNuoc = [];
 
             for (let i = 0; i < features.length; i++) {
                 if (i % 50 === 0) {
@@ -408,8 +405,8 @@
                         L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha);
                     } 
                     else if (tags.natural === 'water' || tags.waterway) {
-                        geoData.nuoc.push(poly);
-                        L.geoJSON(poly, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc);
+                        // Lưu mặt nước thô lại để chuẩn bị "Đục lỗ"
+                        rawNuoc.push(poly);
                     }
                     else if (tags.leisure || tags.natural === 'wood' || tags.natural === 'scrub' || tags.landuse === 'grass' || tags.landuse === 'forest') {
                         geoData.cayxanh.push(poly);
@@ -422,6 +419,37 @@
                 }
             }
 
+            // 💎 THUẬT TOÁN ĐỤC LỖ NỀN (BOOLEAN DIFFERENCE) CHO MẶT NƯỚC
+            updateProgress(75, "ĐANG TỐI ƯU HÓA MẶT NƯỚC...", true);
+            let mNuoc = await chunkedUnion(rawNuoc, "MẶT NƯỚC");
+            if (mNuoc) {
+                geoData.nuoc.push(mNuoc);
+                L.geoJSON(mNuoc, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc);
+            } else if (rawNuoc.length > 0) {
+                geoData.nuoc = rawNuoc;
+                rawNuoc.forEach(n => L.geoJSON(n, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc));
+            }
+
+            updateProgress(80, "ĐANG ĐỤC LỖ THẢM NỀN (BOOLEAN DIFFERENCE)...", true);
+            let baseCanvas = turf.bboxPolygon(screenBox);
+            
+            if (mNuoc) {
+                try {
+                    let diff = turf.difference(baseCanvas, turf.cleanCoords(mNuoc));
+                    if (diff) baseCanvas = diff;
+                } catch(e) {}
+            } else {
+                for(let i=0; i<rawNuoc.length; i++) {
+                    if (i % 10 === 0) await yieldCPU();
+                    try {
+                        let diff = turf.difference(baseCanvas, turf.cleanCoords(rawNuoc[i]));
+                        if (diff) baseCanvas = diff;
+                    } catch(e) {}
+                }
+            }
+            if(baseCanvas) geoData.thamban_do.push(baseCanvas);
+
+            // GỘP ĐƯỜNG VÀ VỈA HÈ
             if (rBufs.length > 0) {
                 updateProgress(85, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true);
                 let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
@@ -441,7 +469,6 @@
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    // --- XUẤT 3D COLLADA (DAE) VỚI STRICT ISOLATION ---
     async function export3DDAE() {
         updateProgress(10, "ĐANG BIÊN DỊCH MẶT ĐỨNG & ĐỊA HÌNH...", true);
         
@@ -532,7 +559,7 @@
             }
         };
 
-        // BẢO MẬT CÔ LẬP LỚP: Tuyệt đối chỉ xuất những gì người dùng chọn (Kể cả thảm nền)
+        // BẢO MẬT CÔ LẬP LAYER KẾT HỢP VỚI ĐỊA HÌNH
         if(document.getElementById('showDat').checked) {
             await processLayer(geoData.thamban_do, "THAM_NEN", 0.0, false, null);
             await processLayer(geoData.dattrong, "DATTRONG", 0.1, false, 0.0);
@@ -590,7 +617,6 @@
         updateProgress(100, "XUẤT MÔ HÌNH ĐỊA HÌNH 3D THÀNH CÔNG!", false);
     }
 
-    // --- CÔ LẬP LAYER CHO CẢ FILE 2D DXF ---
     async function export2DDXF() {
         let hasData = false;
         updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
@@ -616,12 +642,10 @@
         };
 
         if(document.getElementById('showNuoc').checked) await writeLines(geoData.nuoc, "V21_NUOC");
-        
         if(document.getElementById('showDat').checked) {
             await writeLines(geoData.thamban_do, "V21_THAMNEN");
             await writeLines(geoData.dattrong, "V21_DATTRONG");
         }
-        
         if(document.getElementById('showCay').checked) await writeLines(geoData.cayxanh, "V21_CAYXANH");
         if(document.getElementById('showDuong').checked) await writeLines(geoData.duong, "V21_DUONG");
         if(document.getElementById('showViahe').checked) await writeLines(geoData.viahe, "V21_VIAHE");
