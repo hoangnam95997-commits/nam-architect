@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v66 - Speed & Scale Edition</title>
+    <title>NAM ARCH PRO v67 - Ultimate 3D Topology</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -94,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V66 - SPEED & SCALE</span>
+        <span class="tagline">V67 - 3D TOPOLOGY ENGINE</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -110,9 +110,9 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> <span class="color-dot" id="dot-nha" style="background:#ff3366;"></span> Tòa Nhà</label>
-                <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> <span class="color-dot" id="dot-duong" style="background:#ffffff;"></span> Đường xá</label>
+                <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> <span class="color-dot" id="dot-duong" style="background:#ffffff;"></span> Lòng Đường</label>
                 <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> Vỉa Hè</label>
-                <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> Sông hồ</label>
+                <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> Sông Hồ</label>
                 <label class="layer-label"><input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')"> <span class="color-dot" id="dot-cay" style="background:#10b981;"></span> Cây Xanh</label>
                 <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')"> <span class="color-dot" id="dot-dat" style="background:#9ca3af;"></span> Đất Trống</label>
             </div>
@@ -138,7 +138,7 @@
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe(false)">📥 XUẤT 2D</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.2; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Block 3D (Nhớ check Merge coplanar faces)">🏙️ XUẤT 3D SU</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.2; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Block 3D (Tự động Make Face)">🏙️ XUẤT 3D SU</button>
             </div>
         </div>
     </div>
@@ -292,6 +292,31 @@
 
     const yieldCPU = () => new Promise(r => setTimeout(r, 5));
 
+    // ĐÃ FIX: Thuật toán Gộp khối (Boolean) đã được tối ưu hóa bằng cách làm sạch tọa độ trước khi xử lý
+    async function chunkedUnion(polygons, type) {
+        if (!polygons || polygons.length === 0) return null;
+        if (polygons.length === 1) return polygons[0];
+        
+        // Clean các điểm thừa trước khi gộp để chống lag/đơ máy
+        let current = polygons.map(p => {
+            try { return turf.cleanCoords(p); } catch(e) { return p; }
+        });
+        
+        let step = 0;
+        while (current.length > 1) {
+            let next = [];
+            for (let i = 0; i < current.length; i += 2) {
+                if (i % 5 === 0) await yieldCPU();
+                if (i + 1 < current.length) {
+                    try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); }
+                } else next.push(current[i]);
+            }
+            current = next; step++;
+            document.getElementById('stt').innerText = `GỘP MẶT PHẲNG ${type}: BƯỚC ${step}`;
+        }
+        return current[0];
+    }
+
     function makeClosedPolygon(pts) {
         let ring = pts.map(p => [p[0], p[1]]);
         if (ring[0][0] !== ring[ring.length-1][0] || ring[0][1] !== ring[ring.length-1][1]) ring.push([...ring[0]]);
@@ -315,7 +340,6 @@
         const sw = b.getSouthWest(), ne = b.getNorthEast();
         const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
         
-        // Truy vấn bổ sung các lớp Công viên, Cỏ, Đất trống
         const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];
         (
             way["building"];
@@ -338,10 +362,12 @@
             let ways = data.elements.filter(e => e.type === "way");
             if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
 
+            let rBufs = [], sBufs = [];
+
             for (let i = 0; i < ways.length; i++) {
                 const e = ways[i];
                 if (i % 50 === 0) {
-                    updateProgress(15 + (i / ways.length) * 80, `ĐANG QUÉT MẢNG KHỐI: ${i}/${ways.length}`, true);
+                    updateProgress(15 + (i / ways.length) * 50, `ĐANG QUÉT MẢNG KHỐI: ${i}/${ways.length}`, true);
                     await yieldCPU(); 
                 }
 
@@ -371,22 +397,29 @@
                     L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong);
                 }
                 else if (e.tags.highway) {
-                    // TỐI ƯU CỰC ĐỘ: Không dùng Boolean đục lỗ rắc rối nữa. 
-                    // Chuyển sang vẽ đa giác độc lập để SketchUp tự dán mặt đè lên nhau. Giảm thời gian từ 40p xuống 5s.
                     const line = turf.lineString(pts);
                     const wDuong = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
-                    const wViahe = wDuong + 6; // Vỉa hè mỗi bên rộng 3m
+                    const wViahe = wDuong + 6; 
                     
                     try {
-                        const polyDuong = turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters', steps: 2}), screenBox);
-                        const polyViahe = turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters', steps: 2}), screenBox);
-                        
-                        geoData.duong.push(polyDuong);
-                        geoData.viahe.push(polyViahe);
-                        
-                        L.geoJSON(polyViahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe);
-                        L.geoJSON(polyDuong, { style: getLayerStyle('duong') }).addTo(layers.duong);
+                        rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters', steps: 2}), screenBox));
+                        sBufs.push(turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters', steps: 2}), screenBox));
                     } catch(err) {}
+                }
+            }
+
+            updateProgress(70, "XỬ LÝ MẶT PHẲNG ĐƯỜNG...", true);
+            if (rBufs.length > 0) {
+                let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
+                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
+
+                updateProgress(85, "XỬ LÝ MẶT PHẲNG VỈA HÈ...", true);
+                let mS = await chunkedUnion(sBufs, "VỈA HÈ");
+                try {
+                    let viahe = turf.difference(mS, mR);
+                    if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
+                } catch(e) { 
+                    if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
                 }
             }
             
@@ -405,59 +438,56 @@
         return rings;
     }
 
+    // --- ĐÃ FIX: CHUẨN XUẤT FILE DXF LWPOLYLINE MỚI NHẤT ---
     async function exportDxfSafe(is3D) {
         let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length;
         if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
         
-        updateProgress(90, is3D ? "ĐANG BIÊN DỊCH BLOCK 3D..." : "ĐANG GHI FILE CAD 2D...", true);
+        updateProgress(90, is3D ? "ĐANG ĐÓNG NẮP KHỐI 3D..." : "ĐANG GHI FILE CAD 2D...", true);
         
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
 
-        // TỐI ƯU 3D: Dùng Polyline 2 lớp (Z=0 và Z=Height) để lừa SketchUp tự động đóng khối (Solid Block)
         const writeToDxf = async (dataArray, layerName, baseZ) => {
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 20 === 0) await yieldCPU();
                 const item = dataArray[i];
-                const rings = extractRings(item.geometry);
+                const rings = extractRings(item.geometry || item); // Xử lý cả Feature và Polygon thuần
                 
                 rings.forEach(ring => {
-                    if(!ring || ring.length < 2) return;
+                    if(!ring || ring.length < 3) return; // Bỏ qua nếu ít hơn 3 điểm
                     
                     let h = item.height || 0;
 
                     if (!is3D) {
-                        // BẢN VẼ 2D CHUẨN
-                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
-                        ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
-                        dxf += "0\nSEQEND\n";
+                        // BẢN VẼ 2D: Vẽ đa giác phẳng chuẩn LWPOLYLINE
+                        dxf += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${ring.length}\n70\n1\n`;
+                        ring.forEach(pt => { dxf += `10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
                     } else {
-                        // MÔ HÌNH 3D BẰNG KỸ THUẬT SONG SINH:
-                        // 1. Vẽ mặt bằng (Z=base) kèm lệnh kéo tường (Thickness)
-                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n38\n${baseZ}\n`;
-                        if (h > 0) dxf += `39\n${h}\n`; // Kéo tường
-                        ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
-                        dxf += "0\nSEQEND\n";
-
-                        // 2. Vẽ viền nắp mái (Z=base+height). Khi Import, SU sẽ tự dán "Roof" vào đây
+                        // MÔ HÌNH 3D BẰNG KỸ THUẬT ĐÓNG NẮP KÉP (DOUBLE-CAP)
+                        // Lớp 1: Mặt sàn và Tường bao
+                        dxf += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${ring.length}\n70\n1\n38\n${baseZ}\n`;
+                        if (h > 0) dxf += `39\n${h.toFixed(2)}\n`; // Đùn tường
+                        ring.forEach(pt => { dxf += `10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
+                        
+                        // Lớp 2: Mặt nắp mái (Chỉ dùng cho Tòa nhà)
                         if (h > 0) {
-                            dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n38\n${baseZ + h}\n`;
-                            ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
-                            dxf += "0\nSEQEND\n";
+                            dxf += `0\nLWPOLYLINE\n8\n${layerName}_ROOF\n90\n${ring.length}\n70\n1\n38\n${(baseZ + h).toFixed(2)}\n`;
+                            ring.forEach(pt => { dxf += `10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
                         }
                     }
                 });
             }
         };
 
-        // Gán cao độ chống Z-Fighting (đè hình)
-        if(document.getElementById('showNuoc').checked) await writeToDxf(geoData.nuoc, "V21_NUOC", -0.1);
+        // Thứ tự xuất các lớp (Z-Fighting Fix)
+        if(document.getElementById('showNuoc').checked) await writeToDxf(geoData.nuoc, "V21_NUOC", -0.5);
         if(document.getElementById('showDat').checked) await writeToDxf(geoData.dattrong, "V21_DATTRONG", 0);
-        if(document.getElementById('showCay').checked) await writeToDxf(geoData.cayxanh, "V21_CAYXANH", 0.02);
-        if(document.getElementById('showViahe').checked) await writeToDxf(geoData.viahe, "V21_VIAHE", 0.05);
+        if(document.getElementById('showCay').checked) await writeToDxf(geoData.cayxanh, "V21_CAYXANH", 0.05);
         if(document.getElementById('showDuong').checked) await writeToDxf(geoData.duong, "V21_DUONG", 0.1);
-        if(document.getElementById('showNha').checked) await writeToDxf(geoData.nha, "V21_NHA", 0.15);
+        if(document.getElementById('showViahe').checked) await writeToDxf(geoData.viahe, "V21_VIAHE", 0.2);
+        if(document.getElementById('showNha').checked) await writeToDxf(geoData.nha, "V21_NHA", 0.2);
 
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
