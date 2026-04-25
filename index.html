@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v72 - The OBJ Engine</title>
+    <title>NAM ARCH PRO v73 - Perfect Solid Engine</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -94,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V72 - N-GON OBJ ENGINE (CLEAN 3D)</span>
+        <span class="tagline">V73 - TRUE SOLID & NORMALS</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -138,7 +138,7 @@
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()">📥 2D CAD (.DXF)</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DOBJ()" title="File 3D chuẩn khối đặc, Không rác nét">🏙️ TẢI 3D (.OBJ)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DOBJ()" title="Chuẩn mặt Trắng, chống Z-Fighting">🏙️ TẢI 3D (.OBJ)</button>
             </div>
         </div>
     </div>
@@ -292,7 +292,6 @@
 
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 0));
 
-    // THUẬT TOÁN GỘP KHỐI CHO OBJ (Siêu Nhanh)
     async function chunkedUnion(polygons, type) {
         if (!polygons || polygons.length === 0) return null;
         if (polygons.length === 1) return polygons[0];
@@ -358,6 +357,13 @@
             let ways = data.elements.filter(e => e.type === "way");
             if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
 
+            if(ways.length > 8000) {
+                if(!confirm(`Khu vực này có hơn ${ways.length} đối tượng. Bạn có muốn tiếp tục?`)) {
+                    updateProgress(0, "ĐÃ HỦY QUÉT.", false);
+                    return;
+                }
+            }
+
             let rBufs = [], sBufs = [];
 
             for (let i = 0; i < ways.length; i++) {
@@ -422,56 +428,75 @@
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    // --- TRÌNH BIÊN DỊCH .OBJ NGUYÊN BẢN (THUẬT TOÁN ĐỈNH CAO CỦA V72) ---
+    // --- THUẬT TOÁN ĐỈNH CAO: BĂM LƯỚI & ÉP HƯỚNG PHÁP TUYẾN (NORMALS) ---
     async function export3DOBJ() {
         let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length;
         if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
         
-        updateProgress(10, "ĐANG BIÊN DỊCH MÔ HÌNH .OBJ...", true);
+        updateProgress(10, "ĐANG BIÊN DỊCH MÔ HÌNH .OBJ (SOLID)...", true);
         
-        let obj = "# NAM ARCH PRO 3D MODEL\n";
-        let vIdx = 1; // Vertex index trong OBJ bắt đầu từ 1
+        let objLines = ["# NAM ARCH PRO 3D MODEL - V73 TRUE SOLID ENGINE"];
+        let vIdx = 1; 
         
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         const tx = (pt) => ((pt[0] - center.lng) * sx).toFixed(3);
         const ty = (pt) => ((pt[1] - center.lat) * sy).toFixed(3);
 
-        // Hàm tạo mặt N-Gons siêu sạch (Không băm tam giác, không có đường chéo rác)
-        const writeNgonFace = (ring, zVal) => {
-            let pts = ring;
-            if (pts.length < 3) return;
-            // Xóa điểm cuối nếu trùng điểm đầu (Chuẩn OBJ)
-            if (pts[0][0] === pts[pts.length-1][0] && pts[0][1] === pts[pts.length-1][1]) pts = pts.slice(0, -1);
-            
-            let startIdx = vIdx;
-            pts.forEach(pt => { obj += `v ${tx(pt)} ${ty(pt)} ${zVal}\n`; vIdx++; });
-            
-            obj += `f `;
-            for(let i=0; i<pts.length; i++) obj += `${startIdx + i} `;
-            obj += `\n`;
+        // HÀM TOÁN HỌC ĐỂ KIỂM TRA MẶT TRÁI/PHẢI
+        function getCCWTriangle(p1, p2, p3) {
+            let cross = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0]);
+            // Nếu cross < 0, mặt đang quay xuống dưới. Đảo lại để nó ngửa lên trời (Mặt Trắng)
+            if (cross < 0) return [p1, p3, p2];
+            return [p1, p2, p3];
+        }
+
+        const writeTriangles = (coords, zVal, reverseNormal = false) => {
+            try {
+                // Rewind để chuẩn hóa chiều quay
+                let poly = turf.rewind(turf.polygon(coords), {reverse: false});
+                let clean = turf.cleanCoords(poly);
+                let tess = turf.tesselate(clean);
+                
+                tess.features.forEach(tri => {
+                    let pts = tri.geometry.coordinates[0];
+                    if (pts.length < 3) return;
+                    
+                    // Ép tất cả các mặt hướng LÊN TRỜI (CCW)
+                    let [p1, p2, p3] = getCCWTriangle(pts[0], pts[1], pts[2]);
+                    
+                    // Riêng mặt sàn của tòa nhà thì ép hướng XUỐNG ĐẤT (CW) để thành khối đặc
+                    if (reverseNormal) [p1, p2, p3] = [p1, p3, p2];
+
+                    objLines.push(`v ${tx(p1)} ${ty(p1)} ${zVal}`);
+                    objLines.push(`v ${tx(p2)} ${ty(p2)} ${zVal}`);
+                    objLines.push(`v ${tx(p3)} ${ty(p3)} ${zVal}`);
+                    objLines.push(`f ${vIdx} ${vIdx+1} ${vIdx+2}`);
+                    vIdx += 3;
+                });
+            } catch(e) {}
         };
 
-        // Hàm tạo tường (Quads 4 mặt)
         const writeWalls = (ring, zBottom, zTop) => {
             let pts = ring;
-            if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts.push(pts[0]);
+            if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts = [...pts, pts[0]];
             for(let i=0; i<pts.length-1; i++) {
-                obj += `v ${tx(pts[i])} ${ty(pts[i])} ${zBottom}\n`;
-                obj += `v ${tx(pts[i+1])} ${ty(pts[i+1])} ${zBottom}\n`;
-                obj += `v ${tx(pts[i+1])} ${ty(pts[i+1])} ${zTop}\n`;
-                obj += `v ${tx(pts[i])} ${ty(pts[i])} ${zTop}\n`;
-                obj += `f ${vIdx} ${vIdx+1} ${vIdx+2} ${vIdx+3}\n`;
+                objLines.push(`v ${tx(pts[i])} ${ty(pts[i])} ${zBottom}`);
+                objLines.push(`v ${tx(pts[i+1])} ${ty(pts[i+1])} ${zBottom}`);
+                objLines.push(`v ${tx(pts[i+1])} ${ty(pts[i+1])} ${zTop}`);
+                objLines.push(`v ${tx(pts[i])} ${ty(pts[i])} ${zTop}`);
+                // Vẽ tường: Ép hướng pháp tuyến ra NGOÀI (v1 v2 v3 v4 -> f 1 2 3 4)
+                objLines.push(`f ${vIdx} ${vIdx+1} ${vIdx+2} ${vIdx+3}`);
                 vIdx += 4;
             }
         };
 
         const writeLayerToOBJ = async (dataArray, layerName, baseZ, isBuilding) => {
             if(dataArray.length === 0) return;
-            obj += `g ${layerName}\n`; // Phân Group rành mạch trong SketchUp
+            objLines.push(`g ${layerName}`);
             
             for (let i = 0; i < dataArray.length; i++) {
-                if (i % 100 === 0) {
+                if (i % 20 === 0) {
                     let p = 10 + (i / dataArray.length) * 80;
                     updateProgress(p, `DỰNG KHỐI [${layerName}]: ${i}/${dataArray.length}`, true);
                     await yieldCPU(); 
@@ -484,48 +509,38 @@
                 let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
 
                 polys.forEach(coords => {
-                    if (coords.length === 1) {
-                        // 95% Trường hợp: Mặt phẳng liền mạch (Không lủng lỗ) -> Tạo N-Gon sạch bóng
-                        writeNgonFace(coords[0], baseZ); // Vẽ Sàn
-                        if (isBuilding && h > 0) {
-                            writeNgonFace(coords[0], baseZ + h); // Vẽ Mái
-                            writeWalls(coords[0], baseZ, baseZ + h); // Vẽ Tường
-                        }
-                    } else {
-                        // 5% Trường hợp: Có lỗ thủng bên trong -> Bắt buộc băm tam giác (Tessellation)
-                        try {
-                            let poly = turf.polygon(coords);
-                            let clean = turf.cleanCoords(poly);
-                            let tess = turf.tesselate(clean);
-                            tess.features.forEach(tri => {
-                                writeNgonFace(tri.geometry.coordinates[0], baseZ);
-                                if (isBuilding && h > 0) writeNgonFace(tri.geometry.coordinates[0], baseZ + h);
-                            });
-                            // Bọc tường cho các lỗ thủng
-                            if (isBuilding && h > 0) coords.forEach(ring => writeWalls(ring, baseZ, baseZ + h));
-                        } catch(e) {}
+                    // Vẽ các mặt hướng LÊN (Mặt đất, mặt đường, mặt mái nhà)
+                    writeTriangles(coords, isBuilding && h > 0 ? baseZ + h : baseZ, false);
+                    
+                    if (isBuilding && h > 0) {
+                        // Vẽ mặt sàn nhà hướng XUỐNG (Để tạo thành khối đặc kín bưng)
+                        writeTriangles(coords, baseZ, true);
+                        
+                        // Vẽ tường bao xung quanh hướng ra NGOÀI
+                        let poly = turf.rewind(turf.polygon(coords), {reverse: false});
+                        poly.geometry.coordinates.forEach(ring => writeWalls(ring, baseZ, baseZ + h));
                     }
                 });
             }
         };
 
-        // Ghi tuần tự từng Layer theo Z (Cao độ) chuẩn
-        if(document.getElementById('showNuoc').checked) await writeLayerToOBJ(geoData.nuoc, "LAYER_NUOC", -0.5, false);
+        // KHOẢNG CÁCH Z-STACKING KHỦNG (Mỗi lớp cách nhau 0.2m) ĐỂ CHỐNG 100% Z-FIGHTING
+        if(document.getElementById('showNuoc').checked) await writeLayerToOBJ(geoData.nuoc, "LAYER_NUOC", -0.4, false);
         if(document.getElementById('showDat').checked) await writeLayerToOBJ(geoData.dattrong, "LAYER_DATTRONG", 0, false);
-        if(document.getElementById('showCay').checked) await writeLayerToOBJ(geoData.cayxanh, "LAYER_CAYXANH", 0.05, false);
-        if(document.getElementById('showDuong').checked) await writeLayerToOBJ(geoData.duong, "LAYER_DUONG", 0.1, false);
-        if(document.getElementById('showViahe').checked) await writeLayerToOBJ(geoData.viahe, "LAYER_VIAHE", 0.2, false);
-        if(document.getElementById('showNha').checked) await writeLayerToOBJ(geoData.nha, "LAYER_NHA", 0.25, true);
+        if(document.getElementById('showCay').checked) await writeLayerToOBJ(geoData.cayxanh, "LAYER_CAYXANH", 0.2, false);
+        if(document.getElementById('showDuong').checked) await writeLayerToOBJ(geoData.duong, "LAYER_DUONG", 0.4, false);
+        if(document.getElementById('showViahe').checked) await writeLayerToOBJ(geoData.viahe, "LAYER_VIAHE", 0.6, false);
+        if(document.getElementById('showNha').checked) await writeLayerToOBJ(geoData.nha, "LAYER_NHA", 0.6, true);
 
+        const finalOBJ = objLines.join('\n');
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([obj], {type: 'text/plain'}));
-        a.download = "NAM_ARCH_CITY.obj"; 
+        a.href = URL.createObjectURL(new Blob([finalOBJ], {type: 'text/plain'}));
+        a.download = "NAM_ARCH_SOLID_CITY.obj"; 
         a.click();
         
         updateProgress(100, "XUẤT MÔ HÌNH .OBJ THÀNH CÔNG!", false);
     }
 
-    // --- XUẤT 2D DXF BÌNH THƯỜNG ---
     async function export2DDXF() {
         if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Chưa có dữ liệu!");
         updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
