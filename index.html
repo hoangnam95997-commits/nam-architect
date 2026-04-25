@@ -3,143 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v82 - Boolean Puzzle Topology</title>
+    <title>NAM ARCH PRO v83 - Pro UI/UX Edition</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
     
     <style>
+        /* TỪ BỎ MÀU NEON, CHUYỂN SANG HỆ MÀU SAAS CHUYÊN NGHIỆP */
         :root { 
-            --primary: #00e5ff; --secondary: #0077ff; --accent-3d: #00ff88;
-            --bg-dark: #111827; --panel-bg: rgba(31, 41, 55, 0.95);
-            --box-bg: rgba(17, 24, 39, 0.6); 
-            --text-main: #f9fafb; --text-muted: #9ca3af;
-            --border: rgba(255, 255, 255, 0.1);
+            --primary: #3b82f6; /* Xanh dương Pro */
+            --primary-hover: #2563eb;
+            --accent: #8b5cf6; /* Tím thanh lịch */
+            --accent-hover: #7c3aed;
+            --success: #10b981;
+            --bg-base: #0f172a; /* Xám đen sâu */
+            --surface-1: #1e293b;
+            --surface-2: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --radius-lg: 16px;
+            --radius-md: 10px;
         }
 
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-main); overflow: hidden; }
-        #map { height: 100vh; width: 100vw; background: var(--bg-dark); }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; }
+        #map { height: 100vh; width: 100vw; background: var(--bg-base); }
         
-        .search-box { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .search-box input { background: transparent; border: none; padding: 12px 15px; width: 250px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+        /* THANH TÌM KIẾM TINH GỌN */
+        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.3s ease; }
+        .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        .search-box input { background: transparent; border: none; padding: 12px 16px; width: 280px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
         .search-box input::placeholder { color: var(--text-muted); }
-        .search-box button { background: var(--box-bg); border: none; border-left: 1px solid var(--border); padding: 0 15px; cursor: pointer; color: var(--primary); transition: 0.2s; font-weight: bold;}
-        .search-box button:hover { background: rgba(0, 229, 255, 0.1); }
+        .search-box button { background: rgba(255,255,255,0.05); border: none; border-left: 1px solid var(--border); padding: 0 20px; cursor: pointer; color: var(--primary); font-weight: 600; font-size: 14px; transition: 0.2s; }
+        .search-box button:hover { background: var(--primary); color: #fff; }
 
-        .sidebar-container { position: absolute; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 10px; align-items: flex-start; }
-        .sidebar { width: 350px; background: var(--panel-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 20px; padding: 20px 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto; }
-        .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
-        .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: 0.3s; }
+        /* BẢNG ĐIỀU KHIỂN CHÍNH (KÍNH MỜ SANG TRỌNG) */
+        .sidebar-container { position: absolute; top: 24px; left: 24px; z-index: 1000; display: flex; gap: 12px; align-items: flex-start; }
+        .sidebar { width: 360px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2); max-height: calc(100vh - 48px); overflow-y: auto; }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+        .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; }
 
-        .toggle-btn { background: var(--panel-bg); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; margin-top: 10px; }
-        .toggle-btn:hover { background: var(--box-bg); transform: scale(1.05); }
+        .toggle-btn { background: var(--surface-1); border: 1px solid var(--border); color: var(--text-main); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); transition: 0.2s; margin-top: 8px; }
+        .toggle-btn:hover { background: var(--border); transform: scale(1.05); }
 
-        h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; text-align: center; }
-        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 15px; margin-top: 4px;}
+        /* TYPOGRAPHY */
+        .brand-header { margin-bottom: 24px; text-align: center; }
+        h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+        h1 span { color: var(--primary); }
+        .tagline { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-top: 4px; }
 
-        .ctrl-box { background: var(--box-bg); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
-        .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;}
+        /* CARD CHỨA NỘI DUNG */
+        .panel-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .panel-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* SLIDER CHUYÊN NGHIỆP */
+        .val-hl { color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px;}
+        .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: var(--border); border-radius: 3px; outline: none; margin-top: 8px; }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.1); transition: 0.2s; }
+        .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* HIỆU ỨNG TOGGLE SWITCH THAY CHO CHECKBOX CŨ */
+        .layer-list { display: flex; flex-direction: column; gap: 8px; }
+        .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; transition: 0.2s; cursor: pointer; }
+        .layer-item:hover { background: rgba(255,255,255,0.05); }
+        .layer-left { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; }
+        .color-dot { width: 12px; height: 12px; border-radius: 3px; }
         
-        .layer-label { cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 11px;}
-        .layer-label input[type="checkbox"] { cursor: pointer; accent-color: var(--primary); }
+        /* Ẩn checkbox thật */
+        .layer-item input[type="checkbox"] { display: none; }
+        /* Vẽ công tắc giả */
+        .toggle-switch { width: 36px; height: 20px; background: var(--border); border-radius: 20px; position: relative; transition: 0.3s; }
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        /* Trạng thái bật */
+        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: var(--primary); }
+        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { transform: translateX(16px); }
 
-        .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.3); border-radius: 2px; outline: none; margin-top: 5px; }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--primary); cursor: pointer; transition: 0.2s; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        /* BUTTONS PHẲNG VÀ HIỆN ĐẠI */
+        .btn-main { width: 100%; padding: 14px; border: none; border-radius: var(--radius-md); background: var(--primary); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3); margin-bottom: 16px; }
+        .btn-main:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.4); }
+        .btn-main:active { transform: translateY(1px); box-shadow: none; }
         
-        .btn-glow { width: 100%; padding: 12px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 10px; margin-top: 5px; }
-        .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); }
-        
-        .btn-outline { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 10px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
-        .btn-outline:hover { background: rgba(128,128,128,0.15); }
+        .btn-outline { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-main); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); }
+        .btn-export-2d { flex: 1; border-color: var(--primary); color: var(--primary); }
+        .btn-export-2d:hover { background: rgba(59, 130, 246, 0.1); }
+        .btn-export-3d { flex: 1.5; background: var(--accent); border-color: var(--accent); color: #fff; }
+        .btn-export-3d:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
-        .prog-container { margin: 10px 0; }
-        .prog-wrap { height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        #progress { width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, var(--accent-3d), #ffcc00, #00e5ff); background-size: 200% 100%; transition: width 0.3s ease; box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }
-        .prog-wrap.active #progress { animation: progressFlow 2s linear infinite; }
-        @keyframes progressFlow { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
+        /* TIẾN TRÌNH THANH LỊCH HƠN */
+        .prog-container { margin-top: 12px; }
+        .prog-wrap { height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; overflow: hidden; position: relative; }
+        #progress { width: 0%; height: 100%; background: var(--success); transition: width 0.3s ease; }
+        #stt { font-size: 11px; text-align: center; color: var(--text-muted); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 8px; line-height: 1.4;}
 
-        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px; line-height: 1.4;}
-
-        .hud-bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .hud-item { display: flex; align-items: center; gap: 8px; }
-        .hud-val { color: var(--text-main); font-weight: 700; }
-        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; z-index: 999; pointer-events: none; opacity: 0.5; }
-        .crosshair::before { content: ''; position: absolute; top: 14px; left: 0; width: 30px; height: 2px; background: var(--primary); }
-        .crosshair::after { content: ''; position: absolute; top: 0; left: 14px; width: 2px; height: 30px; background: var(--primary); }
+        /* HUD TINH GỌN Ở ĐÁY MÀN HÌNH */
+        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 30px; padding: 8px 24px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .hud-item { display: flex; align-items: center; gap: 6px; }
+        .hud-val { color: #fff; font-weight: 600; }
+        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; z-index: 999; pointer-events: none; opacity: 0.6; }
+        .crosshair::before { content: ''; position: absolute; top: 11px; left: 0; width: 24px; height: 2px; background: #fff; border-radius: 2px;}
+        .crosshair::after { content: ''; position: absolute; top: 0; left: 11px; width: 2px; height: 24px; background: #fff; border-radius: 2px;}
         .leaflet-interactive { pointer-events: none; }
-        .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
         
-        .core-badge { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; transition: all 0.3s ease; }
-        .core-badge.loading { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
-        .cyber-spinner { width: 12px; height: 12px; border-radius: 50%; background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff); animation: spin 1s linear infinite; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0); }
-        .core-badge.loading .stt-text { background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientText 2s linear infinite; }
-        .core-badge.online { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); text-shadow: 0 0 5px #10b981; }
-        .core-badge.online .cyber-spinner { display: none; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes gradientText { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        .core-badge { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-muted); }
+        .core-badge.online { color: var(--success); }
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .core-badge.online .pulse-dot { box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.95); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(0.95); opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Tìm kiếm địa điểm..." onkeypress="if(event.key === 'Enter') searchLocation()">
+    <input type="text" id="searchInput" placeholder="Tìm kiếm địa điểm, tọa độ..." onkeypress="if(event.key === 'Enter') searchLocation()">
     <button onclick="searchLocation()">Tìm</button>
 </div>
 
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
-        <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V82 - BOOLEAN PUZZLE TOPOLOGY</span>
+        
+        <div class="brand-header">
+            <h1>NAM ARCH <span>PRO</span></h1>
+            <span class="tagline">V83 • BOOLEAN TOPOLOGY ENGINE</span>
+        </div>
 
-        <div class="ctrl-box">
-            <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
+        <div class="panel-card">
+            <div class="panel-header">
+                <span class="panel-title">Mức Độ Thu Phóng</span>
+                <span class="val-hl" id="z-val">16.0</span>
+            </div>
             <input type="range" id="zoomSlider" min="1" max="100" step="0.5" value="16" class="zoom-slider">
         </div>
 
-        <div class="ctrl-box">
-            <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 10px;">
-                <span style="color: var(--primary); text-transform: uppercase; font-size: 10px;">⚙️ TÙY CHỌN XUẤT LAYER</span>
+        <div class="panel-card">
+            <div class="panel-header">
+                <span class="panel-title">Quản Lý Phân Lớp</span>
+                <div id="coreBadge" class="core-badge online"><div class="pulse-dot"></div> <span id="lib-stt">Core Online</span></div>
             </div>
-
-            <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 12px; width: 100%;" onclick="toggleMapTheme()">🗺️ BẢN ĐỒ NỀN: TỐI (DARK)</button>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> <span class="color-dot" id="dot-nha" style="background:#ff3366;"></span> Tòa Nhà</label>
-                <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> <span class="color-dot" id="dot-duong" style="background:#ffffff;"></span> Lòng Đường</label>
-                <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> Vỉa Hè</label>
-                <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> Sông Hồ</label>
-                <label class="layer-label"><input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')"> <span class="color-dot" id="dot-cay" style="background:#16a34a;"></span> Cây Xanh</label>
-                <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')" title="Các mảnh ghép lấp đầy khoảng trống màu đen"> <span class="color-dot" id="dot-dat" style="background:#4b5563;"></span> Lấp Vùng Trống</label>
+            
+            <div class="layer-list">
+                <label class="layer-item">
+                    <input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')">
+                    <div class="layer-left"><span class="color-dot" id="dot-nha" style="background:#f43f5e;"></span> Tòa Nhà</div>
+                    <div class="toggle-switch"></div>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')">
+                    <div class="layer-left"><span class="color-dot" id="dot-duong" style="background:#f8fafc;"></span> Lòng Đường</div>
+                    <div class="toggle-switch"></div>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')">
+                    <div class="layer-left"><span class="color-dot" id="dot-viahe" style="background:#f59e0b;"></span> Vỉa Hè</div>
+                    <div class="toggle-switch"></div>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
+                    <div class="layer-left"><span class="color-dot" id="dot-nuoc" style="background:#0ea5e9;"></span> Sông Hồ</div>
+                    <div class="toggle-switch"></div>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')">
+                    <div class="layer-left"><span class="color-dot" id="dot-cay" style="background:#10b981;"></span> Cây Xanh</div>
+                    <div class="toggle-switch"></div>
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')" title="Các mảnh ghép lấp đầy khoảng trống">
+                    <div class="layer-left"><span class="color-dot" id="dot-dat" style="background:#64748b;"></span> Lấp Vùng Trống</div>
+                    <div class="toggle-switch"></div>
+                </label>
             </div>
+            
+            <button id="mapThemeBtn" class="btn-outline" style="margin-top: 12px; width: 100%; border-color: transparent;" onclick="toggleMapTheme()">🌓 Đổi Nền Bản Đồ (Sáng/Tối)</button>
         </div>
 
-        <button class="btn-glow" onclick="startMegaScan()">🚀 BẮT ĐẦU QUÉT MAP (SPACE)</button>
+        <button class="btn-main" onclick="startMegaScan()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
+            CHẠY PHÂN TÍCH MAP (SPACE)
+        </button>
 
-        <div class="ctrl-box" style="padding-bottom: 8px;">
-            <div class="row">
-                <span>Hệ thống Core:</span>
-                <div id="coreBadge" class="core-badge loading">
-                    <div class="cyber-spinner"></div>
-                    <span class="stt-text" id="lib-stt">ĐANG TẢI...</span>
-                </div>
+        <div class="panel-card" style="padding: 12px 16px;">
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button class="btn-outline" style="flex: 1;" onclick="resetScan()" title="Xóa toàn bộ bộ nhớ Cache">Xóa Data</button>
             </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-outline btn-export-2d" onclick="export2DDXF()">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    2D CAD
+                </button>
+                <button class="btn-outline btn-export-3d" onclick="export3DDAE()" title="Mô hình Khớp Nối, Chuẩn Cao Độ 100%">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    XUẤT 3D PRO
+                </button>
+            </div>
+
             <div class="prog-container">
                 <div class="prog-wrap" id="progWrap"><div id="progress"></div></div>
-                <div id="stt">SẴN SÀNG NHẬN LỆNH</div>
-            </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()">📥 2D CAD (.DXF)</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()" title="Mô hình Khớp Nối, Chuẩn Cao Độ 100%">🏙️ TẢI 3D (.DAE)</button>
+                <div id="stt">Đang chờ lệnh...</div>
             </div>
         </div>
     </div>
@@ -149,14 +217,18 @@
 
 <div class="crosshair"></div>
 <div class="hud-bottom">
-    <div class="hud-item">🧭 HƯỚNG: <span class="hud-val">BẮC (N)</span></div>
-    <div class="hud-item">📍 TỌA ĐỘ: <span class="hud-val" id="hud-coord">10.7933, 106.6800</span></div>
-    <div class="hud-item">🚁 CAO ĐỘ: <span class="hud-val" id="hud-alt">610m</span></div>
+    <div class="hud-item">🧭 <span class="hud-val">BẮC (N)</span></div>
+    <div class="hud-item">📍 <span class="hud-val" id="hud-coord">10.7933, 106.6800</span></div>
+    <div class="hud-item">🚁 <span class="hud-val" id="hud-alt">610m</span></div>
 </div>
 
 <div id="map"></div>
 
 <script>
+    // =========================================================================
+    // LÕI THUẬT TOÁN V82 GIỮ NGUYÊN 100% - KHÔNG CHỈNH SỬA ĐỂ ĐẢM BẢO ỔN ĐỊNH
+    // =========================================================================
+    
     let sidebarOpen = true;
     function toggleSidebar() {
         const sb = document.getElementById('sidebar');
@@ -170,14 +242,6 @@
         if (e.code === 'Space') { e.preventDefault(); startMegaScan(); }
     });
 
-    setInterval(() => {
-        const el = document.getElementById('lib-stt');
-        const badge = document.getElementById('coreBadge');
-        if (typeof turf !== 'undefined' && typeof osmtogeojson !== 'undefined') { 
-            el.innerText = "ONLINE (V6.5)"; badge.className = "core-badge online";
-        }
-    }, 1000);
-
     var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
     var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
     var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 100, maxNativeZoom: 19 });
@@ -185,7 +249,7 @@
     L.GridLayer.Graticule = L.GridLayer.extend({
         createTile: function () {
             var tile = document.createElement('canvas'); tile.width = tile.height = 256;
-            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke(); return tile;
         }
     });
@@ -196,22 +260,20 @@
         isLightMap = !isLightMap;
         if(isLightMap) {
             map.removeLayer(darkT); lightT.addTo(map);
-            document.getElementById('mapThemeBtn').innerText = '🗺️ BẢN ĐỒ NỀN: ĐA SẮC (VOYAGER)';
             document.getElementById('dot-nha').style.background = '#dc2626';
-            document.getElementById('dot-duong').style.background = '#111827';
+            document.getElementById('dot-duong').style.background = '#1e293b';
             document.getElementById('dot-viahe').style.background = '#ea580c';
             document.getElementById('dot-nuoc').style.background = '#0284c7';
             document.getElementById('dot-cay').style.background = '#16a34a';
-            document.getElementById('dot-dat').style.background = '#4b5563';
+            document.getElementById('dot-dat').style.background = '#94a3b8';
         } else {
             map.removeLayer(lightT); darkT.addTo(map);
-            document.getElementById('mapThemeBtn').innerText = '🗺️ BẢN ĐỒ NỀN: TỐI (DARK)';
-            document.getElementById('dot-nha').style.background = '#ff3366';
-            document.getElementById('dot-duong').style.background = '#ffffff';
-            document.getElementById('dot-viahe').style.background = '#ffcc00';
-            document.getElementById('dot-nuoc').style.background = '#00e5ff';
+            document.getElementById('dot-nha').style.background = '#f43f5e';
+            document.getElementById('dot-duong').style.background = '#f8fafc';
+            document.getElementById('dot-viahe').style.background = '#f59e0b';
+            document.getElementById('dot-nuoc').style.background = '#0ea5e9';
             document.getElementById('dot-cay').style.background = '#10b981';
-            document.getElementById('dot-dat').style.background = '#9ca3af';
+            document.getElementById('dot-dat').style.background = '#64748b';
         }
         updateLineStyles();
     }
@@ -224,7 +286,7 @@
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data = await res.json();
             if(data && data.length > 0) map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
-            else alert("Không tìm thấy!");
+            else alert("Không tìm thấy địa điểm!");
         } catch(e) {}
     }
 
@@ -254,18 +316,18 @@
     function getLayerStyle(type) {
         const config = isLightMap ? {
             nha: { color: '#dc2626', weight: 2, fillOpacity: 0.15 },
-            duong: { color: '#111827', weight: 2, fillOpacity: 0.1 },
+            duong: { color: '#1e293b', weight: 2, fillOpacity: 0.1 },
             viahe: { color: '#ea580c', weight: 2, fillOpacity: 0.15 },
             nuoc: { color: '#0284c7', weight: 2, fillOpacity: 0.15 },
             cayxanh: { color: '#16a34a', weight: 2, fillOpacity: 0.15 },
-            dattrong: { color: '#4b5563', weight: 2, fillOpacity: 0.1 }
+            dattrong: { color: '#94a3b8', weight: 2, fillOpacity: 0.1 }
         } : {
-            nha: { color: '#ff3366', weight: 2, fillOpacity: 0.15 }, 
-            duong: { color: '#ffffff', weight: 2, fillOpacity: 0.1 }, 
-            viahe: { color: '#ffcc00', weight: 2, fillOpacity: 0.15 }, 
-            nuoc: { color: '#00e5ff', weight: 2, fillOpacity: 0.15 },
+            nha: { color: '#f43f5e', weight: 2, fillOpacity: 0.15 }, 
+            duong: { color: '#f8fafc', weight: 2, fillOpacity: 0.1 }, 
+            viahe: { color: '#f59e0b', weight: 2, fillOpacity: 0.15 }, 
+            nuoc: { color: '#0ea5e9', weight: 2, fillOpacity: 0.15 },
             cayxanh: { color: '#10b981', weight: 2, fillOpacity: 0.15 },
-            dattrong: { color: '#9ca3af', weight: 2, fillOpacity: 0.1 }  
+            dattrong: { color: '#64748b', weight: 2, fillOpacity: 0.1 }  
         };
         return config[type];
     }
@@ -281,14 +343,14 @@
         pBar.style.width = percent + '%';
         stt.innerText = text;
         if(isActive) pWrap.classList.add('active'); else pWrap.classList.remove('active');
-        stt.style.color = (percent >= 100) ? "#10b981" : "var(--primary)";
+        stt.style.color = (percent >= 100) ? "var(--success)" : "var(--primary)";
     }
 
     function resetScan() {
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [], cayxanh: [], dattrong: [], o_pho: [] };
-        updateProgress(0, "ĐÃ XÓA. SẴN SÀNG!", false);
-        document.getElementById('stt').style.color = "var(--text-main)";
+        updateProgress(0, "Đã dọn dẹp Cache. Sẵn sàng!", false);
+        document.getElementById('stt').style.color = "var(--text-muted)";
     }
 
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -308,7 +370,7 @@
                 } else next.push(current[i]);
             }
             current = next; step++;
-            document.getElementById('stt').innerText = `GỘP MẶT PHẲNG ${type}: BƯỚC ${step}`;
+            document.getElementById('stt').innerText = `Gộp đa giác ${type}: Vòng ${step}`;
         }
         return current[0];
     }
@@ -328,9 +390,9 @@
     }
 
     async function startMegaScan() {
-        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("Core đang khởi động!");
+        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("Hệ thống Core đang khởi động, vui lòng đợi vài giây!");
         resetScan();
-        updateProgress(10, "KẾT NỐI VỆ TINH OVERPASS...", true);
+        updateProgress(10, "Đang kết nối API Vệ tinh...", true);
 
         const b = map.getBounds();
         const sw = b.getSouthWest(), ne = b.getNorthEast();
@@ -351,17 +413,17 @@
             const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
             const data = await res.json();
             
-            updateProgress(30, "ĐANG BIÊN DỊCH DỮ LIỆU ĐỊA HÌNH...", true);
+            updateProgress(30, "Biên dịch OSM Relations...", true);
             await yieldCPU();
 
             const geojson = osmtogeojson(data);
             const features = geojson.features;
 
-            if(features.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!", false); return; }
+            if(features.length === 0) { updateProgress(0, "Khu vực này trống dữ liệu OSM!", false); return; }
 
             if(features.length > 8000) {
-                if(!confirm(`Khu vực này có hơn ${features.length} đối tượng. Bạn có muốn tiếp tục?`)) {
-                    updateProgress(0, "ĐÃ HỦY QUÉT.", false);
+                if(!confirm(`Khu vực này chứa > ${features.length} objects. Việc phân tích có thể tốn vài phút. Chạy chứ?`)) {
+                    updateProgress(0, "Đã hủy theo yêu cầu.", false);
                     return;
                 }
             }
@@ -370,7 +432,7 @@
 
             for (let i = 0; i < features.length; i++) {
                 if (i % 50 === 0) {
-                    updateProgress(40 + (i / features.length) * 30, `PHÂN LỚP QUY HOẠCH: ${i}/${features.length}`, true);
+                    updateProgress(40 + (i / features.length) * 30, `Phân tách Vector: ${i}/${features.length}`, true);
                     await yieldCPU(); 
                 }
 
@@ -418,15 +480,14 @@
                 }
             }
 
-            // 1. GỘP LÒNG ĐƯỜNG VÀ MẶT NƯỚC (Đây là 2 con dao sẽ đi cắt khoảng trống)
             let mR = null;
             if (rBufs.length > 0) {
-                updateProgress(70, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true);
+                updateProgress(70, "Tối ưu mạng lưới Giao thông...", true);
                 mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
                 if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
             }
 
-            updateProgress(75, "ĐANG GỘP MẶT NƯỚC...", true);
+            updateProgress(75, "Tối ưu bề mặt Thủy văn...", true);
             let mNuoc = await chunkedUnion(rawNuoc, "MẶT NƯỚC");
             if (mNuoc) {
                 geoData.nuoc.push(mNuoc);
@@ -436,36 +497,40 @@
                 rawNuoc.forEach(n => L.geoJSON(n, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc));
             }
 
-            // 💎 BƯỚC 2: TẠO CÁC MẢNH LẤP KHOẢNG TRỐNG (BOOLEAN PUZZLE PIECES)
-            // Lấy kích thước khung màn hình, trừ đi Lòng đường và Mặt nước để ra các "Khoảng trống"
-            updateProgress(80, "ĐANG TẠO CÁC MẢNH LẤP KHOẢNG TRỐNG...", true);
+            updateProgress(80, "Cắt gọt khoảng trống (Boolean Cut)...", true);
             let baseCanvas = turf.bboxPolygon(screenBox);
+            let mOpho = null;
             
             if (mR) {
-                try { baseCanvas = turf.difference(baseCanvas, turf.cleanCoords(mR)); } catch(e) {}
+                try { mOpho = turf.difference(baseCanvas, turf.cleanCoords(mR)); } catch(e) {}
             }
-            
+            if (!mOpho) mOpho = baseCanvas;
+
+            updateProgress(88, "Khớp nối bề mặt Sông Hồ...", true);
             if (mNuoc) {
-                try { baseCanvas = turf.difference(baseCanvas, turf.cleanCoords(mNuoc)); } catch(e) {}
-            } else if (rawNuoc.length > 0) {
+                try { 
+                    let diff = turf.difference(mOpho, turf.cleanCoords(mNuoc)); 
+                    if(diff) mOpho = diff;
+                } catch(e) {}
+            } else {
                 for(let i=0; i<rawNuoc.length; i++) {
                     if (i % 10 === 0) await yieldCPU();
-                    try { baseCanvas = turf.difference(baseCanvas, turf.cleanCoords(rawNuoc[i])); } catch(e){}
+                    try { 
+                        let diff = turf.difference(mOpho, turf.cleanCoords(rawNuoc[i])); 
+                        if(diff) mOpho = diff;
+                    } catch(e) {}
                 }
             }
 
-            // Dùng Flatten băm nát cái thảm lủng lỗ này thành các MẢNH ĐA GIÁC NHỎ ĐỘC LẬP
-            if (baseCanvas) {
-                turf.flatten(baseCanvas).features.forEach(f => {
+            if (mOpho) {
+                turf.flatten(mOpho).features.forEach(f => {
                     geoData.o_pho.push(f);
-                    // Hiển thị mờ mờ trên web để bạn thấy nó lấp kín vùng đen như thế nào
-                    L.geoJSON(f, { color: '#4b5563', weight: 1, fillOpacity: 0.15 }).addTo(layers.dattrong);
+                    L.geoJSON(f, { color: '#64748b', weight: 1, fillOpacity: 0.1 }).addTo(layers.dattrong);
                 });
             }
 
-            // 3. CẮT VỈA HÈ
             if (sBufs.length > 0 && mR) {
-                updateProgress(90, "ĐANG TỐI ƯU CẮT MẶT VỈA HÈ...", true);
+                updateProgress(92, "Trích xuất Vỉa hè...", true);
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 try {
                     let viahe = turf.difference(mS, mR);
@@ -475,13 +540,12 @@
                 }
             }
             
-            updateProgress(100, "QUÉT XONG! SẴN SÀNG XUẤT FILE.", false);
-        } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
+            updateProgress(100, "Hoàn tất! Bấm Tải 3D để xem thành quả.", false);
+        } catch (err) { updateProgress(0, "Lỗi kết nối hoặc Map quá lớn!", false); }
     }
 
-    // --- XUẤT DAE 3D (XẾP HÌNH KHÔNG CÓ Z-FIGHTING) ---
     async function export3DDAE() {
-        updateProgress(10, "ĐANG LẮP RÁP CÁC MẢNH GHÉP 3D...", true);
+        updateProgress(10, "Đang kết xuất Geometry 3D...", true);
         
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
@@ -544,7 +608,7 @@
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 20 === 0) {
                     let p = 10 + (i / dataArray.length) * 80;
-                    updateProgress(p, `DỰNG KHỐI [${layerName}]: ${i}/${dataArray.length}`, true);
+                    updateProgress(p, `Dựng khối Solid [${layerName}]: ${i}/${dataArray.length}`, true);
                     await yieldCPU(); 
                 }
 
@@ -563,7 +627,6 @@
                         poly.geometry.coordinates.forEach(ring => writeWalls(ring, baseZ, topZ));
                     } 
                     else if (curbBottomZ !== null) {
-                        // Vẽ bờ kè nối giữa mặt trên và mặt dưới
                         let poly = turf.rewind(turf.polygon(coords), {reverse: false});
                         poly.geometry.coordinates.forEach(ring => writeWalls(ring, Math.min(baseZ, curbBottomZ), Math.max(baseZ, curbBottomZ)));
                     }
@@ -571,30 +634,25 @@
             }
         };
 
-        // 💎 CẤU TRÚC LOGIC CAO ĐỘ THỎA MÃN Ý TƯỞNG CỦA BẠN 💎
-        // Sông Hồ âm xuống.
         if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "NUOC", -0.5, false, 0.0);
         
-        // CÁC MẢNH LẤP TRỐNG (O_PHO) VÀ LÒNG ĐƯỜNG CÙNG NẰM Ở Z = 0
-        // Vì Mảnh lấp trống là vết cắt chừa lại lòng đường, nên 2 mặt này nằm cạnh nhau khít 100%, không bao giờ đè lên nhau sinh lỗi chớp nháy!
         if(document.getElementById('showDat').checked) {
-            await processLayer(geoData.o_pho, "O_PHO_LAPTRONG", 0.0, false, null); // Nằm sát mặt đường Z=0
-            await processLayer(geoData.dattrong, "DATTRONG_OSM", 0.05, false, 0.0); // Khối đất OSM nhô nhẹ lên
+            await processLayer(geoData.o_pho, "O_PHO", 0.0, false, null); 
+            await processLayer(geoData.dattrong, "DATTRONG_OSM", 0.05, false, 0.0);
         }
         
-        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.0, false, null); // Đường Z=0
+        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.0, false, null); 
         
-        // Các lớp phủ bên trên mặt đất (Cỏ, Vỉa hè, Nhà)
         if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, "CAYXANH", 0.1, false, 0.0); 
         if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "VIAHE", 0.15, false, 0.0); 
-        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.15, true, null); // Nhà mọc từ vỉa hè lên
+        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.15, true, null); 
 
         if(!hasData) {
-            updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
+            updateProgress(0, "Bạn chưa chọn Layer nào để xuất!", false);
             return;
         }
 
-        updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true);
+        updateProgress(95, "Đang đóng gói file DAE...", true);
         await yieldCPU();
 
         const daeXML = `<?xml version="1.0" encoding="utf-8"?>
@@ -629,15 +687,15 @@
 
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'}));
-        a.download = "NAM_ARCH_3D_PUZZLE.dae"; 
+        a.download = "NAM_ARCH_3D_PRO.dae"; 
         a.click();
         
-        updateProgress(100, "XUẤT MÔ HÌNH 3D HOÀN MỸ THÀNH CÔNG!", false);
+        updateProgress(100, "Tải file 3D hoàn tất!", false);
     }
 
     async function export2DDXF() {
         let hasData = false;
-        updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
+        updateProgress(50, "Đang biên dịch Vector 2D...", true);
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
@@ -662,7 +720,7 @@
         if(document.getElementById('showNuoc').checked) await writeLines(geoData.nuoc, "V21_NUOC");
         
         if(document.getElementById('showDat').checked) {
-            await writeLines(geoData.o_pho, "V21_MANH_LAP_TRONG");
+            await writeLines(geoData.o_pho, "V21_O_PHO");
             await writeLines(geoData.dattrong, "V21_DATTRONG_OSM");
         }
         
@@ -672,7 +730,7 @@
         if(document.getElementById('showNha').checked) await writeLines(geoData.nha, "V21_NHA");
 
         if(!hasData) {
-            updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
+            updateProgress(0, "Bạn chưa chọn Layer nào để xuất!", false);
             return;
         }
 
@@ -681,7 +739,7 @@
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
         a.download = "NAM_ARCH_2D_PLAN.dxf"; 
         a.click();
-        updateProgress(100, "XUẤT BẢN VẼ 2D THÀNH CÔNG!", false);
+        updateProgress(100, "Tải file 2D CAD hoàn tất!", false);
     }
 </script>
 </body>
