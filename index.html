@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v74 - Native DAE Engine</title>
+    <title>NAM ARCH PRO v75 - Classic DXF Restored</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -94,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V74 - NATIVE DAE ENGINE</span>
+        <span class="tagline">V75 - CLASSIC DXF & NATIVE DAE</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -113,8 +113,8 @@
                 <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> <span class="color-dot" id="dot-duong" style="background:#ffffff;"></span> Lòng Đường</label>
                 <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> Vỉa Hè</label>
                 <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> Sông Hồ</label>
-                <label class="layer-label"><input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')"> <span class="color-dot" id="dot-cay" style="background:#10b981;"></span> Cây Xanh</label>
-                <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')"> <span class="color-dot" id="dot-dat" style="background:#9ca3af;"></span> Đất Trống</label>
+                <label class="layer-label"><input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')"> <span class="color-dot" id="dot-cay" style="background:#16a34a;"></span> Cây Xanh</label>
+                <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')"> <span class="color-dot" id="dot-dat" style="background:#4b5563;"></span> Đất Trống</label>
             </div>
         </div>
 
@@ -135,9 +135,9 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
+            <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()">📥 2D CAD (.DXF)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()" title="Phục hồi Polyline chống lỗi">📥 2D CAD (.DXF)</button>
                 <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()" title="Chuẩn SketchUp, Chuẩn tỷ lệ 1:1">🏙️ TẢI 3D (.DAE)</button>
             </div>
         </div>
@@ -196,21 +196,9 @@
         if(isLightMap) {
             map.removeLayer(darkT); lightT.addTo(map);
             document.getElementById('mapThemeBtn').innerText = '🗺️ BẢN ĐỒ NỀN: ĐA SẮC (VOYAGER)';
-            document.getElementById('dot-nha').style.background = '#dc2626';
-            document.getElementById('dot-duong').style.background = '#111827';
-            document.getElementById('dot-viahe').style.background = '#ea580c';
-            document.getElementById('dot-nuoc').style.background = '#0284c7';
-            document.getElementById('dot-cay').style.background = '#16a34a';
-            document.getElementById('dot-dat').style.background = '#4b5563';
         } else {
             map.removeLayer(lightT); darkT.addTo(map);
             document.getElementById('mapThemeBtn').innerText = '🗺️ BẢN ĐỒ NỀN: TỐI (DARK)';
-            document.getElementById('dot-nha').style.background = '#ff3366';
-            document.getElementById('dot-duong').style.background = '#ffffff';
-            document.getElementById('dot-viahe').style.background = '#ffcc00';
-            document.getElementById('dot-nuoc').style.background = '#00e5ff';
-            document.getElementById('dot-cay').style.background = '#10b981';
-            document.getElementById('dot-dat').style.background = '#9ca3af';
         }
         updateLineStyles();
     }
@@ -358,7 +346,7 @@
             if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
 
             if(ways.length > 8000) {
-                if(!confirm(`Khu vực này có hơn ${ways.length} đối tượng. Việc xuất file có thể lâu. Bạn có muốn tiếp tục?`)) {
+                if(!confirm(`Khu vực này có hơn ${ways.length} đối tượng. Bạn có muốn tiếp tục?`)) {
                     updateProgress(0, "ĐÃ HỦY QUÉT.", false);
                     return;
                 }
@@ -428,8 +416,7 @@
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    // --- NATIVE COLLADA (.DAE) EXPORTER ---
-    // Tạo trực tiếp file XML DAE tương thích 100% SketchUp (Không cần phần mềm chuyển đổi)
+    // --- NATIVE COLLADA (.DAE) EXPORTER GIỮ NGUYÊN TỪ V74 ---
     async function export3DDAE() {
         let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length;
         if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
@@ -481,11 +468,10 @@
             if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts = [...pts, pts[0]];
             for(let i=0; i<pts.length-1; i++) {
                 let p1 = pts[i]; let p2 = pts[i+1];
-                // Tam giác 1
                 addVertex(tx(p1), ty(p1), zBottom);
                 addVertex(tx(p2), ty(p2), zBottom);
                 addVertex(tx(p2), ty(p2), zTop);
-                // Tam giác 2
+                
                 addVertex(tx(p1), ty(p1), zBottom);
                 addVertex(tx(p2), ty(p2), zTop);
                 addVertex(tx(p1), ty(p1), zTop);
@@ -527,7 +513,6 @@
         updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true);
         await yieldCPU();
 
-        // Xây dựng chuỗi XML Collada
         const daeXML = `<?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
   <asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>
@@ -566,9 +551,12 @@
         updateProgress(100, "XUẤT MÔ HÌNH .DAE THÀNH CÔNG!", false);
     }
 
+    // --- ĐÃ FIX: TRẢ VỀ POLYLINE KINH ĐIỂN CHO XUẤT 2D DXF ---
     async function export2DDXF() {
         if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Chưa có dữ liệu!");
+        
         updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
+        
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
@@ -578,10 +566,15 @@
                 if (i % 50 === 0) await yieldCPU();
                 const geom = dataArray[i].geometry || dataArray[i];
                 let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+                
                 polys.forEach(coords => {
                     coords.forEach(ring => {
-                        dxf += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${ring.length}\n70\n1\n38\n0\n`;
-                        ring.forEach(pt => { dxf += `10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
+                        // SỬ DỤNG POLYLINE CHUẨN ĐỂ ĐẢM BẢO 100% HIỂN THỊ
+                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
+                        ring.forEach(pt => { 
+                            dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n30\n0\n`; 
+                        });
+                        dxf += "0\nSEQEND\n";
                     });
                 });
             }
@@ -599,6 +592,7 @@
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
         a.download = "NAM_ARCH_2D_PLAN.dxf"; 
         a.click();
+        
         updateProgress(100, "XUẤT BẢN VẼ 2D THÀNH CÔNG!", false);
     }
 </script>
