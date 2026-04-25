@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v71 - Smart Layering Engine</title>
+    <title>NAM ARCH PRO v72 - The OBJ Engine</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
     
     <style>
         :root { 
-            --primary: #00e5ff; --secondary: #0077ff; --accent-3d: #ff00ff;
+            --primary: #00e5ff; --secondary: #0077ff; --accent-3d: #00ff88;
             --bg-dark: #111827; --panel-bg: rgba(31, 41, 55, 0.95);
             --box-bg: rgba(17, 24, 39, 0.6); 
             --text-main: #f9fafb; --text-muted: #9ca3af;
@@ -38,7 +38,7 @@
         .toggle-btn { background: var(--panel-bg); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: 0.3s; margin-top: 10px; }
         .toggle-btn:hover { background: var(--box-bg); transform: scale(1.05); }
 
-        h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--accent-3d)); -webkit-background-clip: text; color: transparent; text-align: center; }
+        h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; text-align: center; }
         .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 15px; margin-top: 4px;}
 
         .ctrl-box { background: var(--box-bg); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; border: 1px solid var(--border); }
@@ -59,11 +59,11 @@
 
         .prog-container { margin: 10px 0; }
         .prog-wrap { height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        #progress { width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); background-size: 200% 100%; transition: width 0.3s ease; box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }
+        #progress { width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, var(--accent-3d), #ffcc00, #00e5ff); background-size: 200% 100%; transition: width 0.3s ease; box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }
         .prog-wrap.active #progress { animation: progressFlow 2s linear infinite; }
         @keyframes progressFlow { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
 
-        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px; line-height: 1.4;}
+        #stt { font-size: 10px; text-align: center; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; text-transform: uppercase; margin-top: 8px;}
 
         .hud-bottom { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; display: flex; gap: 25px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .hud-item { display: flex; align-items: center; gap: 8px; }
@@ -94,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V71 - SMART LAYERING ENGINE</span>
+        <span class="tagline">V72 - N-GON OBJ ENGINE (CLEAN 3D)</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -137,8 +137,8 @@
         <div style="display: flex; flex-direction: column; gap: 8px;">
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe(false)">📥 XUẤT 2D</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Solid Block - Đã tối ưu tốc độ">🏙️ XUẤT 3D MẶT</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()">📥 2D CAD (.DXF)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DOBJ()" title="File 3D chuẩn khối đặc, Không rác nét">🏙️ TẢI 3D (.OBJ)</button>
             </div>
         </div>
     </div>
@@ -292,6 +292,27 @@
 
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 0));
 
+    // THUẬT TOÁN GỘP KHỐI CHO OBJ (Siêu Nhanh)
+    async function chunkedUnion(polygons, type) {
+        if (!polygons || polygons.length === 0) return null;
+        if (polygons.length === 1) return polygons[0];
+        
+        let current = polygons.map(p => { try { return turf.cleanCoords(p); } catch(e) { return p; } });
+        let step = 0;
+        while (current.length > 1) {
+            let next = [];
+            for (let i = 0; i < current.length; i += 2) {
+                if (i % 5 === 0) await yieldCPU(); 
+                if (i + 1 < current.length) {
+                    try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); }
+                } else next.push(current[i]);
+            }
+            current = next; step++;
+            document.getElementById('stt').innerText = `GỘP MẶT PHẲNG ${type}: BƯỚC ${step}`;
+        }
+        return current[0];
+    }
+
     function makeClosedPolygon(pts) {
         let ring = pts.map(p => [p[0], p[1]]);
         if (ring[0][0] !== ring[ring.length-1][0] || ring[0][1] !== ring[ring.length-1][1]) ring.push([...ring[0]]);
@@ -337,18 +358,12 @@
             let ways = data.elements.filter(e => e.type === "way");
             if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
 
-            // CẢNH BÁO DATA QUÁ LỚN
-            if(ways.length > 8000) {
-                if(!confirm(`Khu vực này có hơn ${ways.length} đối tượng. Bạn có muốn tiếp tục? (Nên Zoom gần lại để map nhẹ hơn)`)) {
-                    updateProgress(0, "ĐÃ HỦY QUÉT.", false);
-                    return;
-                }
-            }
+            let rBufs = [], sBufs = [];
 
             for (let i = 0; i < ways.length; i++) {
                 const e = ways[i];
-                if (i % 100 === 0) {
-                    updateProgress(15 + (i / ways.length) * 80, `ĐANG QUÉT MẢNG KHỐI: ${i}/${ways.length}`, true);
+                if (i % 50 === 0) {
+                    updateProgress(15 + (i / ways.length) * 40, `ĐANG QUÉT MẢNG KHỐI: ${i}/${ways.length}`, true);
                     await yieldCPU(); 
                 }
 
@@ -378,137 +393,151 @@
                     L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong);
                 }
                 else if (e.tags.highway) {
-                    // ĐÃ FIX: TRẢ LẠI SỰ ĐỘC LẬP CHO TỪNG CON ĐƯỜNG, KHÔNG GỘP KHỐI ĐỂ TRÁNH LỖI (SELF-INTERSECTING)
                     const line = turf.lineString(pts);
                     const wDuong = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
                     const wViahe = wDuong + 6; 
-                    
                     try {
-                        const polyDuong = turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters', steps: 2}), screenBox);
-                        const polyViahe = turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters', steps: 2}), screenBox);
-                        
-                        geoData.duong.push(polyDuong);
-                        geoData.viahe.push(polyViahe);
-                        
-                        L.geoJSON(polyViahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe);
-                        L.geoJSON(polyDuong, { style: getLayerStyle('duong') }).addTo(layers.duong);
+                        rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters', steps: 2}), screenBox));
+                        sBufs.push(turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters', steps: 2}), screenBox));
                     } catch(err) {}
                 }
             }
 
+            if (rBufs.length > 0) {
+                updateProgress(60, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true);
+                let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
+                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
+
+                updateProgress(80, "ĐANG CẮT MẶT VỈA HÈ...", true);
+                let mS = await chunkedUnion(sBufs, "VỈA HÈ");
+                try {
+                    let viahe = turf.difference(mS, mR);
+                    if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
+                } catch(e) { 
+                    if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
+                }
+            }
+            
             updateProgress(100, "QUÉT XONG! SẴN SÀNG XUẤT FILE.", false);
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    function extractRings(geom) {
-        let rings = [];
-        if (!geom) return rings;
-        if (geom.type === 'Feature') return extractRings(geom.geometry);
-        if (geom.type === 'FeatureCollection') { geom.features.forEach(f => rings.push(...extractRings(f))); return rings; }
-        if (geom.type === 'Polygon') rings.push(...geom.coordinates);
-        else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(poly => rings.push(...poly));
-        else if (geom.type === 'GeometryCollection') geom.geometries.forEach(g => rings.push(...extractRings(g)));
-        return rings;
-    }
-
-    // --- THUẬT TOÁN ĐAN LƯỚI TẠO MẶT 3D (Tessellation) ---
-    async function create3DFaces(geoArray, layerName, baseZ, isBuilding) {
-        let faceDXF = "";
+    // --- TRÌNH BIÊN DỊCH .OBJ NGUYÊN BẢN (THUẬT TOÁN ĐỈNH CAO CỦA V72) ---
+    async function export3DOBJ() {
+        let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length;
+        if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
+        
+        updateProgress(10, "ĐANG BIÊN DỊCH MÔ HÌNH .OBJ...", true);
+        
+        let obj = "# NAM ARCH PRO 3D MODEL\n";
+        let vIdx = 1; // Vertex index trong OBJ bắt đầu từ 1
+        
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
-        
         const tx = (pt) => ((pt[0] - center.lng) * sx).toFixed(3);
         const ty = (pt) => ((pt[1] - center.lat) * sy).toFixed(3);
 
-        // BÍ QUYẾT: Dùng DXF Group Code 70=15 để ẨN các nếp gấp tam giác bên trong (Giúp mặt phẳng sạch sẽ)
-        const writeTriangle = (p1, p2, p3, zVal) => {
-            let str = `0\n3DFACE\n8\n${layerName}\n`;
-            str += `10\n${tx(p1)}\n20\n${ty(p1)}\n30\n${zVal}\n`;
-            str += `11\n${tx(p2)}\n20\n${ty(p2)}\n30\n${zVal}\n`;
-            str += `12\n${tx(p3)}\n20\n${ty(p3)}\n30\n${zVal}\n`;
-            str += `13\n${tx(p3)}\n20\n${ty(p3)}\n30\n${zVal}\n`;
-            str += `70\n15\n`; // Lệnh tàng hình gân tam giác
-            return str;
-        };
-
-        const writeWall = (p1, p2, zBottom, zTop) => {
-            let str = `0\n3DFACE\n8\n${layerName}\n`;
-            str += `10\n${tx(p1)}\n20\n${ty(p1)}\n30\n${zBottom}\n`;
-            str += `11\n${tx(p2)}\n20\n${ty(p2)}\n30\n${zBottom}\n`;
-            str += `12\n${tx(p2)}\n20\n${ty(p2)}\n30\n${zTop}\n`;
-            str += `13\n${tx(p1)}\n20\n${ty(p1)}\n30\n${zTop}\n`;
-            return str;
-        };
-
-        let total = geoArray.length;
-        for (let i = 0; i < total; i++) {
-            // YIELD CPU LIÊN TỤC ĐỂ CHỐNG TREO MÁY
-            if (i % 20 === 0) {
-                let p = 10 + (i / total) * 80;
-                updateProgress(p, `TẠO MẶT SOLID [${layerName}]: ${i}/${total}`, true);
-                await yieldCPU(); 
-            }
-
-            const item = geoArray[i];
-            const geom = item.geometry || item;
-            let height = item.height || 0;
-
-            let polysToTessellate = [];
-            if (geom.type === 'Polygon') polysToTessellate.push(geom.coordinates);
-            else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(c => polysToTessellate.push(c));
+        // Hàm tạo mặt N-Gons siêu sạch (Không băm tam giác, không có đường chéo rác)
+        const writeNgonFace = (ring, zVal) => {
+            let pts = ring;
+            if (pts.length < 3) return;
+            // Xóa điểm cuối nếu trùng điểm đầu (Chuẩn OBJ)
+            if (pts[0][0] === pts[pts.length-1][0] && pts[0][1] === pts[pts.length-1][1]) pts = pts.slice(0, -1);
             
-            for(let coords of polysToTessellate) {
-                // Vẽ Viền Sắc Nét Ở Vòng Ngoài Cùng (Polyline kín)
-                let outerRing = coords[0];
-                faceDXF += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${outerRing.length}\n70\n1\n38\n${baseZ}\n`;
-                outerRing.forEach(pt => { faceDXF += `10\n${tx(pt)}\n20\n${ty(pt)}\n`; });
-                
-                if (isBuilding && height > 0) {
-                    faceDXF += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${outerRing.length}\n70\n1\n38\n${baseZ + height}\n`;
-                    outerRing.forEach(pt => { faceDXF += `10\n${tx(pt)}\n20\n${ty(pt)}\n`; });
+            let startIdx = vIdx;
+            pts.forEach(pt => { obj += `v ${tx(pt)} ${ty(pt)} ${zVal}\n`; vIdx++; });
+            
+            obj += `f `;
+            for(let i=0; i<pts.length; i++) obj += `${startIdx + i} `;
+            obj += `\n`;
+        };
+
+        // Hàm tạo tường (Quads 4 mặt)
+        const writeWalls = (ring, zBottom, zTop) => {
+            let pts = ring;
+            if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts.push(pts[0]);
+            for(let i=0; i<pts.length-1; i++) {
+                obj += `v ${tx(pts[i])} ${ty(pts[i])} ${zBottom}\n`;
+                obj += `v ${tx(pts[i+1])} ${ty(pts[i+1])} ${zBottom}\n`;
+                obj += `v ${tx(pts[i+1])} ${ty(pts[i+1])} ${zTop}\n`;
+                obj += `v ${tx(pts[i])} ${ty(pts[i])} ${zTop}\n`;
+                obj += `f ${vIdx} ${vIdx+1} ${vIdx+2} ${vIdx+3}\n`;
+                vIdx += 4;
+            }
+        };
+
+        const writeLayerToOBJ = async (dataArray, layerName, baseZ, isBuilding) => {
+            if(dataArray.length === 0) return;
+            obj += `g ${layerName}\n`; // Phân Group rành mạch trong SketchUp
+            
+            for (let i = 0; i < dataArray.length; i++) {
+                if (i % 100 === 0) {
+                    let p = 10 + (i / dataArray.length) * 80;
+                    updateProgress(p, `DỰNG KHỐI [${layerName}]: ${i}/${dataArray.length}`, true);
+                    await yieldCPU(); 
                 }
 
-                // Băm lưới tam giác để Đóng Mặt Sàn và Mái (Chỉ hiện mặt, ẩn nét lưới)
-                try {
-                    let poly = turf.polygon(coords);
-                    let cleaned = turf.cleanCoords(poly);
-                    let tessellated = turf.tesselate(cleaned);
-                    
-                    tessellated.features.forEach(tri => {
-                        let pts = tri.geometry.coordinates[0];
-                        if(pts.length >= 3) {
-                            faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ); 
-                            if (isBuilding && height > 0) faceDXF += writeTriangle(pts[0], pts[1], pts[2], baseZ + height);
+                const item = dataArray[i];
+                const geom = item.geometry || item;
+                const h = item.height || 0;
+
+                let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+
+                polys.forEach(coords => {
+                    if (coords.length === 1) {
+                        // 95% Trường hợp: Mặt phẳng liền mạch (Không lủng lỗ) -> Tạo N-Gon sạch bóng
+                        writeNgonFace(coords[0], baseZ); // Vẽ Sàn
+                        if (isBuilding && h > 0) {
+                            writeNgonFace(coords[0], baseZ + h); // Vẽ Mái
+                            writeWalls(coords[0], baseZ, baseZ + h); // Vẽ Tường
                         }
-                    });
-                } catch(e) {}
-            }
-
-            // Dựng Tường bao quanh (Nếu là nhà)
-            if (isBuilding && height > 0) {
-                for(let coords of polysToTessellate) {
-                    let outerRing = coords[0]; 
-                    for (let j = 0; j < outerRing.length - 1; j++) faceDXF += writeWall(outerRing[j], outerRing[j+1], baseZ, baseZ + height);
-                    for(let k = 1; k < coords.length; k++) {
-                        let innerRing = coords[k];
-                        for (let j = 0; j < innerRing.length - 1; j++) faceDXF += writeWall(innerRing[j], innerRing[j+1], baseZ, baseZ + height);
+                    } else {
+                        // 5% Trường hợp: Có lỗ thủng bên trong -> Bắt buộc băm tam giác (Tessellation)
+                        try {
+                            let poly = turf.polygon(coords);
+                            let clean = turf.cleanCoords(poly);
+                            let tess = turf.tesselate(clean);
+                            tess.features.forEach(tri => {
+                                writeNgonFace(tri.geometry.coordinates[0], baseZ);
+                                if (isBuilding && h > 0) writeNgonFace(tri.geometry.coordinates[0], baseZ + h);
+                            });
+                            // Bọc tường cho các lỗ thủng
+                            if (isBuilding && h > 0) coords.forEach(ring => writeWalls(ring, baseZ, baseZ + h));
+                        } catch(e) {}
                     }
-                }
+                });
             }
-        }
-        return faceDXF;
+        };
+
+        // Ghi tuần tự từng Layer theo Z (Cao độ) chuẩn
+        if(document.getElementById('showNuoc').checked) await writeLayerToOBJ(geoData.nuoc, "LAYER_NUOC", -0.5, false);
+        if(document.getElementById('showDat').checked) await writeLayerToOBJ(geoData.dattrong, "LAYER_DATTRONG", 0, false);
+        if(document.getElementById('showCay').checked) await writeLayerToOBJ(geoData.cayxanh, "LAYER_CAYXANH", 0.05, false);
+        if(document.getElementById('showDuong').checked) await writeLayerToOBJ(geoData.duong, "LAYER_DUONG", 0.1, false);
+        if(document.getElementById('showViahe').checked) await writeLayerToOBJ(geoData.viahe, "LAYER_VIAHE", 0.2, false);
+        if(document.getElementById('showNha').checked) await writeLayerToOBJ(geoData.nha, "LAYER_NHA", 0.25, true);
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([obj], {type: 'text/plain'}));
+        a.download = "NAM_ARCH_CITY.obj"; 
+        a.click();
+        
+        updateProgress(100, "XUẤT MÔ HÌNH .OBJ THÀNH CÔNG!", false);
     }
 
-    async function export2D(center, sx, sy) {
-        let dxf = "";
+    // --- XUẤT 2D DXF BÌNH THƯỜNG ---
+    async function export2DDXF() {
+        if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Chưa có dữ liệu!");
+        updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
+        const center = map.getCenter();
+        const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
+        let dxf = "0\nSECTION\n2\nENTITIES\n";
+
         const writeLines = async (dataArray, layerName) => {
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 50 === 0) await yieldCPU();
                 const geom = dataArray[i].geometry || dataArray[i];
-                let polys = [];
-                if (geom.type === 'Polygon') polys.push(geom.coordinates);
-                else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(c => polys.push(c));
-                
+                let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
                 polys.forEach(coords => {
                     coords.forEach(ring => {
                         dxf += `0\nLWPOLYLINE\n8\n${layerName}\n90\n${ring.length}\n70\n1\n38\n0\n`;
@@ -517,44 +546,20 @@
                 });
             }
         };
+
         if(document.getElementById('showNuoc').checked) await writeLines(geoData.nuoc, "V21_NUOC");
         if(document.getElementById('showDat').checked) await writeLines(geoData.dattrong, "V21_DATTRONG");
         if(document.getElementById('showCay').checked) await writeLines(geoData.cayxanh, "V21_CAYXANH");
         if(document.getElementById('showDuong').checked) await writeLines(geoData.duong, "V21_DUONG");
         if(document.getElementById('showViahe').checked) await writeLines(geoData.viahe, "V21_VIAHE");
         if(document.getElementById('showNha').checked) await writeLines(geoData.nha, "V21_NHA");
-        return dxf;
-    }
-
-    async function exportDxfSafe(is3D) {
-        let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length;
-        if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
-        
-        updateProgress(10, "ĐANG KHỞI TẠO FILE DXF...", true);
-        
-        const center = map.getCenter();
-        const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
-        let dxf = "0\nSECTION\n2\nENTITIES\n";
-
-        if (!is3D) {
-            dxf += await export2D(center, sx, sy);
-        } else {
-            // CAO ĐỘ THỰC TẾ: Chống nhấp nháy chồng mặt phẳng trong SketchUp
-            if(document.getElementById('showNuoc').checked) dxf += await create3DFaces(geoData.nuoc, "V21_NUOC", -0.1, false);
-            if(document.getElementById('showDat').checked) dxf += await create3DFaces(geoData.dattrong, "V21_DATTRONG", 0, false);
-            if(document.getElementById('showCay').checked) dxf += await create3DFaces(geoData.cayxanh, "V21_CAYXANH", 0.05, false);
-            if(document.getElementById('showDuong').checked) dxf += await create3DFaces(geoData.duong, "V21_DUONG", 0.1, false);
-            if(document.getElementById('showViahe').checked) dxf += await create3DFaces(geoData.viahe, "V21_VIAHE", 0.15, false);
-            if(document.getElementById('showNha').checked) dxf += await create3DFaces(geoData.nha, "V21_NHA", 0.15, true);
-        }
 
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
-        a.download = is3D ? "NAM_ARCH_SOLID_CITY.dxf" : "NAM_ARCH_2D_PLAN.dxf"; 
+        a.download = "NAM_ARCH_2D_PLAN.dxf"; 
         a.click();
-        
-        updateProgress(100, is3D ? "XUẤT MÔ HÌNH SOLID THÀNH CÔNG!" : "XUẤT BẢN VẼ 2D THÀNH CÔNG!", false);
+        updateProgress(100, "XUẤT BẢN VẼ 2D THÀNH CÔNG!", false);
     }
 </script>
 </body>
