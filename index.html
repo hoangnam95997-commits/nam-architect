@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v78 - Perfect Topo-Mapper</title>
+    <title>NAM ARCH PRO v79 - Strict Isolation Engine</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -95,7 +95,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V78 - THE PERFECT TOPO-MAPPER</span>
+        <span class="tagline">V79 - STRICT ISOLATION ENGINE</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -104,7 +104,7 @@
 
         <div class="ctrl-box">
             <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 10px;">
-                <span style="color: var(--primary); text-transform: uppercase; font-size: 10px;">⚙️ QUẢN LÝ QUY HOẠCH</span>
+                <span style="color: var(--primary); text-transform: uppercase; font-size: 10px;">⚙️ TÙY CHỌN XUẤT LAYER</span>
             </div>
 
             <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 12px; width: 100%;" onclick="toggleMapTheme()">🗺️ BẢN ĐỒ NỀN: TỐI (DARK)</button>
@@ -115,7 +115,7 @@
                 <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> Vỉa Hè</label>
                 <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> Sông Hồ</label>
                 <label class="layer-label"><input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')"> <span class="color-dot" id="dot-cay" style="background:#16a34a;"></span> Cây Xanh</label>
-                <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')"> <span class="color-dot" id="dot-dat" style="background:#4b5563;"></span> Đất Trống</label>
+                <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')" title="Kiểm soát cả khu đất và tấm thảm nền bản đồ"> <span class="color-dot" id="dot-dat" style="background:#4b5563;"></span> Nền & Đất Trống</label>
             </div>
         </div>
 
@@ -139,7 +139,7 @@
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()">📥 2D CAD (.DXF)</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()" title="Tạo mặt đứng (Curbs) & Chống đè lớp">🏙️ TẢI 3D (.DAE)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()" title="Cô lập Layer 100%">🏙️ TẢI 3D (.DAE)</button>
             </div>
         </div>
     </div>
@@ -173,7 +173,6 @@
     setInterval(() => {
         const el = document.getElementById('lib-stt');
         const badge = document.getElementById('coreBadge');
-        // Phải tải xong cả 2 lõi: Turf và OSMTOGEOJSON
         if (typeof turf !== 'undefined' && typeof osmtogeojson !== 'undefined') { 
             el.innerText = "ONLINE (V6.5)"; badge.className = "core-badge online";
         }
@@ -314,6 +313,12 @@
         return current[0];
     }
 
+    function makeClosedPolygon(pts) {
+        let ring = pts.map(p => [p[0], p[1]]);
+        if (ring[0][0] !== ring[ring.length-1][0] || ring[0][1] !== ring[ring.length-1][1]) ring.push([...ring[0]]);
+        return turf.polygon([ring]);
+    }
+
     function calculateBuildingHeight(tags) {
         if(tags['building:levels']) return parseFloat(tags['building:levels']) * 3.5;
         const rand = Math.random();
@@ -322,7 +327,6 @@
         return 30 + Math.random() * 30;
     }
 
-    // LÕI V76: BỘ QUÉT VẠN NĂNG ĐỌC SIÊU ĐỐI TƯỢNG (RELATIONS)
     async function startMegaScan() {
         if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("Core đang khởi động!");
         resetScan();
@@ -332,11 +336,10 @@
         const sw = b.getSouthWest(), ne = b.getNorthEast();
         const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
         
-        // THẢM NỀN (Khắc phục triệt để lỗ thủng bản đồ)
+        // Tạo THẢM NỀN nhưng không vẽ lên bản đồ Leaflet để tránh rác mắt
         geoData.thamban_do.push(turf.bboxPolygon(screenBox));
         
-        // Truy vấn NWR (Lấy cả sông hồ lớn, công viên dạng relation)
-        const q = `[out:json][timeout:90][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];
+        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];
         (
             nwr["building"];
             nwr["highway"];
@@ -354,7 +357,6 @@
             updateProgress(30, "ĐANG BIÊN DỊCH SIÊU ĐỐI TƯỢNG (RELATIONS)...", true);
             await yieldCPU();
 
-            // Dùng osmtogeojson để parser các Relation khổng lồ
             const geojson = osmtogeojson(data);
             const features = geojson.features;
 
@@ -381,7 +383,6 @@
 
                 if (!geom) continue;
 
-                // Xử lý Lòng đường (LineString)
                 if (geom.type === 'LineString' || geom.type === 'MultiLineString') {
                     if (tags.highway) {
                         const lines = geom.type === 'LineString' ? [geom.coordinates] : geom.coordinates;
@@ -396,7 +397,6 @@
                         });
                     }
                 } 
-                // Xử lý Đa giác (Nước, Cây Xanh, Đất, Nhà)
                 else if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
                     let poly = null;
                     try { poly = turf.bboxClip(f, screenBox); } catch(err) {}
@@ -441,11 +441,8 @@
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    // LÕI V77: XUẤT DAE 3D VỚI MẶT ĐỨNG (CURBS) VÀ TOPOGRAPHY
+    // --- XUẤT 3D COLLADA (DAE) VỚI STRICT ISOLATION ---
     async function export3DDAE() {
-        let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length + geoData.dattrong.length;
-        if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
-        
         updateProgress(10, "ĐANG BIÊN DỊCH MẶT ĐỨNG & ĐỊA HÌNH...", true);
         
         const center = map.getCenter();
@@ -456,6 +453,7 @@
         let positions = [];
         let indices = [];
         let vIdx = 0;
+        let hasData = false;
 
         const addVertex = (x, y, z) => {
             positions.push(`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`);
@@ -477,7 +475,6 @@
                 tess.features.forEach(tri => {
                     let pts = tri.geometry.coordinates[0];
                     if (pts.length < 3) return;
-                    
                     let [p1, p2, p3] = getCCWTriangle(pts[0], pts[1], pts[2]);
                     if (reverseNormal) [p1, p2, p3] = [p1, p3, p2];
 
@@ -505,6 +502,7 @@
 
         const processLayer = async (dataArray, layerName, baseZ, isBuilding, curbBottomZ = null) => {
             if(dataArray.length === 0) return;
+            hasData = true;
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 20 === 0) {
                     let p = 10 + (i / dataArray.length) * 80;
@@ -519,7 +517,6 @@
 
                 polys.forEach(coords => {
                     let topZ = isBuilding && h > 0 ? baseZ + h : baseZ;
-                    
                     writeTriangles(coords, topZ, false);
                     
                     if (isBuilding && h > 0) {
@@ -535,16 +532,22 @@
             }
         };
 
-        // KẾT HỢP CAO ĐỘ V77
-        await processLayer(geoData.thamban_do, "THAM_NEN", 0.0, false, null);
+        // BẢO MẬT CÔ LẬP LỚP: Tuyệt đối chỉ xuất những gì người dùng chọn (Kể cả thảm nền)
+        if(document.getElementById('showDat').checked) {
+            await processLayer(geoData.thamban_do, "THAM_NEN", 0.0, false, null);
+            await processLayer(geoData.dattrong, "DATTRONG", 0.1, false, 0.0);
+        }
         
         if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "NUOC", -0.5, false, 0.0);
-        if(document.getElementById('showDat').checked) await processLayer(geoData.dattrong, "DATTRONG", 0.1, false, 0.0);
         if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, "CAYXANH", 0.2, false, 0.0);
         if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.3, false, 0.0);
         if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "VIAHE", 0.4, false, 0.0);
-        
         if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.4, true, null);
+
+        if(!hasData) {
+            updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
+            return;
+        }
 
         updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true);
         await yieldCPU();
@@ -587,14 +590,17 @@
         updateProgress(100, "XUẤT MÔ HÌNH ĐỊA HÌNH 3D THÀNH CÔNG!", false);
     }
 
+    // --- CÔ LẬP LAYER CHO CẢ FILE 2D DXF ---
     async function export2DDXF() {
-        if(geoData.nha.length === 0 && geoData.duong.length === 0 && geoData.dattrong.length === 0) return alert("Chưa có dữ liệu!");
+        let hasData = false;
         updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
 
         const writeLines = async (dataArray, layerName) => {
+            if(dataArray.length === 0) return;
+            hasData = true;
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 50 === 0) await yieldCPU();
                 const geom = dataArray[i].geometry || dataArray[i];
@@ -610,11 +616,21 @@
         };
 
         if(document.getElementById('showNuoc').checked) await writeLines(geoData.nuoc, "V21_NUOC");
-        if(document.getElementById('showDat').checked) await writeLines(geoData.dattrong, "V21_DATTRONG");
+        
+        if(document.getElementById('showDat').checked) {
+            await writeLines(geoData.thamban_do, "V21_THAMNEN");
+            await writeLines(geoData.dattrong, "V21_DATTRONG");
+        }
+        
         if(document.getElementById('showCay').checked) await writeLines(geoData.cayxanh, "V21_CAYXANH");
         if(document.getElementById('showDuong').checked) await writeLines(geoData.duong, "V21_DUONG");
         if(document.getElementById('showViahe').checked) await writeLines(geoData.viahe, "V21_VIAHE");
         if(document.getElementById('showNha').checked) await writeLines(geoData.nha, "V21_NHA");
+
+        if(!hasData) {
+            updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
+            return;
+        }
 
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
