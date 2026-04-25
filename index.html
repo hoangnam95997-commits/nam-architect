@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v85 - Neon & 3D UI</title>
+    <title>NAM ARCH PRO v86 - Glass Switch UI</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     
     <style>
         :root { 
-            --bg-base: #0a0a0f; /* Đen sâu hơn để làm nổi Neon */
+            --bg-base: #0a0a0f; 
             --surface-1: #13141f;
             --surface-2: rgba(19, 20, 31, 0.7);
             --text-main: #f8fafc;
@@ -28,6 +28,7 @@
             --neon-purple: #9d00ff;
             --neon-pink: #ff007f;
             --neon-green: #00ff88;
+            --neon-orange: #ffaa00;
         }
 
         * { box-sizing: border-box; }
@@ -77,41 +78,99 @@
         .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { transform: translateX(16px); background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue), inset 0 1px 2px rgba(255,255,255,0.8); }
 
         /* ======================================================== */
+        /* CÔNG TẮC GIAO DIỆN (GLASS SWITCH ĐỈNH CAO)               */
+        /* ======================================================== */
+        .theme-toggle-btn {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(145deg, #13141f, #0a0a0f);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            /* Tạo rãnh chìm 3D sâu xuống */
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.8), 0 1px 2px rgba(255,255,255,0.05);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        /* Cục trượt Thủy tinh (Glass Thumb) */
+        .theme-toggle-thumb {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            height: 30px;
+            border-radius: 8px;
+            /* Chế độ tối: Trượt bên trái, Màu Xanh Neon */
+            background: linear-gradient(135deg, #0055ff, var(--neon-blue));
+            box-shadow: 
+                0 0 15px rgba(0, 243, 255, 0.4), /* Hào quang Neon */
+                inset 0 2px 3px rgba(255,255,255,0.5), /* Phản chiếu viền trên */
+                inset 0 -2px 3px rgba(0,0,0,0.5); /* Bóng mờ viền dưới */
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Hiệu ứng nảy (bounce) */
+            z-index: 1;
+        }
+
+        /* Lớp kính phản quang (Glass Reflection) dán lên trên cục trượt */
+        .theme-toggle-thumb::after {
+            content: '';
+            position: absolute; top: 0; left: 5%; width: 90%; height: 40%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
+            border-radius: 6px 6px 0 0;
+        }
+
+        /* Chế độ Sáng: Trượt bên phải, Màu Vàng/Cam Neon */
+        .theme-toggle-thumb.light-mode {
+            left: calc(50%);
+            background: linear-gradient(135deg, #ff5500, var(--neon-orange));
+            box-shadow: 
+                0 0 15px rgba(255, 170, 0, 0.4),
+                inset 0 2px 3px rgba(255,255,255,0.5),
+                inset 0 -2px 3px rgba(0,0,0,0.5);
+        }
+
+        .theme-toggle-text {
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9); /* Đổ bóng chữ để dễ đọc */
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        /* ======================================================== */
         /* HIỆU ỨNG NÚT BẤM 3D & NEON ĐỈNH CAO                      */
         /* ======================================================== */
         
-        /* Nút Mega Scan (Hệ 3D Cứng) */
         .btn-main { 
             width: 100%; padding: 14px; margin-bottom: 16px;
             border: none; border-radius: var(--radius-md); 
             font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
             cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-            
-            /* Tạo khối 3D */
             background: linear-gradient(180deg, #333 0%, #111 100%);
             color: #fff;
             box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.2),  /* Viền sáng nổi lên */
-                inset 0 -2px 5px rgba(0, 0, 0, 0.8),       /* Đáy chìm xuống */
-                0 5px 15px rgba(0, 0, 0, 0.5);             /* Bóng đổ ngoài */
+                inset 0 1px 1px rgba(255, 255, 255, 0.2), 
+                inset 0 -2px 5px rgba(0, 0, 0, 0.8),
+                0 5px 15px rgba(0, 0, 0, 0.5);
             transition: all 0.15s ease;
         }
         .btn-main:hover { 
             background: linear-gradient(180deg, #444 0%, #222 100%);
             transform: translateY(-2px); 
-            box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.3),
-                inset 0 -2px 5px rgba(0, 0, 0, 0.8),
-                0 8px 20px rgba(0, 0, 0, 0.6); 
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -2px 5px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6); 
         }
-        .btn-main:active { 
-            transform: translateY(2px); 
-            box-shadow: 
-                inset 0 2px 5px rgba(0, 0, 0, 0.8), 
-                0 2px 5px rgba(0, 0, 0, 0.3);
-        }
+        .btn-main:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 2px 5px rgba(0, 0, 0, 0.3); }
 
-        /* Nút chức năng phụ (Làm mới) */
         .btn-outline { 
             padding: 10px; border-radius: 8px; 
             background: #1a1b26; border: 1px solid #2a2b3d;
@@ -123,7 +182,6 @@
         .btn-outline:hover { background: #222333; color: #fff; }
         .btn-outline:active { box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); transform: translateY(1px); }
         
-        /* Hai nút xuất file: Hiệu ứng Thủy tinh Khối + Neon Chuyển Động */
         .btn-export-group { display: flex; gap: 10px; }
         
         .btn-3d-neon {
@@ -133,67 +191,40 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
             color: #fff; position: relative; overflow: hidden;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            /* Khối 3D cơ bản cho nút Neon */
-            box-shadow: 
-                inset 0 2px 2px rgba(255, 255, 255, 0.3),  /* Viền trên sáng */
-                inset 0 -4px 6px rgba(0, 0, 0, 0.5),       /* Viền dưới tối */
-                0 4px 10px rgba(0, 0, 0, 0.4);             /* Bóng đổ ngoài */
+            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.3), inset 0 -4px 6px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.4);
         }
         
-        /* Nút CAD 2D: Xanh Neon */
         .btn-cad {
             background: linear-gradient(135deg, #0055ff, #00f3ff);
             background-size: 200% 200%;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         .btn-cad:hover {
-            animation: gradientMove 2s ease infinite;
-            transform: translateY(-2px);
-            box-shadow: 
-                inset 0 2px 2px rgba(255, 255, 255, 0.5),
-                inset 0 -4px 6px rgba(0, 0, 0, 0.4),
-                0 8px 25px rgba(0, 243, 255, 0.5); /* Glow Xanh */
+            animation: gradientMove 2s ease infinite; transform: translateY(-2px);
+            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -4px 6px rgba(0, 0, 0, 0.4), 0 8px 25px rgba(0, 243, 255, 0.5);
         }
         
-        /* Nút 3D DAE: Tím/Hồng Neon */
         .btn-3d {
             background: linear-gradient(135deg, #9d00ff, #ff007f);
             background-size: 200% 200%;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         .btn-3d:hover {
-            animation: gradientMove 2s ease infinite;
-            transform: translateY(-2px);
-            box-shadow: 
-                inset 0 2px 2px rgba(255, 255, 255, 0.5),
-                inset 0 -4px 6px rgba(0, 0, 0, 0.4),
-                0 8px 25px rgba(255, 0, 127, 0.5); /* Glow Hồng */
+            animation: gradientMove 2s ease infinite; transform: translateY(-2px);
+            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -4px 6px rgba(0, 0, 0, 0.4), 0 8px 25px rgba(255, 0, 127, 0.5);
         }
 
-        /* Lớp phủ thủy tinh (Glass reflection) giả lập độ bóng bẩy */
         .btn-3d-neon::after {
-            content: '';
-            position: absolute; top: 0; left: -100%;
-            width: 50%; height: 100%;
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transform: skewX(-20deg);
-            transition: 0.5s;
+            transform: skewX(-20deg); transition: 0.5s;
         }
         .btn-3d-neon:hover::after { left: 200%; }
-        
-        .btn-3d-neon:active {
-            transform: translateY(2px);
-            box-shadow: 
-                inset 0 3px 8px rgba(0, 0, 0, 0.6), /* Ấn chìm sâu xuống */
-                0 2px 5px rgba(0,0,0,0.2);
-        }
+        .btn-3d-neon:active { transform: translateY(2px); box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.6), 0 2px 5px rgba(0,0,0,0.2); }
 
         @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
         }
-        /* ======================================================== */
 
         .prog-container { margin-top: 12px; }
         .prog-wrap { height: 8px; background: #000; border-radius: 4px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); border: 1px solid #333; }
@@ -223,7 +254,7 @@
         
         <div class="brand-header">
             <h1>NAM ARCH <span>PRO</span></h1>
-            <span class="tagline">V85 • NEON 3D BUTTONS EDITION</span>
+            <span class="tagline">V86 • GLASS SWITCH UI</span>
         </div>
 
         <div class="panel-card">
@@ -273,7 +304,11 @@
                 </label>
             </div>
             
-            <button id="mapThemeBtn" class="btn-outline" style="margin-top: 12px; width: 100%; border: none;" onclick="toggleMapTheme()">🌓 Đổi Nền Bản Đồ (Sáng/Tối)</button>
+            <div class="theme-toggle-btn" onclick="toggleMapTheme()">
+                <div class="theme-toggle-thumb" id="themeThumb"></div>
+                <div class="theme-toggle-text" id="txtDark" style="opacity: 1;">🌙 NỀN TỐI</div>
+                <div class="theme-toggle-text" id="txtLight" style="opacity: 0.5;">☀️ NỀN SÁNG</div>
+            </div>
         </div>
 
         <button class="btn-main" onclick="startMegaScan()">
@@ -338,7 +373,6 @@
     var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
     var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 100, maxNativeZoom: 19 });
     
-    // TẠO LƯỚI KINH ĐỘ - VĨ ĐỘ
     let graticuleLayer = L.layerGroup().addTo(map);
     function drawGraticule() {
         graticuleLayer.clearLayers();
@@ -369,6 +403,12 @@
     let isLightMap = false;
     function toggleMapTheme() {
         isLightMap = !isLightMap;
+        
+        // Cập nhật hiệu ứng Công tắc (Glass Switch)
+        const thumb = document.getElementById('themeThumb');
+        const txtDark = document.getElementById('txtDark');
+        const txtLight = document.getElementById('txtLight');
+
         if(isLightMap) {
             map.removeLayer(darkT); lightT.addTo(map);
             document.getElementById('dot-nha').style.background = '#dc2626';
@@ -377,6 +417,11 @@
             document.getElementById('dot-nuoc').style.background = '#0284c7';
             document.getElementById('dot-cay').style.background = '#16a34a';
             document.getElementById('dot-dat').style.background = '#94a3b8';
+            
+            // Đẩy Switch sang Light Mode
+            thumb.classList.add('light-mode');
+            txtDark.style.opacity = '0.4';
+            txtLight.style.opacity = '1';
         } else {
             map.removeLayer(lightT); darkT.addTo(map);
             document.getElementById('dot-nha').style.background = '#f43f5e';
@@ -385,6 +430,11 @@
             document.getElementById('dot-nuoc').style.background = '#0ea5e9';
             document.getElementById('dot-cay').style.background = '#10b981';
             document.getElementById('dot-dat').style.background = '#64748b';
+            
+            // Kéo Switch về Dark Mode
+            thumb.classList.remove('light-mode');
+            txtDark.style.opacity = '1';
+            txtLight.style.opacity = '0.4';
         }
         updateLineStyles();
         drawGraticule();
