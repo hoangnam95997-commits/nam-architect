@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v91 - Holographic Glass UI</title>
+    <title>NAM ARCH PRO v92 - Holographic & Full Logic</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     
     <style>
         :root { 
-            /* BẢNG MÀU HOLOGRAPHIC & AURORA (Cảm hứng từ ảnh ✨.jpg) */
+            /* BẢNG MÀU HOLOGRAPHIC & AURORA */
             --bg-base: #020617; 
             --surface-1: #0f172a;
             --surface-2: rgba(30, 41, 59, 0.6);
@@ -35,10 +35,10 @@
         }
 
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; transition: background 0.5s ease; }
         #map { height: 100vh; width: 100vw; background: var(--bg-base); }
         
-        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.4); transition: all 0.3s ease;}
         .search-box input { background: transparent; border: none; padding: 12px 16px; width: 280px; color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
         .search-box button { background: rgba(255,255,255,0.05); border: none; border-left: 1px solid var(--border); padding: 0 20px; cursor: pointer; color: var(--holo-cyan); font-weight: 700; transition: 0.2s; }
         .search-box button:hover { background: var(--aurora-gradient); color: #fff; }
@@ -53,7 +53,8 @@
         .toggle-btn:hover { background: var(--surface-2); transform: scale(1.05); border-color: var(--holo-blue); }
 
         .brand-header { margin-bottom: 24px; text-align: center; }
-        h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px; background: var(--aurora-gradient); -webkit-background-clip: text; color: transparent; text-shadow: 0 0 30px rgba(129, 140, 248, 0.3); }
+        h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px; background: var(--aurora-gradient); -webkit-background-clip: text; color: transparent; text-shadow: 0 0 30px rgba(129, 140, 248, 0.3); transition: 0.5s; }
+        body.theme-light h1 { background: linear-gradient(90deg, #fbbf24, #f472b6); -webkit-background-clip: text; text-shadow: 0 0 30px rgba(251, 191, 36, 0.4); }
         .tagline { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 3px; display: block; margin-top: 4px; }
 
         .panel-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px; }
@@ -75,11 +76,10 @@
         .toggle-switch { width: 40px; height: 22px; background: #000; border-radius: 20px; position: relative; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8); }
         .toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #334155; border-radius: 50%; transition: 0.3s; }
         .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: var(--aurora-gradient); }
+        body.theme-light .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: linear-gradient(135deg, #fbbf24, #f472b6); }
         .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { transform: translateX(18px); background: #fff; box-shadow: 0 0 10px #fff; }
 
-        /* ======================================================== */
-        /* CÔNG TẮC VŨ TRỤ HOLOGRAPHIC (V91)                        */
-        /* ======================================================== */
+        /* CÔNG TẮC VŨ TRỤ HOLOGRAPHIC (DAY/NIGHT SWITCH) */
         .glass-toggle-container {
             position: relative; width: 100%; height: 50px; border-radius: 25px; cursor: pointer; margin-top: 15px; overflow: hidden; transition: 0.5s; border: 1px solid rgba(255,255,255,0.1);
         }
@@ -103,12 +103,15 @@
         .star { position: absolute; background: #fff; border-radius: 50%; box-shadow: 0 0 5px #fff; animation: twinkle 1s infinite alternate; }
         .s1 { width: 2px; height: 2px; top: 15px; right: 30px; }
         .s2 { width: 3px; height: 3px; top: 25px; right: 50px; }
-
         @keyframes twinkle { from { opacity: 0.3; } to { opacity: 1; } }
 
-        /* ======================================================== */
-        /* HỆ THỐNG NÚT THỦY TINH AURORA (SIÊU VIP)                  */
-        /* ======================================================== */
+        .toggle-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-around; padding: 0 20px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 4; pointer-events: none; transition: 0.5s; }
+        .glass-toggle-container.dark-mode .txt-dark { color: #fff; text-shadow: 0 0 10px rgba(129, 140, 248, 0.8); opacity: 1; margin-left: 20px;}
+        .glass-toggle-container.dark-mode .txt-light { color: rgba(255,255,255,0.2); opacity: 0.5; }
+        .glass-toggle-container.light-mode .txt-dark { color: rgba(0,0,0,0.3); opacity: 0.5; margin-left: 20px;}
+        .glass-toggle-container.light-mode .txt-light { color: #fff; text-shadow: 0 0 10px rgba(251, 191, 36, 0.8); opacity: 1; }
+
+        /* NÚT THỦY TINH AURORA */
         .btn-glass {
             padding: 16px 10px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.2);
             font-family: 'Inter', sans-serif; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
@@ -118,14 +121,13 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 1;
         }
-        /* Lớp phản chiếu Glossy */
         .btn-glass::before {
             content: ''; position: absolute; top: 2px; left: 5%; width: 90%; height: 40%;
             background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
             border-radius: 25px 25px 80px 80px; z-index: 2; pointer-events: none;
         }
+        .btn-glass:active { transform: translateY(2px); box-shadow: inset 0 5px 15px rgba(0,0,0,0.5); }
 
-        /* Nút QUÉT: Sắc xanh Aurora */
         .btn-glass-scan {
             width: 100%; font-size: 14px; margin-bottom: 20px;
             background: linear-gradient(135deg, rgba(192, 132, 252, 0.4), rgba(34, 211, 238, 0.4));
@@ -136,47 +138,52 @@
             background: linear-gradient(135deg, rgba(192, 132, 252, 0.6), rgba(34, 211, 238, 0.6));
             box-shadow: 0 15px 40px rgba(34, 211, 238, 0.3), inset 0 0 25px rgba(255,255,255,0.2);
         }
+        /* Mode Sáng */
+        body.theme-light .btn-glass-scan {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.4), rgba(244, 114, 182, 0.4));
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 0 20px rgba(251, 191, 36, 0.2);
+        }
+        body.theme-light .btn-glass-scan:hover {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.6), rgba(244, 114, 182, 0.6));
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4), inset 0 0 25px rgba(255,255,255,0.3);
+        }
 
-        /* Nút RESET: Sắc hồng Aurora */
         .btn-glass-reset {
             flex: 1; padding: 12px; border-radius: 15px; font-size: 11px;
-            background: rgba(244, 114, 182, 0.2);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background: rgba(244, 114, 182, 0.2); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         .btn-glass-reset:hover {
-            background: rgba(244, 114, 182, 0.4);
-            box-shadow: 0 8px 20px rgba(244, 114, 182, 0.2);
-            transform: translateY(-2px);
+            background: rgba(244, 114, 182, 0.4); box-shadow: 0 8px 20px rgba(244, 114, 182, 0.2); transform: translateY(-2px);
         }
 
-        /* Nút XUẤT 2D & 3D: Sắc tím/xanh ngọc Aurora */
+        .btn-export-group { display: flex; gap: 10px; }
         .btn-glass-cad {
-            flex: 1; background: linear-gradient(135deg, rgba(129, 140, 248, 0.4), rgba(34, 211, 238, 0.4));
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            flex: 1; background: linear-gradient(135deg, rgba(129, 140, 248, 0.4), rgba(34, 211, 238, 0.4)); box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
         .btn-glass-cad:hover { transform: translateY(-3px); background: linear-gradient(135deg, rgba(129, 140, 248, 0.6), rgba(34, 211, 238, 0.6)); }
 
         .btn-glass-3d {
-            flex: 1; background: linear-gradient(135deg, rgba(192, 132, 252, 0.4), rgba(244, 114, 182, 0.4));
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            flex: 1; background: linear-gradient(135deg, rgba(192, 132, 252, 0.4), rgba(244, 114, 182, 0.4)); box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
         .btn-glass-3d:hover { transform: translateY(-3px); background: linear-gradient(135deg, rgba(192, 132, 252, 0.6), rgba(244, 114, 182, 0.6)); }
 
-        .btn-glass:active { transform: translateY(2px); box-shadow: inset 0 5px 15px rgba(0,0,0,0.5); }
-
-        /* THANH TIẾN TRÌNH KHỐI NỔI (V91) */
+        /* THANH TIẾN TRÌNH */
         .prog-container { margin-top: 15px; }
         .prog-wrap { height: 12px; background: #000; border-radius: 10px; overflow: hidden; position: relative; box-shadow: inset 0 3px 6px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05); }
         #progress { width: 0%; height: 100%; background: linear-gradient(90deg, #c084fc, #818cf8, #22d3ee, #f472b6); background-size: 300% 100%; animation: auroraFlow 4s linear infinite; box-shadow: 0 0 15px rgba(129, 140, 248, 0.5); transition: width 0.4s ease;}
+        body.theme-light #progress { background: linear-gradient(90deg, #fbbf24, #f472b6, #fbbf24); box-shadow: 0 0 15px rgba(251, 191, 36, 0.5); }
         @keyframes auroraFlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
         #stt { font-size: 11px; text-align: center; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* HUD TỌA ĐỘ TRONG TRẺO */
+        /* HUD TỌA ĐỘ */
         .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 10px 30px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        body.theme-light .hud-bottom { background: rgba(255,255,255,0.7); color: #475569; }
         .hud-val { color: var(--holo-cyan); font-weight: 800; text-shadow: 0 0 10px rgba(34, 211, 238, 0.4); transition: 0.5s;}
+        body.theme-light .hud-val { color: var(--holo-gold); text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); }
         
-        .core-badge { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .core-badge { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); transition: 0.5s;}
+        body.theme-light .core-badge { color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(0.9); opacity: 1; } }
     </style>
@@ -193,7 +200,7 @@
         
         <div class="brand-header">
             <h1>NAM ARCH <span>PRO</span></h1>
-            <span class="tagline">V91 • HOLOGRAPHIC GLASS</span>
+            <span class="tagline">V92 • HOLOGRAPHIC & FULL LOGIC</span>
         </div>
 
         <div class="panel-card">
@@ -288,7 +295,7 @@
 
 <script>
     // =========================================================================
-    // LÕI THUẬT TOÁN V82 GIỮ NGUYÊN 100% - ĐẢM BẢO VẬN HÀNH HOÀN HẢO
+    // LÕI THUẬT TOÁN V82 - ĐƯỢC BUNG FULL CODE, KHÔNG BỊ NÉN ĐỂ DỄ ĐỌC HƠN
     // =========================================================================
     
     let sidebarOpen = true;
@@ -301,10 +308,14 @@
 
     document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT') return;
-        if (e.code === 'Space') { e.preventDefault(); startMegaScan(); }
+        if (e.code === 'Space') { 
+            e.preventDefault(); 
+            startMegaScan(); 
+        }
     });
 
     var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
+    
     var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
     var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 100, maxNativeZoom: 19 });
     
@@ -313,13 +324,24 @@
         graticuleLayer.clearLayers();
         let bounds = map.getBounds();
         let zoom = map.getZoom();
+        
         let step = zoom >= 18 ? 0.0005 : (zoom >= 16 ? 0.002 : (zoom >= 14 ? 0.01 : 0.05));
         let gridColor = isLightMap ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-        for(let lat = startLat = Math.floor(bounds.getSouth() / step) * step; lat <= bounds.getNorth(); lat += step) {
-            L.polyline([[lat, bounds.getWest()], [lat, bounds.getEast()]], {color: gridColor, weight: 1, dashArray: '4, 4'}).addTo(graticuleLayer);
+        
+        let startLat = Math.floor(bounds.getSouth() / step) * step;
+        let endLat = Math.ceil(bounds.getNorth() / step) * step;
+        let startLng = Math.floor(bounds.getWest() / step) * step;
+        let endLng = Math.ceil(bounds.getEast() / step) * step;
+
+        for(let lat = startLat; lat <= endLat; lat += step) {
+            L.polyline([[lat, bounds.getWest()], [lat, bounds.getEast()]], {
+                color: gridColor, weight: 1, dashArray: '4, 4'
+            }).addTo(graticuleLayer);
         }
-        for(let lng = startLng = Math.floor(bounds.getWest() / step) * step; lng <= bounds.getEast(); lng += step) {
-            L.polyline([[bounds.getSouth(), lng], [bounds.getNorth(), lng]], {color: gridColor, weight: 1, dashArray: '4, 4'}).addTo(graticuleLayer);
+        for(let lng = startLng; lng <= endLng; lng += step) {
+            L.polyline([[bounds.getSouth(), lng], [bounds.getNorth(), lng]], {
+                color: gridColor, weight: 1, dashArray: '4, 4'
+            }).addTo(graticuleLayer);
         }
     }
     map.on('move zoomend', drawGraticule); 
@@ -330,12 +352,15 @@
         document.body.classList.toggle('theme-light', isLightMap);
         const toggleBtn = document.getElementById('themeToggleBtn');
         const thumbIcon = document.getElementById('themeThumbIcon');
+        
         if(isLightMap) {
-            map.removeLayer(darkT); lightT.addTo(map);
+            map.removeLayer(darkT); 
+            lightT.addTo(map);
             toggleBtn.classList.replace('dark-mode', 'light-mode');
             thumbIcon.innerText = '☀️';
         } else {
-            map.removeLayer(lightT); darkT.addTo(map);
+            map.removeLayer(lightT); 
+            darkT.addTo(map);
             toggleBtn.classList.replace('light-mode', 'dark-mode');
             thumbIcon.innerText = '🌙';
         }
@@ -351,27 +376,42 @@
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data = await res.json();
-            if(data && data.length > 0) map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
+            if(data && data.length > 0) {
+                map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
+            }
         } catch(e) {}
     }
 
     function updateHUD() {
-        let z = map.getZoom(); let center = map.getCenter();
+        let z = map.getZoom(); 
+        let center = map.getCenter();
         document.getElementById('zoomSlider').value = z; 
         document.getElementById('z-val').innerText = z.toFixed(1);
         document.getElementById('hud-coord').innerText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+        
         let alt = Math.round(40000000 / Math.pow(2, z));
         document.getElementById('hud-alt').innerText = alt >= 1000 ? (alt/1000).toFixed(1) + 'km' : alt + 'm';
     }
     document.getElementById('zoomSlider').addEventListener('input', e => map.setZoom(e.target.value));
-    map.on('move zoomend', updateHUD); updateHUD();
+    map.on('move zoomend', updateHUD); 
+    updateHUD();
 
     var geoData = { nha: [], duong: [], viahe: [], nuoc: [], cayxanh: [], dattrong: [], o_pho: [] };
-    var layers = { cayxanh: L.layerGroup().addTo(map), dattrong: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), nha: L.layerGroup().addTo(map) };
+    var layers = { 
+        cayxanh: L.layerGroup().addTo(map), 
+        dattrong: L.layerGroup().addTo(map), 
+        nuoc: L.layerGroup().addTo(map), 
+        viahe: L.layerGroup().addTo(map), 
+        duong: L.layerGroup().addTo(map), 
+        nha: L.layerGroup().addTo(map) 
+    };
 
     function toggleLayer(type) {
-        if(document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked) map.addLayer(layers[type]);
-        else map.removeLayer(layers[type]);
+        if(document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked) {
+            map.addLayer(layers[type]);
+        } else {
+            map.removeLayer(layers[type]);
+        }
     }
 
     function getLayerStyle(type) {
@@ -386,7 +426,9 @@
         return config[type];
     }
 
-    function updateLineStyles() { Object.keys(layers).forEach(type => layers[type].eachLayer(l => l.setStyle(getLayerStyle(type)))); }
+    function updateLineStyles() { 
+        Object.keys(layers).forEach(type => layers[type].eachLayer(l => l.setStyle(getLayerStyle(type)))); 
+    }
 
     function updateProgress(percent, text, isActive = true) {
         const pBar = document.getElementById('progress');
@@ -404,17 +446,34 @@
 
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 0));
 
+    // THUẬT TOÁN GỘP MẶT PHẲNG (BOOLEAN UNION)
     async function chunkedUnion(polygons, type) {
         if (!polygons || polygons.length === 0) return null;
         if (polygons.length === 1) return polygons[0];
-        let current = polygons.map(p => { try { return turf.cleanCoords(p); } catch(e) { return p; } });
+        
+        let current = polygons.map(p => { 
+            try { return turf.cleanCoords(p); } catch(e) { return p; } 
+        });
+        
+        let step = 0;
         while (current.length > 1) {
             let next = [];
             for (let i = 0; i < current.length; i += 2) {
                 if (i % 2 === 0) await yieldCPU(); 
-                if (i + 1 < current.length) { try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); } } else next.push(current[i]);
+                
+                if (i + 1 < current.length) { 
+                    try { 
+                        next.push(turf.union(current[i], current[i+1])); 
+                    } catch(e) { 
+                        next.push(current[i]); 
+                    } 
+                } else {
+                    next.push(current[i]);
+                }
             }
-            current = next;
+            current = next; 
+            step++;
+            document.getElementById('stt').innerText = `Gộp đa giác ${type}: Vòng ${step}`;
         }
         return current[0];
     }
@@ -424,96 +483,216 @@
         return 9 + Math.random() * 15;
     }
 
+    // QUÁ TRÌNH QUÉT DỮ LIỆU CHÍNH (MEGA SCAN)
     async function startMegaScan() {
-        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("SYSTEM LOADING...");
+        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') {
+            return alert("SYSTEM LOADING...");
+        }
         resetScan();
         updateProgress(10, "LINKING SATELLITE...", true);
-        const b = map.getBounds(); const sw = b.getSouthWest(), ne = b.getNorthEast(); const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
-        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(nwr["building"];nwr["highway"];nwr["natural"~"water|wood"];nwr["waterway"];nwr["leisure"~"park|garden"];nwr["landuse"];);out body;>;out skel qt;`;
+        
+        const b = map.getBounds(); 
+        const sw = b.getSouthWest();
+        const ne = b.getNorthEast(); 
+        const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
+        
+        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];
+        (
+            nwr["building"];
+            nwr["highway"];
+            nwr["natural"~"water|coastline|wood|scrub|wetland"];
+            nwr["waterway"];
+            nwr["leisure"~"park|garden"];
+            nwr["landuse"];
+        );out body;>;out skel qt;`;
+        
         try {
             const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
             const data = await res.json();
-            const geojson = osmtogeojson(data); const features = geojson.features;
-            if(features.length === 0) return updateProgress(0, "EMPTY DATA", false);
+            
+            const geojson = osmtogeojson(data); 
+            const features = geojson.features;
+            
+            if(features.length === 0) {
+                return updateProgress(0, "EMPTY DATA", false);
+            }
+            
             let rBufs = [], sBufs = [], rawNuoc = [];
+            
             for (let i = 0; i < features.length; i++) {
-                const f = features[i]; const geom = f.geometry; const tags = f.properties; if (!geom) continue;
+                const f = features[i]; 
+                const geom = f.geometry; 
+                const tags = f.properties; 
+                
+                if (!geom) continue;
+                
                 if (geom.type === 'LineString' || geom.type === 'MultiLineString') {
                     if (tags.highway) {
                         const lines = geom.type === 'LineString' ? [geom.coordinates] : geom.coordinates;
                         lines.forEach(coords => {
-                            const line = turf.lineString(coords); const wDuong = (tags.highway === 'primary') ? 12 : 6;
-                            try { rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters'}), screenBox)); sBufs.push(turf.bboxClip(turf.buffer(line, (wDuong+6)/2, {units:'meters'}), screenBox)); } catch(e){}
+                            const line = turf.lineString(coords); 
+                            const wDuong = (tags.highway === 'primary') ? 12 : 6;
+                            try { 
+                                rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters'}), screenBox)); 
+                                sBufs.push(turf.bboxClip(turf.buffer(line, (wDuong+6)/2, {units:'meters'}), screenBox)); 
+                            } catch(e){}
                         });
                     }
                 } else if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
-                    let poly = null; try { poly = turf.bboxClip(f, screenBox); } catch(e){} if (!poly || poly.geometry.coordinates.length === 0) continue;
-                    if (tags.building) { poly.height = calculateBuildingHeight(tags); geoData.nha.push(poly); L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha); }
-                    else if (tags.natural === 'water' || tags.waterway) rawNuoc.push(poly);
-                    else if (tags.leisure || tags.natural === 'wood') { geoData.cayxanh.push(poly); L.geoJSON(poly, { style: getLayerStyle('cayxanh') }).addTo(layers.cayxanh); }
-                    else { geoData.dattrong.push(poly); L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong); }
+                    let poly = null; 
+                    try { 
+                        poly = turf.bboxClip(f, screenBox); 
+                    } catch(e){} 
+                    
+                    if (!poly || poly.geometry.coordinates.length === 0) continue;
+                    
+                    if (tags.building) { 
+                        poly.height = calculateBuildingHeight(tags); 
+                        geoData.nha.push(poly); 
+                        L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha); 
+                    }
+                    else if (tags.natural === 'water' || tags.waterway) {
+                        rawNuoc.push(poly);
+                    }
+                    else if (tags.leisure || tags.natural === 'wood') { 
+                        geoData.cayxanh.push(poly); 
+                        L.geoJSON(poly, { style: getLayerStyle('cayxanh') }).addTo(layers.cayxanh); 
+                    }
+                    else { 
+                        geoData.dattrong.push(poly); 
+                        L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong); 
+                    }
                 }
             }
-            let mR = await chunkedUnion(rBufs, "ROAD"); if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
-            let mNuoc = await chunkedUnion(rawNuoc, "WATER"); if (mNuoc) { geoData.nuoc.push(mNuoc); L.geoJSON(mNuoc, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc); }
-            let baseCanvas = turf.bboxPolygon(screenBox); if (mR) try { baseCanvas = turf.difference(baseCanvas, mR); } catch(e){}
-            if (mNuoc) try { baseCanvas = turf.difference(baseCanvas, mNuoc); } catch(e){}
-            if (baseCanvas) turf.flatten(baseCanvas).features.forEach(f => geoData.o_pho.push(f));
+            
+            // XỬ LÝ LÒNG ĐƯỜNG VÀ MẶT NƯỚC
+            let mR = await chunkedUnion(rBufs, "ROAD"); 
+            if (mR) { 
+                geoData.duong.push(mR); 
+                L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); 
+            }
+            
+            let mNuoc = await chunkedUnion(rawNuoc, "WATER"); 
+            if (mNuoc) { 
+                geoData.nuoc.push(mNuoc); 
+                L.geoJSON(mNuoc, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc); 
+            }
+            
+            // TẠO LỚP ĐỤC LỖ (BOOLEAN DIFFERENCE)
+            let baseCanvas = turf.bboxPolygon(screenBox); 
+            if (mR) {
+                try { baseCanvas = turf.difference(baseCanvas, mR); } catch(e){}
+            }
+            if (mNuoc) {
+                try { baseCanvas = turf.difference(baseCanvas, mNuoc); } catch(e){}
+            }
+            
+            // BĂM NÁT LỚP NỀN THÀNH CÁC Ô PHỐ (O_PHO)
+            if (baseCanvas) {
+                turf.flatten(baseCanvas).features.forEach(f => geoData.o_pho.push(f));
+            }
+            
             updateProgress(100, "SCAN COMPLETED.", false);
-        } catch (err) { updateProgress(0, "SYSTEM ERROR", false); }
+        } catch (err) { 
+            updateProgress(0, "SYSTEM ERROR", false); 
+        }
     }
 
+    // XUẤT 3D COLLADA
     async function export3DDAE() {
         updateProgress(10, "EXPORTING 3D...", true);
-        const center = map.getCenter(); const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
-        const tx = (pt) => ((pt[0] - center.lng) * sx); const ty = (pt) => ((pt[1] - center.lat) * sy);
-        let positions = []; let indices = []; let vIdx = 0;
-        const addVertex = (x, y, z) => { positions.push(`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`); indices.push(vIdx++); };
+        const center = map.getCenter(); 
+        const sy = 111319.9;
+        const sx = sy * Math.cos(center.lat * Math.PI / 180);
+        
+        const tx = (pt) => ((pt[0] - center.lng) * sx); 
+        const ty = (pt) => ((pt[1] - center.lat) * sy);
+        
+        let positions = []; 
+        let indices = []; 
+        let vIdx = 0;
+        
+        const addVertex = (x, y, z) => { 
+            positions.push(`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`); 
+            indices.push(vIdx++); 
+        };
+        
         const writeTriangles = (coords, zVal, reverse = false) => {
             try {
                 let tess = turf.tesselate(turf.cleanCoords(turf.rewind(turf.polygon(coords), {reverse: false})));
                 tess.features.forEach(tri => {
-                    let pts = tri.geometry.coordinates[0]; if (pts.length < 3) return;
-                    let p1 = pts[0], p2 = pts[1], p3 = pts[2]; if (reverse) [p1, p2, p3] = [p1, p3, p2];
-                    addVertex(tx(p1), ty(p1), zVal); addVertex(tx(p2), ty(p2), zVal); addVertex(tx(p3), ty(p3), zVal);
+                    let pts = tri.geometry.coordinates[0]; 
+                    if (pts.length < 3) return;
+                    let p1 = pts[0], p2 = pts[1], p3 = pts[2]; 
+                    if (reverse) [p1, p2, p3] = [p1, p3, p2];
+                    addVertex(tx(p1), ty(p1), zVal); 
+                    addVertex(tx(p2), ty(p2), zVal); 
+                    addVertex(tx(p3), ty(p3), zVal);
                 });
             } catch(e){}
         };
-        const processLayer = async (data, baseZ, isBuilding, curbBottom = null) => {
+        
+        const processLayer = async (data, baseZ, isBuilding) => {
             for (let item of data) {
-                const geom = item.geometry || item; const h = item.height || 0; let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+                const geom = item.geometry || item; 
+                const h = item.height || 0; 
+                let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
                 polys.forEach(coords => {
-                    let topZ = isBuilding && h > 0 ? baseZ + h : baseZ; writeTriangles(coords, topZ, false);
+                    let topZ = isBuilding && h > 0 ? baseZ + h : baseZ; 
+                    writeTriangles(coords, topZ, false);
                     if (isBuilding && h > 0) writeTriangles(coords, baseZ, true);
                 });
             }
         };
+        
         if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, -0.5, false);
         if(document.getElementById('showDat').checked) await processLayer(geoData.o_pho, 0.0, false);
         if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, 0.0, false);
         if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, 0.1, false);
         if(document.getElementById('showNha').checked) await processLayer(geoData.nha, 0.15, true);
+        
         const dae = `<?xml version="1.0" encoding="utf-8"?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"><asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset><library_geometries><geometry id="g0"><mesh><source id="p0"><float_array id="p0-a" count="${positions.length*3}">${positions.join(' ')}</float_array><technique_common><accessor source="#p0-a" count="${positions.length}" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source><vertices id="v0"><input semantic="POSITION" source="#p0"/></vertices><triangles count="${indices.length/3}"><input semantic="VERTEX" source="#v0" offset="0"/><p>${indices.join(' ')}</p></triangles></mesh></geometry></library_geometries><library_visual_scenes><visual_scene id="S"><node id="N"><instance_geometry url="#g0"/></node></visual_scene></library_visual_scenes><scene><instance_visual_scene url="#S"/></scene></COLLADA>`;
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([dae], {type: 'application/collada+xml'})); a.download = "NAM_ARCH_HOLO_3D.dae"; a.click(); updateProgress(100, "DOWNLOAD READY.", false);
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([dae], {type: 'application/collada+xml'})); 
+        a.download = "NAM_ARCH_HOLO_3D.dae"; 
+        a.click(); 
+        updateProgress(100, "DOWNLOAD READY.", false);
     }
 
+    // XUẤT 2D DXF
     async function export2DDXF() {
         updateProgress(50, "WRITING DXF...", true);
-        const center = map.getCenter(); const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
+        const center = map.getCenter(); 
+        const sy = 111319.9;
+        const sx = sy * Math.cos(center.lat * Math.PI / 180);
+        
         let dxf = "0\nSECTION\n2\nENTITIES\n";
+        
         const writeLines = async (data, layer) => {
             for (let item of data) {
-                const geom = item.geometry || item; let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+                const geom = item.geometry || item; 
+                let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
                 polys.forEach(coords => coords.forEach(ring => {
                     dxf += `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n1\n`;
-                    ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layer}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n30\n0\n`; });
+                    ring.forEach(pt => { 
+                        dxf += `0\nVERTEX\n8\n${layer}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n30\n0\n`; 
+                    });
                     dxf += "0\nSEQEND\n";
                 }));
             }
         };
-        await writeLines(geoData.nuoc, "WATER"); await writeLines(geoData.o_pho, "BLOCKS"); await writeLines(geoData.duong, "ROADS"); await writeLines(geoData.nha, "BUILDINGS");
+        
+        await writeLines(geoData.nuoc, "WATER"); 
+        await writeLines(geoData.o_pho, "BLOCKS"); 
+        await writeLines(geoData.duong, "ROADS"); 
+        await writeLines(geoData.nha, "BUILDINGS");
+        
         dxf += "0\nENDSEC\n0\nEOF";
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'})); a.download = "NAM_ARCH_HOLO_2D.dxf"; a.click(); updateProgress(100, "DOWNLOAD READY.", false);
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'})); 
+        a.download = "NAM_ARCH_HOLO_2D.dxf"; 
+        a.click(); 
+        updateProgress(100, "DOWNLOAD READY.", false);
     }
 </script>
 </body>
