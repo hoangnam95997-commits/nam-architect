@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v75 - Classic DXF Restored</title>
+    <title>NAM ARCH PRO v76 - Full-Spectrum Mapper</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+    <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
     
     <style>
         :root { 
@@ -94,7 +95,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V75 - CLASSIC DXF & NATIVE DAE</span>
+        <span class="tagline">V76 - FULL-SPECTRUM MAPPER</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -137,8 +138,8 @@
         <div style="display: flex; flex-direction: column; gap: 8px;">
             <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()">🔄 LÀM MỚI DỮ LIỆU</button>
             <div style="display: flex; gap: 8px;">
-                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()" title="Phục hồi Polyline chống lỗi">📥 2D CAD (.DXF)</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()" title="Chuẩn SketchUp, Chuẩn tỷ lệ 1:1">🏙️ TẢI 3D (.DAE)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="export2DDXF()">📥 2D CAD (.DXF)</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="export3DDAE()">🏙️ TẢI 3D (.DAE)</button>
             </div>
         </div>
     </div>
@@ -172,7 +173,7 @@
     setInterval(() => {
         const el = document.getElementById('lib-stt');
         const badge = document.getElementById('coreBadge');
-        if (typeof turf !== 'undefined') { 
+        if (typeof turf !== 'undefined' && typeof osmtogeojson !== 'undefined') { 
             el.innerText = "ONLINE (V6.5)"; badge.className = "core-badge online";
         }
     }, 1000);
@@ -300,12 +301,6 @@
         return current[0];
     }
 
-    function makeClosedPolygon(pts) {
-        let ring = pts.map(p => [p[0], p[1]]);
-        if (ring[0][0] !== ring[ring.length-1][0] || ring[0][1] !== ring[ring.length-1][1]) ring.push([...ring[0]]);
-        return turf.polygon([ring]);
-    }
-
     function calculateBuildingHeight(tags) {
         if(tags['building:levels']) return parseFloat(tags['building:levels']) * 3.5;
         const rand = Math.random();
@@ -315,7 +310,7 @@
     }
 
     async function startMegaScan() {
-        if(typeof turf === 'undefined') return alert("Core đang khởi động!");
+        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("Core đang khởi động!");
         resetScan();
         updateProgress(10, "KẾT NỐI VỆ TINH OVERPASS...", true);
 
@@ -323,86 +318,98 @@
         const sw = b.getSouthWest(), ne = b.getNorthEast();
         const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
         
-        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];
+        // TRẢI THẢM NỀN (BASE GROUND) - ĐẢM BẢO 100% LẤP ĐẦY CÁC KHOẢNG TRẮNG
+        const baseGround = turf.bboxPolygon(screenBox);
+        geoData.dattrong.push(baseGround);
+        L.geoJSON(baseGround, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong);
+
+        // BỘ LỌC VẠN NĂNG: Quét nwr (Node, Way, Relation) để bắt cả sông hồ và mảng xanh siêu to
+        const q = `[out:json][timeout:90][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];
         (
-            way["building"];
-            way["highway"];
-            way["natural"="water"];
-            way["leisure"="park"];
-            way["landuse"="grass"];
-            way["natural"="wood"];
-            way["leisure"="garden"];
-            way["landuse"="brownfield"];
-            way["landuse"="construction"];
+            nwr["building"];
+            nwr["highway"];
+            nwr["natural"~"water|coastline|wood|scrub|wetland"];
+            nwr["waterway"~"riverbank|canal|dock"];
+            nwr["leisure"~"park|garden|pitch|recreation_ground"];
+            nwr["landuse"];
+            nwr["amenity"];
         );out body;>;out skel qt;`;
         
         try {
             const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
             const data = await res.json();
-            const nodes = new Map();
-            data.elements.forEach(e => { if(e.type === 'node') nodes.set(e.id, [e.lon, e.lat]); });
+            
+            updateProgress(30, "ĐANG BIÊN DỊCH SIÊU ĐỐI TƯỢNG (RELATIONS)...", true);
+            await yieldCPU();
 
-            let ways = data.elements.filter(e => e.type === "way");
-            if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
+            // SỬ DỤNG LÕI OSMTOGEOJSON ĐỂ ĐỌC DỮ LIỆU
+            const geojson = osmtogeojson(data);
+            const features = geojson.features;
 
-            if(ways.length > 8000) {
-                if(!confirm(`Khu vực này có hơn ${ways.length} đối tượng. Bạn có muốn tiếp tục?`)) {
-                    updateProgress(0, "ĐÃ HỦY QUÉT.", false);
-                    return;
-                }
-            }
+            if(features.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
 
             let rBufs = [], sBufs = [];
 
-            for (let i = 0; i < ways.length; i++) {
-                const e = ways[i];
+            for (let i = 0; i < features.length; i++) {
                 if (i % 50 === 0) {
-                    updateProgress(15 + (i / ways.length) * 40, `ĐANG QUÉT MẢNG KHỐI: ${i}/${ways.length}`, true);
+                    updateProgress(40 + (i / features.length) * 40, `PHÂN LỚP QUY HOẠCH: ${i}/${features.length}`, true);
                     await yieldCPU(); 
                 }
 
-                const pts = e.nodes.map(id => nodes.get(id)).filter(p => p);
-                if (pts.length < 2) continue;
+                const f = features[i];
+                const geom = f.geometry;
+                const tags = f.properties;
 
-                let poly = null;
-                if (pts.length >= 3) {
-                    try { poly = turf.bboxClip(makeClosedPolygon(pts), screenBox); } catch(err) {}
-                }
+                if (!geom) continue;
 
-                if (e.tags.building && poly) {
-                    poly.height = calculateBuildingHeight(e.tags);
-                    geoData.nha.push(poly);
-                    L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha);
+                // Xử lý Lòng đường (LineString)
+                if (geom.type === 'LineString' || geom.type === 'MultiLineString') {
+                    if (tags.highway) {
+                        const lines = geom.type === 'LineString' ? [geom.coordinates] : geom.coordinates;
+                        lines.forEach(coords => {
+                            const line = turf.lineString(coords);
+                            const wDuong = (tags.highway === 'primary' || tags.highway === 'secondary') ? 12 : 6;
+                            const wViahe = wDuong + 6; 
+                            try {
+                                rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters'}), screenBox));
+                                sBufs.push(turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters'}), screenBox));
+                            } catch(err) {}
+                        });
+                    }
                 } 
-                else if ((e.tags.natural === 'water') && poly) {
-                    geoData.nuoc.push(poly);
-                    L.geoJSON(poly, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc);
-                }
-                else if ((e.tags.leisure === 'park' || e.tags.landuse === 'grass' || e.tags.natural === 'wood' || e.tags.leisure === 'garden') && poly) {
-                    geoData.cayxanh.push(poly);
-                    L.geoJSON(poly, { style: getLayerStyle('cayxanh') }).addTo(layers.cayxanh);
-                }
-                else if ((e.tags.landuse === 'brownfield' || e.tags.landuse === 'construction') && poly) {
-                    geoData.dattrong.push(poly);
-                    L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong);
-                }
-                else if (e.tags.highway) {
-                    const line = turf.lineString(pts);
-                    const wDuong = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
-                    const wViahe = wDuong + 6; 
-                    try {
-                        rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters', steps: 2}), screenBox));
-                        sBufs.push(turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters', steps: 2}), screenBox));
-                    } catch(err) {}
+                // Xử lý Đa giác (Polygon / MultiPolygon)
+                else if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
+                    let poly = null;
+                    try { poly = turf.bboxClip(f, screenBox); } catch(err) {}
+                    if (!poly || poly.geometry.coordinates.length === 0) continue;
+
+                    if (tags.building) {
+                        poly.height = calculateBuildingHeight(tags);
+                        geoData.nha.push(poly);
+                        L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha);
+                    } 
+                    else if (tags.natural === 'water' || tags.waterway) {
+                        geoData.nuoc.push(poly);
+                        L.geoJSON(poly, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc);
+                    }
+                    else if (tags.leisure || tags.natural === 'wood' || tags.natural === 'scrub' || tags.landuse === 'grass' || tags.landuse === 'forest') {
+                        geoData.cayxanh.push(poly);
+                        L.geoJSON(poly, { style: getLayerStyle('cayxanh') }).addTo(layers.cayxanh);
+                    }
+                    else if (tags.landuse || tags.amenity) {
+                        // Khu dân cư, thương mại, y tế... gom vào Đất trống
+                        geoData.dattrong.push(poly);
+                        L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong);
+                    }
                 }
             }
 
             if (rBufs.length > 0) {
-                updateProgress(60, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true);
+                updateProgress(85, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true);
                 let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
                 if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
 
-                updateProgress(80, "ĐANG CẮT MẶT VỈA HÈ...", true);
+                updateProgress(95, "ĐANG CẮT MẶT VỈA HÈ...", true);
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 try {
                     let viahe = turf.difference(mS, mR);
@@ -416,9 +423,8 @@
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
-    // --- NATIVE COLLADA (.DAE) EXPORTER GIỮ NGUYÊN TỪ V74 ---
     async function export3DDAE() {
-        let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length;
+        let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length + geoData.dattrong.length;
         if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
         
         updateProgress(10, "ĐANG BIÊN DỊCH MÔ HÌNH .DAE (COLLADA)...", true);
@@ -503,12 +509,14 @@
             }
         };
 
-        if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "NUOC", -0.4, false);
-        if(document.getElementById('showDat').checked) await processLayer(geoData.dattrong, "DATTRONG", 0, false);
-        if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, "CAYXANH", 0.2, false);
-        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.4, false);
-        if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "VIAHE", 0.6, false);
-        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.6, true);
+        // KHOẢNG CÁCH Z-STACKING (CAO ĐỘ) GIỮ NGUYÊN ĐỂ CHỐNG CHỒNG MẶT
+        if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "NUOC", -0.2, false);
+        // Đất trống ở Z=0 làm nền cho tất cả mọi thứ
+        if(document.getElementById('showDat').checked) await processLayer(geoData.dattrong, "DATTRONG", 0.0, false);
+        if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, "CAYXANH", 0.05, false);
+        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.1, false);
+        if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "VIAHE", 0.15, false);
+        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.15, true);
 
         updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true);
         await yieldCPU();
@@ -551,12 +559,9 @@
         updateProgress(100, "XUẤT MÔ HÌNH .DAE THÀNH CÔNG!", false);
     }
 
-    // --- ĐÃ FIX: TRẢ VỀ POLYLINE KINH ĐIỂN CHO XUẤT 2D DXF ---
     async function export2DDXF() {
-        if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Chưa có dữ liệu!");
-        
+        if(geoData.nha.length === 0 && geoData.duong.length === 0 && geoData.dattrong.length === 0) return alert("Chưa có dữ liệu!");
         updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
-        
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
@@ -566,14 +571,10 @@
                 if (i % 50 === 0) await yieldCPU();
                 const geom = dataArray[i].geometry || dataArray[i];
                 let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-                
                 polys.forEach(coords => {
                     coords.forEach(ring => {
-                        // SỬ DỤNG POLYLINE CHUẨN ĐỂ ĐẢM BẢO 100% HIỂN THỊ
                         dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
-                        ring.forEach(pt => { 
-                            dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n30\n0\n`; 
-                        });
+                        ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n30\n0\n`; });
                         dxf += "0\nSEQEND\n";
                     });
                 });
@@ -592,7 +593,6 @@
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
         a.download = "NAM_ARCH_2D_PLAN.dxf"; 
         a.click();
-        
         updateProgress(100, "XUẤT BẢN VẼ 2D THÀNH CÔNG!", false);
     }
 </script>
