@@ -13,6 +13,7 @@
     
     <style id="custom-ui">
         /* ========================================================================= */
+        /* --- /* ========================================================================= */
 /* BẢNG MÀU LIQUID GLASS (Chuẩn 100% theo ảnh thiết kế) */
 :root { 
     --bg-base: #060913; /* Nền xanh đen cực sâu */
@@ -168,7 +169,12 @@ body.theme-light .btn-magenta { background: linear-gradient(135deg, #b350ff, #ff
 .hud-val { color: #fff; font-weight: 800; text-shadow: 0 0 10px #00e5ff; transition: 0.5s;}
 
 @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(0.9); opacity: 1; } }
-/* ========================================================================= */
+/* ========================================================================= */ --- */
+        /* Tạm thời mình chỉ để vài dòng reset cơ bản để hiển thị khung */
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #07090f; color: white; overflow: hidden;}
+        #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; z-index: 1;}
+        .ui-layer { position: relative; z-index: 1000; }
+        /* ========================================================================= */
     </style>
 </head>
 <body>
