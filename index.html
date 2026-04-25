@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v65 - Solid Faces & Blocks</title>
+    <title>NAM ARCH PRO v66 - Speed & Scale Edition</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
         .search-box button:hover { background: rgba(0, 229, 255, 0.1); }
 
         .sidebar-container { position: absolute; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 10px; align-items: flex-start; }
-        .sidebar { width: 350px; background: var(--panel-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 20px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto; }
+        .sidebar { width: 350px; background: var(--panel-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 20px; padding: 20px 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); max-height: 90vh; overflow-y: auto; }
         .sidebar::-webkit-scrollbar { width: 4px; }
         .sidebar::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
         .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: 0.3s; }
@@ -39,25 +39,25 @@
         .toggle-btn:hover { background: var(--box-bg); transform: scale(1.05); }
 
         h1 { margin: 0; font-size: 22px; font-weight: 900; background: linear-gradient(to right, var(--primary), var(--accent-3d)); -webkit-background-clip: text; color: transparent; text-align: center; }
-        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 20px; margin-top: 4px;}
+        .tagline { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; text-align: center; display: block; margin-bottom: 15px; margin-top: 4px;}
 
-        .ctrl-box { background: var(--box-bg); border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid var(--border); }
-        .row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .ctrl-box { background: var(--box-bg); border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
         .val-hl { color: var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;}
         
-        .layer-label { cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 12px;}
+        .layer-label { cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 11px;}
         .layer-label input[type="checkbox"] { cursor: pointer; accent-color: var(--primary); }
 
         .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.3); border-radius: 2px; outline: none; margin-top: 5px; }
         .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--primary); cursor: pointer; transition: 0.2s; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
         
-        .btn-glow { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px; }
+        .btn-glow { width: 100%; padding: 12px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 10px; margin-top: 5px; }
         .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); }
         
-        .btn-outline { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        .btn-outline { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 10px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
         .btn-outline:hover { background: rgba(128,128,128,0.15); }
 
-        .prog-container { margin: 15px 0; }
+        .prog-container { margin: 10px 0; }
         .prog-wrap { height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
         #progress { width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); background-size: 200% 100%; transition: width 0.3s ease; box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }
         .prog-wrap.active #progress { animation: progressFlow 2s linear infinite; }
@@ -74,9 +74,9 @@
         .leaflet-interactive { pointer-events: none; }
         .color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
         
-        .core-badge { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; transition: all 0.3s ease; }
+        .core-badge { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; transition: all 0.3s ease; }
         .core-badge.loading { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
-        .cyber-spinner { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff); animation: spin 1s linear infinite; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0); }
+        .cyber-spinner { width: 12px; height: 12px; border-radius: 50%; background: conic-gradient(#00e5ff, #ff00ff, #ffcc00, #00e5ff); animation: spin 1s linear infinite; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff 0); }
         .core-badge.loading .stt-text { background: linear-gradient(90deg, #00e5ff, #ff00ff, #ffcc00, #00e5ff); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientText 2s linear infinite; }
         .core-badge.online { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); text-shadow: 0 0 5px #10b981; }
         .core-badge.online .cyber-spinner { display: none; }
@@ -94,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V65 - SOLID FACES & BLOCKS</span>
+        <span class="tagline">V66 - SPEED & SCALE</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -102,29 +102,25 @@
         </div>
 
         <div class="ctrl-box">
-            <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
-                <span style="color: var(--primary); text-transform: uppercase; font-size: 11px;">⚙️ TRÍCH XUẤT LỚP BẢN ĐỒ</span>
+            <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 10px;">
+                <span style="color: var(--primary); text-transform: uppercase; font-size: 10px;">⚙️ QUẢN LÝ QUY HOẠCH</span>
             </div>
 
-            <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 15px; width: 100%;" onclick="toggleMapTheme()">🗺️ NỀN BẢN ĐỒ: TỐI (DARK)</button>
+            <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 12px; width: 100%;" onclick="toggleMapTheme()">🗺️ BẢN ĐỒ NỀN: TỐI (DARK)</button>
 
-            <div class="row" style="justify-content: flex-start; gap: 20px;">
-                <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> <span class="color-dot" id="dot-nha" style="background:#ff3366;"></span> 🏢 Tòa Nhà</label>
-            </div>
-            <div class="row" style="justify-content: flex-start; gap: 20px;">
-                <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> <span class="color-dot" id="dot-duong" style="background:#ffffff;"></span> 🛣️ Lòng Đường</label>
-            </div>
-            <div class="row" style="justify-content: flex-start; gap: 20px;">
-                <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> 🚶 Vỉa Hè</label>
-            </div>
-            <div class="row" style="justify-content: flex-start; gap: 20px;">
-                <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> 💧 Mặt Nước</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <label class="layer-label"><input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')"> <span class="color-dot" id="dot-nha" style="background:#ff3366;"></span> Tòa Nhà</label>
+                <label class="layer-label"><input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')"> <span class="color-dot" id="dot-duong" style="background:#ffffff;"></span> Đường xá</label>
+                <label class="layer-label"><input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')"> <span class="color-dot" id="dot-viahe" style="background:#ffcc00;"></span> Vỉa Hè</label>
+                <label class="layer-label"><input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')"> <span class="color-dot" id="dot-nuoc" style="background:#00e5ff;"></span> Sông hồ</label>
+                <label class="layer-label"><input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')"> <span class="color-dot" id="dot-cay" style="background:#10b981;"></span> Cây Xanh</label>
+                <label class="layer-label"><input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')"> <span class="color-dot" id="dot-dat" style="background:#9ca3af;"></span> Đất Trống</label>
             </div>
         </div>
 
         <button class="btn-glow" onclick="startMegaScan()">🚀 BẮT ĐẦU QUÉT (SPACE)</button>
 
-        <div class="ctrl-box" style="padding-bottom: 10px;">
+        <div class="ctrl-box" style="padding-bottom: 8px;">
             <div class="row">
                 <span>Hệ thống Core:</span>
                 <div id="coreBadge" class="core-badge loading">
@@ -138,11 +134,11 @@
             </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button class="btn-outline" style="margin-top: 0; padding: 12px 0;" onclick="resetScan()">🔄 LÀM MỚI BẢN ĐỒ</button>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe(false)" title="Xuất nét 2D phẳng (Plan)">📥 XUẤT CAD 2D</button>
-                <button class="btn-outline" style="margin-top: 0; flex: 1.2; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Tự động Make Face & Đóng Khối 3D">🏙️ XUẤT 3D (FACES)</button>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn-outline" style="margin-top: 0;" onclick="resetScan()" title="Xóa dữ liệu để quét vùng mới">🔄 LÀM MỚI DỮ LIỆU</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe(false)">📥 XUẤT 2D</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.2; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Block 3D (Nhớ check Merge coplanar faces)">🏙️ XUẤT 3D SU</button>
             </div>
         </div>
     </div>
@@ -188,7 +184,7 @@
     L.GridLayer.Graticule = L.GridLayer.extend({
         createTile: function () {
             var tile = document.createElement('canvas'); tile.width = tile.height = 256;
-            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke(); return tile;
         }
     });
@@ -199,18 +195,22 @@
         isLightMap = !isLightMap;
         if(isLightMap) {
             map.removeLayer(darkT); lightT.addTo(map);
-            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: ĐA SẮC (VOYAGER)';
+            document.getElementById('mapThemeBtn').innerText = '🗺️ BẢN ĐỒ NỀN: ĐA SẮC (VOYAGER)';
             document.getElementById('dot-nha').style.background = '#dc2626';
             document.getElementById('dot-duong').style.background = '#111827';
             document.getElementById('dot-viahe').style.background = '#ea580c';
             document.getElementById('dot-nuoc').style.background = '#0284c7';
+            document.getElementById('dot-cay').style.background = '#16a34a';
+            document.getElementById('dot-dat').style.background = '#4b5563';
         } else {
             map.removeLayer(lightT); darkT.addTo(map);
-            document.getElementById('mapThemeBtn').innerText = '🗺️ NỀN BẢN ĐỒ: TỐI (DARK)';
+            document.getElementById('mapThemeBtn').innerText = '🗺️ BẢN ĐỒ NỀN: TỐI (DARK)';
             document.getElementById('dot-nha').style.background = '#ff3366';
             document.getElementById('dot-duong').style.background = '#ffffff';
             document.getElementById('dot-viahe').style.background = '#ffcc00';
             document.getElementById('dot-nuoc').style.background = '#00e5ff';
+            document.getElementById('dot-cay').style.background = '#10b981';
+            document.getElementById('dot-dat').style.background = '#9ca3af';
         }
         updateLineStyles();
     }
@@ -238,8 +238,12 @@
     document.getElementById('zoomSlider').addEventListener('input', e => map.setZoom(e.target.value));
     map.on('move zoomend', updateHUD); updateHUD();
 
-    var geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
-    var layers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
+    var geoData = { nha: [], duong: [], viahe: [], nuoc: [], cayxanh: [], dattrong: [] };
+    var layers = { 
+        cayxanh: L.layerGroup().addTo(map), dattrong: L.layerGroup().addTo(map), 
+        nuoc: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), 
+        duong: L.layerGroup().addTo(map), nha: L.layerGroup().addTo(map) 
+    };
 
     function toggleLayer(type) {
         if(document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked) map.addLayer(layers[type]);
@@ -248,15 +252,19 @@
 
     function getLayerStyle(type) {
         const config = isLightMap ? {
-            nha: { color: '#dc2626', weight: 3, fillOpacity: 0.15 },
-            duong: { color: '#111827', weight: 3, fillOpacity: 0.1 },
-            viahe: { color: '#ea580c', weight: 3, fillOpacity: 0.15 },
-            nuoc: { color: '#0284c7', weight: 3, fillOpacity: 0.15 }
+            nha: { color: '#dc2626', weight: 2, fillOpacity: 0.15 },
+            duong: { color: '#111827', weight: 2, fillOpacity: 0.1 },
+            viahe: { color: '#ea580c', weight: 2, fillOpacity: 0.15 },
+            nuoc: { color: '#0284c7', weight: 2, fillOpacity: 0.15 },
+            cayxanh: { color: '#16a34a', weight: 2, fillOpacity: 0.15 },
+            dattrong: { color: '#4b5563', weight: 2, fillOpacity: 0.1 }
         } : {
-            nha: { color: '#ff3366', weight: 3, fillOpacity: 0.15 }, 
-            duong: { color: '#ffffff', weight: 3, fillOpacity: 0.1 }, 
-            viahe: { color: '#ffcc00', weight: 3, fillOpacity: 0.15 }, 
-            nuoc: { color: '#00e5ff', weight: 3, fillOpacity: 0.15 }  
+            nha: { color: '#ff3366', weight: 2, fillOpacity: 0.15 }, 
+            duong: { color: '#ffffff', weight: 2, fillOpacity: 0.1 }, 
+            viahe: { color: '#ffcc00', weight: 2, fillOpacity: 0.15 }, 
+            nuoc: { color: '#00e5ff', weight: 2, fillOpacity: 0.15 },
+            cayxanh: { color: '#10b981', weight: 2, fillOpacity: 0.15 },
+            dattrong: { color: '#9ca3af', weight: 2, fillOpacity: 0.1 }  
         };
         return config[type];
     }
@@ -277,30 +285,12 @@
 
     function resetScan() {
         Object.values(layers).forEach(l => l.clearLayers());
-        geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
+        geoData = { nha: [], duong: [], viahe: [], nuoc: [], cayxanh: [], dattrong: [] };
         updateProgress(0, "ĐÃ XÓA. SẴN SÀNG!", false);
         document.getElementById('stt').style.color = "var(--text-main)";
     }
 
     const yieldCPU = () => new Promise(r => setTimeout(r, 5));
-
-    async function chunkedUnion(polygons, type) {
-        if (!polygons || polygons.length === 0) return null;
-        if (polygons.length === 1) return polygons[0];
-        let current = [...polygons]; let step = 0;
-        while (current.length > 1) {
-            let next = [];
-            for (let i = 0; i < current.length; i += 2) {
-                if (i % 4 === 0) await yieldCPU();
-                if (i + 1 < current.length) {
-                    try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); }
-                } else next.push(current[i]);
-            }
-            current = next; step++;
-            document.getElementById('stt').innerText = `TỐI ƯU MẶT PHẲNG ${type}: ${step}`;
-        }
-        return current[0];
-    }
 
     function makeClosedPolygon(pts) {
         let ring = pts.map(p => [p[0], p[1]]);
@@ -308,13 +298,12 @@
         return turf.polygon([ring]);
     }
 
-    // Tự động gán chiều cao chân thực (Randomized cho tự nhiên nếu data trống)
     function calculateBuildingHeight(tags) {
         if(tags['building:levels']) return parseFloat(tags['building:levels']) * 3.5;
         const rand = Math.random();
-        if(rand < 0.7) return 9 + Math.random() * 6;     // 70% thấp tầng
-        if(rand < 0.9) return 15 + Math.random() * 15;   // 20% trung tầng
-        return 30 + Math.random() * 30;                  // 10% cao tầng
+        if(rand < 0.7) return 9 + Math.random() * 6;
+        if(rand < 0.9) return 15 + Math.random() * 15;
+        return 30 + Math.random() * 30;
     }
 
     async function startMegaScan() {
@@ -325,7 +314,20 @@
         const b = map.getBounds();
         const sw = b.getSouthWest(), ne = b.getNorthEast();
         const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
-        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(way["building"];way["highway"];way["natural"="water"];);out body;>;out skel qt;`;
+        
+        // Truy vấn bổ sung các lớp Công viên, Cỏ, Đất trống
+        const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];
+        (
+            way["building"];
+            way["highway"];
+            way["natural"="water"];
+            way["leisure"="park"];
+            way["landuse"="grass"];
+            way["natural"="wood"];
+            way["leisure"="garden"];
+            way["landuse"="brownfield"];
+            way["landuse"="construction"];
+        );out body;>;out skel qt;`;
         
         try {
             const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
@@ -333,54 +335,63 @@
             const nodes = new Map();
             data.elements.forEach(e => { if(e.type === 'node') nodes.set(e.id, [e.lon, e.lat]); });
 
-            let rBufs = [], sBufs = [];
             let ways = data.elements.filter(e => e.type === "way");
-            if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!", false); return; }
+            if(ways.length === 0) { updateProgress(0, "KHÔNG CÓ DỮ LIỆU!", false); return; }
 
             for (let i = 0; i < ways.length; i++) {
                 const e = ways[i];
-                if (i % 30 === 0) {
-                    updateProgress(10 + (i / ways.length) * 50, `TRÍCH XUẤT HÌNH HỌC: ${i}/${ways.length}`, true);
+                if (i % 50 === 0) {
+                    updateProgress(15 + (i / ways.length) * 80, `ĐANG QUÉT MẢNG KHỐI: ${i}/${ways.length}`, true);
                     await yieldCPU(); 
                 }
 
                 const pts = e.nodes.map(id => nodes.get(id)).filter(p => p);
-                if (pts.length < 3) continue;
+                if (pts.length < 2) continue;
 
-                if (e.tags.building) {
-                    const poly = turf.bboxClip(makeClosedPolygon(pts), screenBox);
-                    // Gắn thêm thuộc tính chiều cao (height) vào feature
+                let poly = null;
+                if (pts.length >= 3) {
+                    try { poly = turf.bboxClip(makeClosedPolygon(pts), screenBox); } catch(err) {}
+                }
+
+                if (e.tags.building && poly) {
                     poly.height = calculateBuildingHeight(e.tags);
                     geoData.nha.push(poly);
                     L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha);
-                } else if (e.tags.natural === 'water') {
-                    const poly = turf.bboxClip(makeClosedPolygon(pts), screenBox);
+                } 
+                else if ((e.tags.natural === 'water') && poly) {
                     geoData.nuoc.push(poly);
                     L.geoJSON(poly, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc);
-                } else if (e.tags.highway) {
+                }
+                else if ((e.tags.leisure === 'park' || e.tags.landuse === 'grass' || e.tags.natural === 'wood' || e.tags.leisure === 'garden') && poly) {
+                    geoData.cayxanh.push(poly);
+                    L.geoJSON(poly, { style: getLayerStyle('cayxanh') }).addTo(layers.cayxanh);
+                }
+                else if ((e.tags.landuse === 'brownfield' || e.tags.landuse === 'construction') && poly) {
+                    geoData.dattrong.push(poly);
+                    L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong);
+                }
+                else if (e.tags.highway) {
+                    // TỐI ƯU CỰC ĐỘ: Không dùng Boolean đục lỗ rắc rối nữa. 
+                    // Chuyển sang vẽ đa giác độc lập để SketchUp tự dán mặt đè lên nhau. Giảm thời gian từ 40p xuống 5s.
                     const line = turf.lineString(pts);
-                    const w = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
-                    rBufs.push(turf.bboxClip(turf.buffer(line, w/2, {units:'meters', steps: 2}), screenBox));
-                    sBufs.push(turf.bboxClip(turf.buffer(line, (w/2)+3.5, {units:'meters', steps: 2}), screenBox));
+                    const wDuong = (e.tags.highway === 'primary' || e.tags.highway === 'secondary') ? 12 : 6;
+                    const wViahe = wDuong + 6; // Vỉa hè mỗi bên rộng 3m
+                    
+                    try {
+                        const polyDuong = turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters', steps: 2}), screenBox);
+                        const polyViahe = turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters', steps: 2}), screenBox);
+                        
+                        geoData.duong.push(polyDuong);
+                        geoData.viahe.push(polyViahe);
+                        
+                        L.geoJSON(polyViahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe);
+                        L.geoJSON(polyDuong, { style: getLayerStyle('duong') }).addTo(layers.duong);
+                    } catch(err) {}
                 }
             }
             
-            if (rBufs.length > 0) {
-                updateProgress(70, "XỬ LÝ MẶT PHẲNG ĐƯỜNG...", true);
-                let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
-                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
-
-                updateProgress(85, "XỬ LÝ MẶT PHẲNG VỈA HÈ...", true);
-                let mS = await chunkedUnion(sBufs, "VỈA HÈ");
-                try {
-                    let viahe = turf.difference(mS, mR);
-                    if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
-                } catch(e) { 
-                    if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
-                }
-            }
-            updateProgress(100, "HOÀN TẤT! CHỌN PHƯƠNG THỨC XUẤT.", false);
-        } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU QUÁ LỚN!", false); }
+            updateProgress(100, "HOÀN TẤT TRÍCH XUẤT!", false);
+        } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
     }
 
     function extractRings(geom) {
@@ -394,107 +405,59 @@
         return rings;
     }
 
-    // --- HÀM ĐAN LƯỚI TẠO MẶT (Tessellation) ---
-    function tesselateToTriangles(feature) {
-        let triangles = [];
-        if (!feature || !feature.geometry) return triangles;
-        
-        const tessellatePoly = (polyCoords) => {
-            try {
-                let poly = turf.polygon(polyCoords);
-                let cleaned = turf.cleanCoords(poly);
-                let res = turf.tesselate(cleaned);
-                res.features.forEach(f => triangles.push(f));
-            } catch(e) { } // Bỏ qua nếu hình lỗi
-        };
-
-        if (feature.geometry.type === 'Polygon') {
-            tessellatePoly(feature.geometry.coordinates);
-        } else if (feature.geometry.type === 'MultiPolygon') {
-            feature.geometry.coordinates.forEach(coords => tesselatePoly(coords));
-        }
-        return triangles;
-    }
-
-    // --- XUẤT FILE DXF (2D POLYLINE VÀ 3D FACES) ---
     async function exportDxfSafe(is3D) {
-        if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Chưa có dữ liệu!");
+        let totalFeatures = geoData.nha.length + geoData.duong.length + geoData.cayxanh.length;
+        if(totalFeatures === 0) return alert("Chưa có dữ liệu!");
         
-        updateProgress(90, is3D ? "ĐANG ĐAN LƯỚI TẠO MẶT 3D..." : "ĐANG GHI FILE CAD 2D...", true);
+        updateProgress(90, is3D ? "ĐANG BIÊN DỊCH BLOCK 3D..." : "ĐANG GHI FILE CAD 2D...", true);
         
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
 
-        const tx = (pt) => ((pt[0] - center.lng) * sx).toFixed(3);
-        const ty = (pt) => ((pt[1] - center.lat) * sy).toFixed(3);
-
-        const processLayer = async (dataArray, layerName, baseZ) => {
+        // TỐI ƯU 3D: Dùng Polyline 2 lớp (Z=0 và Z=Height) để lừa SketchUp tự động đóng khối (Solid Block)
+        const writeToDxf = async (dataArray, layerName, baseZ) => {
             for (let i = 0; i < dataArray.length; i++) {
-                if (i % 10 === 0) await yieldCPU();
-                const feature = dataArray[i];
-
-                if (!is3D) {
-                    // XUẤT 2D BÌNH THƯỜNG (Polyline nét thanh)
-                    let rings = extractRings(feature.geometry);
-                    rings.forEach(ring => {
-                        if(!ring || ring.length < 2) return;
-                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
-                        ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${tx(pt)}\n20\n${ty(pt)}\n30\n0\n`; });
-                        dxf += "0\nSEQEND\n";
-                    });
-                } else {
-                    // XUẤT 3D FACES (Lưới đan mặt và Tường bao)
-                    let height = feature.height || 0;
+                if (i % 20 === 0) await yieldCPU();
+                const item = dataArray[i];
+                const rings = extractRings(item.geometry);
+                
+                rings.forEach(ring => {
+                    if(!ring || ring.length < 2) return;
                     
-                    // 1. Tạo Mái và Sàn (Bằng cách đan lưới tam giác)
-                    let triangles = tesselateToTriangles(feature);
-                    triangles.forEach(geom => {
-                        let pts = geom.geometry.coordinates[0];
-                        if (pts && pts.length >= 4) { // Tam giác có 4 điểm (đóng)
-                            // Vẽ sàn (mọi object đều có sàn)
-                            if (height === 0 || layerName === "V21_NHA") {
-                                dxf += `0\n3DFACE\n8\n${layerName}\n`;
-                                dxf += `10\n${tx(pts[0])}\n20\n${ty(pts[0])}\n30\n${baseZ}\n`;
-                                dxf += `11\n${tx(pts[1])}\n20\n${ty(pts[1])}\n30\n${baseZ}\n`;
-                                dxf += `12\n${tx(pts[2])}\n20\n${ty(pts[2])}\n30\n${baseZ}\n`;
-                                dxf += `13\n${tx(pts[2])}\n20\n${ty(pts[2])}\n30\n${baseZ}\n`; // 3D Face yêu cầu 4 góc
-                            }
-                            // Vẽ mái (nếu là nhà)
-                            if (height > 0) {
-                                dxf += `0\n3DFACE\n8\n${layerName}\n`;
-                                dxf += `10\n${tx(pts[0])}\n20\n${ty(pts[0])}\n30\n${baseZ + height}\n`;
-                                dxf += `11\n${tx(pts[1])}\n20\n${ty(pts[1])}\n30\n${baseZ + height}\n`;
-                                dxf += `12\n${tx(pts[2])}\n20\n${ty(pts[2])}\n30\n${baseZ + height}\n`;
-                                dxf += `13\n${tx(pts[2])}\n20\n${ty(pts[2])}\n30\n${baseZ + height}\n`;
-                            }
-                        }
-                    });
+                    let h = item.height || 0;
 
-                    // 2. Tạo Tường bao quanh (Nếu là nhà)
-                    if (height > 0) {
-                        let rings = extractRings(feature.geometry);
-                        rings.forEach(ring => {
-                            for(let j=0; j<ring.length-1; j++) {
-                                let p1 = ring[j];
-                                let p2 = ring[j+1];
-                                dxf += `0\n3DFACE\n8\n${layerName}\n`;
-                                dxf += `10\n${tx(p1)}\n20\n${ty(p1)}\n30\n${baseZ}\n`;
-                                dxf += `11\n${tx(p2)}\n20\n${ty(p2)}\n30\n${baseZ}\n`;
-                                dxf += `12\n${tx(p2)}\n20\n${ty(p2)}\n30\n${baseZ + height}\n`;
-                                dxf += `13\n${tx(p1)}\n20\n${ty(p1)}\n30\n${baseZ + height}\n`;
-                            }
-                        });
+                    if (!is3D) {
+                        // BẢN VẼ 2D CHUẨN
+                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
+                        ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
+                        dxf += "0\nSEQEND\n";
+                    } else {
+                        // MÔ HÌNH 3D BẰNG KỸ THUẬT SONG SINH:
+                        // 1. Vẽ mặt bằng (Z=base) kèm lệnh kéo tường (Thickness)
+                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n38\n${baseZ}\n`;
+                        if (h > 0) dxf += `39\n${h}\n`; // Kéo tường
+                        ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
+                        dxf += "0\nSEQEND\n";
+
+                        // 2. Vẽ viền nắp mái (Z=base+height). Khi Import, SU sẽ tự dán "Roof" vào đây
+                        if (h > 0) {
+                            dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n38\n${baseZ + h}\n`;
+                            ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
+                            dxf += "0\nSEQEND\n";
+                        }
                     }
-                }
+                });
             }
         };
 
-        // Đẩy tuần tự các Layer với cao độ Z-Fighting khác nhau
-        if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "V21_NUOC", -0.1);
-        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "V21_DUONG", 0);
-        if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "V21_VIAHE", 0.15);
-        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "V21_NHA", 0.15);
+        // Gán cao độ chống Z-Fighting (đè hình)
+        if(document.getElementById('showNuoc').checked) await writeToDxf(geoData.nuoc, "V21_NUOC", -0.1);
+        if(document.getElementById('showDat').checked) await writeToDxf(geoData.dattrong, "V21_DATTRONG", 0);
+        if(document.getElementById('showCay').checked) await writeToDxf(geoData.cayxanh, "V21_CAYXANH", 0.02);
+        if(document.getElementById('showViahe').checked) await writeToDxf(geoData.viahe, "V21_VIAHE", 0.05);
+        if(document.getElementById('showDuong').checked) await writeToDxf(geoData.duong, "V21_DUONG", 0.1);
+        if(document.getElementById('showNha').checked) await writeToDxf(geoData.nha, "V21_NHA", 0.15);
 
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
