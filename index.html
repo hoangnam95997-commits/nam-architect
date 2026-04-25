@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO - Liquid Glass Final</title>
+    <title>NAM ARCH PRO - True Liquid Glass</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -12,157 +12,174 @@
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
     
     <style>
-        /* BẢNG MÀU LIQUID GLASS CHUẨN UI KIT */
+        /* BẢNG MÀU CHUẨN LIQUID GLASS UI KIT */
         :root { 
-            --bg-base: #090c15; 
-            --glass-panel: rgba(20, 25, 38, 0.65); 
+            --bg-base: #0a0e17; /* Nền xanh đen mờ ảo */
+            --glass-bg: rgba(18, 24, 38, 0.4); /* Kính trong suốt */
             --glass-border: rgba(255, 255, 255, 0.08);
-            --cyan-core: #00e5ff;
-            --cyan-deep: #0055ff;
+            --glass-highlight: rgba(255, 255, 255, 0.6);
+            
+            --cyan-core: #00f3ff;
+            --cyan-glow: rgba(0, 243, 255, 0.5);
             --magenta-core: #ff007b;
-            --purple-deep: #8a2be2;
-            --glow-cyan: rgba(0, 229, 255, 0.6);
-            --glow-magenta: rgba(255, 0, 123, 0.6);
+            --magenta-glow: rgba(255, 0, 123, 0.5);
+            --purple-core: #8a2be2;
+            
             --text-main: #ffffff;
             --text-muted: #8b95a5;
         }
 
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; transition: background 0.5s ease; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; transition: 0.5s; }
         #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; z-index: 1;}
         .ui-layer { position: relative; z-index: 1000; pointer-events: none; }
         .ui-layer > * { pointer-events: auto; }
 
-        /* THEME SÁNG */
-        body.theme-light { --bg-base: #f0f4f8; --glass-panel: rgba(255, 255, 255, 0.8); --glass-border: rgba(255,255,255,0.8); --text-main: #1e293b; --text-muted: #64748b; }
+        body.theme-light { --bg-base: #e2e8f0; --glass-bg: rgba(255,255,255,0.7); --text-main: #0f172a; --text-muted: #64748b; --glass-highlight: rgba(255,255,255,0.9); --glass-border: rgba(0,0,0,0.1);}
 
-        /* THANH TÌM KIẾM */
-        .search-box { position: absolute; top: 24px; right: 24px; display: flex; background: var(--glass-panel); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 24px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.5); transition: 0.3s;}
-        .search-box:focus-within { border-color: var(--cyan-core); box-shadow: 0 0 20px var(--glow-cyan), inset 0 0 10px rgba(0,229,255,0.2); }
-        .search-box input { background: transparent; border: none; padding: 14px 20px; width: 280px; color: var(--text-main); font-size: 14px; outline: none; }
-        .search-box input::placeholder { color: var(--text-muted); }
-        .search-box button { background: rgba(255,255,255,0.02); border: none; border-left: 1px solid var(--glass-border); padding: 0 20px; color: var(--cyan-core); font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .search-box button:hover { background: rgba(0, 229, 255, 0.15); text-shadow: 0 0 10px var(--cyan-core); }
+        /* 1. THANH TÌM KIẾM */
+        .search-box { position: absolute; top: 24px; right: 24px; display: flex; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-top: 1px solid var(--glass-highlight); border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.3s;}
+        .search-box:focus-within { border-color: var(--cyan-core); box-shadow: 0 0 20px var(--cyan-glow); }
+        .search-box input { background: transparent; border: none; padding: 12px 16px; width: 280px; color: var(--text-main); font-size: 14px; outline: none; }
+        .search-box button { background: transparent; border: none; border-left: 1px solid var(--glass-border); padding: 0 20px; color: var(--cyan-core); font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .search-box button:hover { background: rgba(0, 243, 255, 0.1); }
 
-        /* BẢNG SIDEBAR */
+        /* 2. SIDEBAR KÍNH TRONG SUỐT */
         .sidebar-container { position: absolute; top: 24px; left: 24px; display: flex; gap: 16px; align-items: flex-start; }
-        .sidebar { width: 360px; background: var(--glass-panel); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.15); border-left: 1px solid rgba(255,255,255,0.15); border-radius: 32px; padding: 28px; box-shadow: 0 35px 60px rgba(0,0,0,0.8); max-height: calc(100vh - 48px); overflow-y: auto; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar { width: 360px; background: var(--glass-bg); backdrop-filter: blur(30px); border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.2); border-left: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); max-height: calc(100vh - 48px); overflow-y: auto; }
         .sidebar::-webkit-scrollbar { width: 0; }
         .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; }
 
-        .toggle-btn { background: var(--glass-panel); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s; margin-top: 10px; }
-        .toggle-btn:hover { border-color: var(--cyan-core); box-shadow: 0 0 20px var(--glow-cyan); transform: scale(1.05); }
+        .toggle-btn { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.3); color: var(--text-main); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.4); margin-top: 10px; transition: 0.3s; }
+        .toggle-btn:hover { border-color: var(--cyan-core); box-shadow: 0 0 15px var(--cyan-glow); }
 
-        /* TIÊU ĐỀ & KHUNG CARD */
-        .brand-header { margin-bottom: 28px; display: flex; flex-direction: column; align-items: center; position: relative;}
-        h1 { margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -0.5px; color: #fff; text-shadow: 0 4px 15px rgba(0,0,0,0.8); }
-        .brand-header::after { content: ''; width: 36px; height: 4px; background: var(--cyan-core); border-radius: 4px; margin-top: 10px; box-shadow: 0 0 12px var(--cyan-core);}
-        .tagline { font-size: 11px; font-weight: 700; color: var(--cyan-core); margin-top: 8px; letter-spacing: 1.5px; text-shadow: 0 0 8px var(--glow-cyan); }
+        /* HEADER */
+        .brand-header { margin-bottom: 24px; text-align: center; }
+        h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main); text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .tagline { font-size: 11px; font-weight: 700; color: var(--cyan-core); letter-spacing: 2px; text-shadow: 0 0 10px var(--cyan-glow); display: block; margin-top: 4px;}
 
-        .panel-card { margin-bottom: 28px; background: rgba(0,0,0,0.25); padding: 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.03); box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);}
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 4px;}
-        .panel-title { font-size: 13px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px;}
-        .val-hl { color: var(--cyan-core); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; text-shadow: 0 0 12px var(--glow-cyan); }
+        /* CARDS */
+        .panel-card { background: rgba(0,0,0,0.2); padding: 16px; border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); margin-bottom: 20px; }
+        body.theme-light .panel-card { background: rgba(255,255,255,0.3); box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .panel-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .val-hl { color: var(--cyan-core); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; text-shadow: 0 0 10px var(--cyan-glow); }
 
-        /* SLIDER THU PHÓNG */
-        .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: #000; border-radius: 4px; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.1); margin-top: 5px;}
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 15px var(--cyan-core), inset 0 2px 4px rgba(0,0,0,0.3); border: 4px solid var(--cyan-core); transition: 0.3s; }
-        .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.25); }
+        /* SLIDER */
+        .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 4px; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; cursor: pointer; border: 3px solid var(--cyan-core); box-shadow: 0 0 15px var(--cyan-glow); transition: 0.3s; }
 
-        /* DANH SÁCH LỚP & CÔNG TẮC HOLLOW GLOW */
-        .layer-list { display: flex; flex-direction: column; gap: 14px; }
-        .layer-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 8px 12px; border-radius: 12px; transition: 0.3s; background: rgba(255,255,255,0.02); border: 1px solid transparent;}
-        .layer-item:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
-        .layer-left { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 500; color: var(--text-muted); transition: 0.3s; }
+        /* 3. CÔNG TẮC LAYER (Đã sửa lại bố cục chuẩn: Chữ bên trái, Nút bên phải) */
+        .layer-list { display: flex; flex-direction: column; gap: 12px; }
+        .layer-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 6px 4px; transition: 0.3s; }
+        .layer-left { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: var(--text-muted); transition: 0.3s; }
         .layer-item:hover .layer-left { color: var(--text-main); }
-        .color-dot { width: 12px; height: 12px; border-radius: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
-
-        .layer-item input[type="checkbox"] { display: none; }
-        .toggle-switch { width: 44px; height: 24px; background: transparent; border-radius: 20px; border: 2px solid rgba(255,255,255,0.15); position: relative; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #475569; border-radius: 50%; transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .color-dot { width: 12px; height: 12px; border-radius: 3px; }
         
-        .layer-item input[type="checkbox"]:checked + .toggle-switch { border-color: var(--cyan-core); box-shadow: 0 0 12px var(--glow-cyan), inset 0 0 8px rgba(0, 229, 255, 0.3); }
-        .layer-item input[type="checkbox"]:checked + .toggle-switch::after { transform: translateX(20px); background: #ffffff; box-shadow: 0 0 10px #ffffff; }
-        .layer-item input[type="checkbox"]:checked ~ .layer-left { color: var(--text-main); }
+        .layer-item input[type="checkbox"] { display: none; }
+        /* Track rỗng màu tối */
+        .toggle-switch { width: 40px; height: 22px; background: rgba(0,0,0,0.5); border-radius: 15px; border: 2px solid rgba(255,255,255,0.1); position: relative; transition: 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        /* Cục trượt xám */
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: #64748b; border-radius: 50%; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        
+        /* BẬT: Viền sáng + Cục trượt trắng */
+        .layer-item input[type="checkbox"]:checked + .toggle-switch { border-color: var(--cyan-core); box-shadow: 0 0 12px var(--cyan-glow), inset 0 0 6px rgba(0, 243, 255, 0.3); background: transparent;}
+        .layer-item input[type="checkbox"]:checked + .toggle-switch::after { transform: translateX(18px); background: #fff; box-shadow: 0 0 8px #fff; }
+        .layer-item input[type="checkbox"]:checked ~ .layer-left { color: var(--text-main); } /* Sửa lại CSS Selector do thay đổi HTML */
 
-        /* CÔNG TẮC VŨ TRỤ NGÀY/ĐÊM */
-        .theme-toggle { position: relative; width: 100%; height: 48px; border-radius: 24px; cursor: pointer; margin-top: 24px; background: #07090f; border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-shadow: inset 0 4px 10px rgba(0,0,0,0.8); transition: 0.5s; overflow: hidden; }
-        .theme-toggle.dark-mode { border-color: var(--purple-deep); box-shadow: 0 0 20px rgba(138, 43, 226, 0.3), inset 0 0 15px rgba(138, 43, 226, 0.2); }
-        .theme-toggle.light-mode { border-color: #ff9d00; background: #fff; box-shadow: 0 0 20px rgba(255, 157, 0, 0.4), inset 0 0 15px rgba(255, 157, 0, 0.2); }
+        /* 4. CÔNG TẮC NGÀY ĐÊM */
+        .theme-toggle { position: relative; width: 100%; height: 44px; border-radius: 22px; cursor: pointer; margin-top: 20px; background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-shadow: inset 0 4px 10px rgba(0,0,0,0.8); transition: 0.5s; overflow: hidden; }
+        .theme-toggle.dark-mode { border-color: var(--purple-core); box-shadow: 0 0 15px rgba(138, 43, 226, 0.4), inset 0 0 10px rgba(138, 43, 226, 0.2); }
+        .theme-toggle.light-mode { border-color: #ff9d00; background: #fff; box-shadow: 0 0 15px rgba(255, 157, 0, 0.4); }
 
-        .theme-thumb { position: absolute; top: 4px; width: 36px; height: 36px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; }
-        .theme-toggle.dark-mode .theme-thumb { left: 4px; box-shadow: 0 0 15px var(--purple-deep); }
-        .theme-toggle.light-mode .theme-thumb { left: calc(100% - 40px); box-shadow: 0 0 15px #ff9d00; transform: rotate(360deg); }
+        .theme-thumb { position: absolute; top: 3px; width: 34px; height: 34px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; }
+        .theme-toggle.dark-mode .theme-thumb { left: 3px; box-shadow: 0 0 15px var(--purple-core); }
+        .theme-toggle.light-mode .theme-thumb { left: calc(100% - 37px); box-shadow: 0 0 15px #ff9d00; transform: rotate(360deg); }
 
         .theme-text { font-size: 11px; font-weight: 800; z-index: 2; pointer-events: none; transition: 0.3s; letter-spacing: 1px;}
-        .theme-toggle.dark-mode .t-dark { color: #fff; text-shadow: 0 0 10px var(--purple-deep); } .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
+        .theme-toggle.dark-mode .t-dark { color: #fff; text-shadow: 0 0 10px var(--purple-core); } .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
         .theme-toggle.light-mode .t-dark { color: rgba(0,0,0,0.2); } .theme-toggle.light-mode .t-light { color: #ff9d00; text-shadow: 0 0 10px #ff9d00; }
 
         .decor { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
         .stars { opacity: 1; transition: 0.5s; } .theme-toggle.light-mode .stars { opacity: 0; }
-        .star { position: absolute; background: #fff; border-radius: 50%; box-shadow: 0 0 5px #fff; animation: twinkle 1.5s infinite alternate; }
-        .s1 { width: 2px; height: 2px; top: 12px; right: 40px; } .s2 { width: 3px; height: 3px; top: 25px; right: 25px; animation-delay: 0.5s;}
+        .star { position: absolute; background: #fff; border-radius: 50%; box-shadow: 0 0 5px #fff; animation: twinkle 1s infinite alternate; }
+        .s1 { width: 2px; height: 2px; top: 10px; right: 30px; } .s2 { width: 3px; height: 3px; top: 20px; right: 20px; animation-delay: 0.5s;}
         .clouds { opacity: 0; transition: 0.5s; transform: translateY(5px); } .theme-toggle.light-mode .clouds { opacity: 1; transform: translateY(0); }
         .cloud { position: absolute; background: #fff; border-radius: 50%; opacity: 0.7; filter: blur(2px); }
-        .c1 { width: 25px; height: 25px; top: 8px; left: 35px; } .c2 { width: 15px; height: 15px; top: 18px; left: 55px; }
+        .c1 { width: 20px; height: 20px; top: 8px; left: 30px; } .c2 { width: 15px; height: 15px; top: 15px; left: 45px; }
         @keyframes twinkle { from {opacity: 0.2;} to {opacity: 1;} }
 
-        /* NÚT BẤM LIQUID GLASS (CẮT KHỐI 3D SẮC NÉT) */
+        /* ======================================================== */
+        /* 5. NÚT LIQUID GLASS (SỬ DỤNG KỸ THUẬT THIN-BORDER GLOW)  */
+        /* ======================================================== */
         .btn-liquid {
-            width: 100%; padding: 18px 12px; 
-            border-radius: 50px; 
-            border: 1px solid rgba(255,255,255,0.15);
-            outline: none;
-            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;
+            width: 100%; padding: 16px; border-radius: 24px; /* Bo tròn vừa phải, không bị móp */
+            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;
             color: #fff; cursor: pointer; position: relative; overflow: hidden;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
+            transition: all 0.3s ease; z-index: 1; outline: none;
+            
+            /* Kỹ thuật kính trong suốt + bóng đổ trong */
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.5); /* Đường highlight mép trên siêu mảnh */
+            backdrop-filter: blur(10px);
         }
 
-        .btn-liquid::before {
-            content: ''; position: absolute; top: 2px; left: 3px; right: 3px; height: 48%; 
-            border-radius: 50px 50px 100px 100px / 50px 50px 15px 15px; 
-            background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.05) 100%);
-            z-index: -1; pointer-events: none;
-        }
+        .btn-liquid:active { transform: translateY(2px); }
 
-        .btn-liquid::after {
-            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
-            border-radius: 0 0 50px 50px; background: linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%);
-            z-index: -2; pointer-events: none;
-        }
-        .btn-liquid:active { transform: translateY(3px); }
-
+        /* Nút QUÉT: Cyan Liquid */
         .btn-cyan {
-            background: linear-gradient(135deg, var(--cyan-core), var(--cyan-deep));
-            box-shadow: 0 10px 25px var(--glow-cyan), inset 0 2px 3px rgba(255,255,255,0.7), inset 0 -5px 10px rgba(0, 40, 150, 0.9);
+            /* Bóng chìm bên trong (tạo khối) + Hào quang bên ngoài */
+            box-shadow: 
+                inset 0 0 20px rgba(0, 243, 255, 0.2), 
+                inset 0 -10px 20px rgba(0, 85, 255, 0.4),
+                0 10px 20px rgba(0, 0, 0, 0.5);
+            border-color: rgba(0, 243, 255, 0.3);
+            border-top-color: rgba(255, 255, 255, 0.6);
         }
-        .btn-cyan:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 15px 35px rgba(0, 229, 255, 0.8), inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -5px 10px rgba(0, 40, 150, 0.9); }
+        .btn-cyan:hover {
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 
+                inset 0 0 20px rgba(0, 243, 255, 0.4), 
+                inset 0 -10px 20px rgba(0, 85, 255, 0.6),
+                0 10px 25px var(--cyan-glow);
+            transform: translateY(-2px);
+        }
 
         .btn-group { display: flex; gap: 12px; margin-top: 16px; }
 
+        /* Nút MÀU HỒNG/TÍM */
         .btn-magenta {
             flex: 1; font-size: 12px;
-            background: linear-gradient(135deg, var(--purple-deep), var(--magenta-core));
-            box-shadow: 0 10px 25px var(--glow-magenta), inset 0 2px 3px rgba(255,255,255,0.7), inset 0 -5px 10px rgba(80, 0, 120, 0.9);
+            box-shadow: 
+                inset 0 0 20px rgba(255, 0, 123, 0.2), 
+                inset 0 -10px 20px rgba(138, 43, 226, 0.4),
+                0 8px 15px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 0, 123, 0.3);
+            border-top-color: rgba(255, 255, 255, 0.5);
         }
-        .btn-magenta:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 15px 35px rgba(255, 0, 123, 0.8), inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -5px 10px rgba(80, 0, 120, 0.9); }
+        .btn-magenta:hover {
+            background: rgba(255, 0, 123, 0.1);
+            box-shadow: 
+                inset 0 0 20px rgba(255, 0, 123, 0.4), 
+                inset 0 -10px 20px rgba(138, 43, 226, 0.6),
+                0 10px 25px var(--magenta-glow);
+            transform: translateY(-2px);
+        }
 
-        /* THANH TIẾN TRÌNH LOADER 3D */
-        .prog-container { margin-top: 30px; text-align: center;}
-        .prog-wrap { height: 16px; background: #04060a; border-radius: 20px; padding: 3px; position: relative; box-shadow: inset 0 3px 8px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.05); border: 1px solid rgba(0,0,0,0.8); }
-        #progress { width: 0%; height: 100%; border-radius: 10px; background: linear-gradient(90deg, #00e5ff, #8a2be2, #ff007b); background-size: 200% 100%; animation: liquidFlow 2s linear infinite; box-shadow: 0 0 15px rgba(255, 0, 123, 0.6), inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.5); transition: width 0.4s ease;}
+        /* 6. THANH LOADER 3D */
+        .prog-container { margin-top: 25px; text-align: center;}
+        .prog-wrap { height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; padding: 2px; position: relative; box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.05); }
+        #progress { width: 0%; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #00f3ff, #8a2be2, #ff007b); background-size: 200% 100%; animation: liquidFlow 2s linear infinite; box-shadow: 0 0 15px rgba(255, 0, 123, 0.5), inset 0 2px 3px rgba(255,255,255,0.5); transition: width 0.4s ease;}
         @keyframes liquidFlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-        #stt { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-top: 14px; text-transform: uppercase; letter-spacing: 2px; }
+        #stt { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* HUD TỌA ĐỘ Ở ĐÁY MÀN HÌNH */
-        .hud-bottom { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--glass-panel); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.15); border-radius: 50px; padding: 14px 40px; display: flex; gap: 40px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); box-shadow: 0 20px 40px rgba(0,0,0,0.8); z-index: 1000;}
+        /* 7. HUD TỌA ĐỘ ĐÁY MÀN HÌNH */
+        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.2); border-radius: 30px; padding: 12px 35px; display: flex; gap: 35px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); box-shadow: 0 15px 30px rgba(0,0,0,0.8); z-index: 1000;}
         .hud-val { color: var(--text-main); font-weight: 800; text-shadow: 0 0 10px var(--cyan-core); transition: 0.5s;}
         
-        body.theme-light .hud-bottom { background: rgba(255,255,255,0.85); color: #64748b; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        body.theme-light .hud-val { color: #1e293b; text-shadow: none; }
-        
-        .core-badge { font-size: 10px; font-weight: 800; color: var(--cyan-core); display: flex; align-items: center; gap: 8px; background: rgba(0, 229, 255, 0.1); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.2); }
+        .core-badge { font-size: 10px; font-weight: 800; color: var(--cyan-core); display: flex; align-items: center; gap: 6px; background: rgba(0, 243, 255, 0.1); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(0, 243, 255, 0.2); }
         .pulse-dot { width: 6px; height: 6px; background: var(--cyan-core); border-radius: 50%; box-shadow: 0 0 8px var(--cyan-core); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(0.9); opacity: 1; } }
     </style>
@@ -171,8 +188,8 @@
 
 <div class="ui-layer">
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Tìm kiếm địa điểm, tọa độ..." onkeypress="if(event.key === 'Enter') searchLocation()">
-        <button onclick="searchLocation()">Tìm</button>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm địa điểm..." onkeypress="if(event.key === 'Enter') searchLocation()">
+        <button onclick="searchLocation()">TÌM</button>
     </div>
 
     <div class="sidebar-container">
@@ -193,40 +210,40 @@
 
             <div class="panel-card">
                 <div class="panel-header">
-                    <span class="panel-title">Quản Lý Lớp Hiển Thị</span>
-                    <div id="coreBadge" class="core-badge"><div class="pulse-dot"></div> V82 CORE</div>
+                    <span class="panel-title">Quản Lý Lớp</span>
+                    <div class="core-badge"><div class="pulse-dot"></div> V82 CORE</div>
                 </div>
                 
                 <div class="layer-list">
                     <label class="layer-item">
+                        <div class="layer-left"><span class="color-dot" style="background:#ff007b;"></span> Tòa Nhà</div>
                         <input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:var(--magenta-core);"></span> Tòa Nhà</div>
                     </label>
                     <label class="layer-item">
+                        <div class="layer-left"><span class="color-dot" style="background:#ffffff;"></span> Lòng Đường</div>
                         <input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#ffffff;"></span> Lòng Đường</div>
                     </label>
                     <label class="layer-item">
+                        <div class="layer-left"><span class="color-dot" style="background:#ff7e67;"></span> Vỉa Hè</div>
                         <input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#ff7e67;"></span> Vỉa Hè</div>
                     </label>
                     <label class="layer-item">
+                        <div class="layer-left"><span class="color-dot" style="background:#00f3ff;"></span> Sông Hồ</div>
                         <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:var(--cyan-core);"></span> Sông Hồ</div>
                     </label>
                     <label class="layer-item">
+                        <div class="layer-left"><span class="color-dot" style="background:#00ff88;"></span> Cây Xanh</div>
                         <input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#00ff88;"></span> Cây Xanh</div>
                     </label>
                     <label class="layer-item">
+                        <div class="layer-left"><span class="color-dot" style="background:#8b95a5;"></span> Ô Phố Nền</div>
                         <input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#8b95a5;"></span> Ô Phố Nền</div>
                     </label>
                 </div>
                 
@@ -240,26 +257,17 @@
             </div>
 
             <button class="btn-liquid btn-cyan" onclick="startMegaScan()">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
                 QUÉT ĐỊA HÌNH V82
             </button>
 
             <div class="btn-group">
-                <button class="btn-liquid btn-magenta" onclick="resetScan()">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    LÀM MỚI
-                </button>
+                <button class="btn-liquid btn-magenta" onclick="resetScan()">LÀM MỚI</button>
             </div>
             
             <div class="btn-group">
-                <button class="btn-liquid btn-magenta" onclick="export2DDXF()">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    2D CAD
-                </button>
-                <button class="btn-liquid btn-magenta" onclick="export3DDAE()">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    3D DAE
-                </button>
+                <button class="btn-liquid btn-magenta" onclick="export2DDXF()">2D CAD</button>
+                <button class="btn-liquid btn-magenta" onclick="export3DDAE()">3D DAE</button>
             </div>
 
             <div class="prog-container">
@@ -376,7 +384,7 @@
             nha: { color: '#ff007b', weight: 2, fillOpacity: 0.15 }, 
             duong: { color: '#ffffff', weight: 2, fillOpacity: 0.1 }, 
             viahe: { color: '#ff7e67', weight: 2, fillOpacity: 0.15 }, 
-            nuoc: { color: '#00e5ff', weight: 2, fillOpacity: 0.15 },
+            nuoc: { color: '#00f3ff', weight: 2, fillOpacity: 0.15 },
             cayxanh: { color: '#00ff88', weight: 2, fillOpacity: 0.15 },
             dattrong: { color: '#8b95a5', weight: 2, fillOpacity: 0.1 }  
         };
@@ -386,7 +394,7 @@
     function updateProgress(percent, text, isActive = true) {
         const pBar = document.getElementById('progress'); const stt = document.getElementById('stt');
         pBar.style.width = percent + '%'; stt.innerText = text;
-        stt.style.color = (percent >= 100) ? (isLightMap ? "#ff7e67" : "var(--cyan-core)") : (isLightMap ? "#ff007b" : "var(--purple-deep)");
+        stt.style.color = (percent >= 100) ? (isLightMap ? "#ff9d00" : "var(--cyan-core)") : (isLightMap ? "#ff007b" : "var(--purple-core)");
     }
 
     function resetScan() {
