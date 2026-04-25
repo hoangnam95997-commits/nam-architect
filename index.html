@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v89 - Glossy Glass UI</title>
+    <title>NAM ARCH PRO v90 - Unified Glass UI</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -32,15 +32,18 @@
         }
 
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; transition: background 0.5s ease;}
         #map { height: 100vh; width: 100vw; background: var(--bg-base); }
         
         .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5); transition: all 0.3s ease; }
         .search-box:focus-within { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); }
+        body.theme-light .search-box:focus-within { border-color: var(--neon-orange); box-shadow: 0 0 15px rgba(255, 170, 0, 0.3); }
         .search-box input { background: transparent; border: none; padding: 12px 16px; width: 280px; color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
         .search-box input::placeholder { color: var(--text-muted); }
         .search-box button { background: rgba(255,255,255,0.05); border: none; border-left: 1px solid var(--border); padding: 0 20px; cursor: pointer; color: var(--neon-blue); font-weight: 700; font-size: 14px; transition: 0.2s; }
+        body.theme-light .search-box button { color: var(--neon-orange); }
         .search-box button:hover { background: rgba(0, 243, 255, 0.1); text-shadow: 0 0 8px var(--neon-blue); }
+        body.theme-light .search-box button:hover { background: rgba(255, 170, 0, 0.1); text-shadow: 0 0 8px var(--neon-orange); }
 
         .sidebar-container { position: absolute; top: 24px; left: 24px; z-index: 1000; display: flex; gap: 12px; align-items: flex-start; }
         .sidebar { width: 360px; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.1); border-left: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-lg); padding: 24px; box-shadow: 10px 20px 40px rgba(0, 0, 0, 0.6); max-height: calc(100vh - 48px); overflow-y: auto; }
@@ -52,17 +55,21 @@
         .toggle-btn:hover { background: #222333; transform: scale(1.05); }
 
         .brand-header { margin-bottom: 24px; text-align: center; }
-        h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); -webkit-background-clip: text; color: transparent; text-shadow: 0 0 20px rgba(0, 243, 255, 0.3); }
+        h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); -webkit-background-clip: text; color: transparent; text-shadow: 0 0 20px rgba(0, 243, 255, 0.3); transition: 0.5s;}
+        body.theme-light h1 { background: linear-gradient(90deg, #ffaa00, #ff007f); -webkit-background-clip: text; text-shadow: 0 0 20px rgba(255, 170, 0, 0.3); }
         .tagline { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; display: block; margin-top: 4px; }
 
         .panel-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .panel-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
-        .val-hl { color: var(--neon-blue); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; background: rgba(0, 243, 255, 0.1); padding: 2px 8px; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); }
+        /* ĐỒNG BỘ MÀU ZOOM SLIDER */
+        .val-hl { color: var(--neon-blue); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; background: rgba(0, 243, 255, 0.1); padding: 2px 8px; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); transition: 0.5s; }
+        body.theme-light .val-hl { color: var(--neon-orange); background: rgba(255, 170, 0, 0.1); box-shadow: 0 0 10px rgba(255, 170, 0, 0.2); }
         
         .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: var(--border); border-radius: 3px; outline: none; margin-top: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--neon-blue); cursor: pointer; box-shadow: 0 0 15px var(--neon-blue), inset 0 0 5px rgba(255,255,255,0.8); transition: 0.2s; }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--neon-blue); cursor: pointer; box-shadow: 0 0 15px var(--neon-blue), inset 0 0 5px rgba(255,255,255,0.8); transition: 0.5s; }
+        body.theme-light .zoom-slider::-webkit-slider-thumb { background: var(--neon-orange); box-shadow: 0 0 15px var(--neon-orange), inset 0 0 5px rgba(255,255,255,0.8); }
         .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
         .layer-list { display: flex; flex-direction: column; gap: 8px; }
@@ -74,8 +81,11 @@
         .layer-item input[type="checkbox"] { display: none; }
         .toggle-switch { width: 36px; height: 20px; background: #111; border-radius: 20px; position: relative; transition: 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
         .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #444; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.3); }
-        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: rgba(0, 243, 255, 0.2); border: 1px solid var(--neon-blue); box-shadow: 0 0 10px rgba(0, 243, 255, 0.2), inset 0 2px 4px rgba(0,0,0,0.5); }
-        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { transform: translateX(16px); background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue), inset 0 1px 2px rgba(255,255,255,0.8); }
+        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: rgba(0, 243, 255, 0.2); border: 1px solid var(--neon-blue); box-shadow: 0 0 10px rgba(0, 243, 255, 0.2), inset 0 2px 4px rgba(0,0,0,0.5); transition: 0.5s; }
+        .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { transform: translateX(16px); background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue), inset 0 1px 2px rgba(255,255,255,0.8); transition: 0.5s; }
+        
+        body.theme-light .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: rgba(255, 170, 0, 0.2); border: 1px solid var(--neon-orange); box-shadow: 0 0 10px rgba(255, 170, 0, 0.2), inset 0 2px 4px rgba(0,0,0,0.5); }
+        body.theme-light .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { background: var(--neon-orange); box-shadow: 0 0 10px var(--neon-orange), inset 0 1px 2px rgba(255,255,255,0.8); }
 
         /* CÔNG TẮC NGÀY/ĐÊM (V88) */
         .glass-toggle-container {
@@ -124,114 +134,112 @@
         @keyframes twinkle { 0% { opacity: 0.2; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
 
         /* ======================================================== */
-        /* NÚT BẤM CƠ BẢN                                           */
-        /* ======================================================== */
-        
-        .btn-main { 
-            width: 100%; padding: 14px; margin-bottom: 16px; border: none; border-radius: var(--radius-md); 
-            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-            background: linear-gradient(180deg, #333 0%, #111 100%); color: #fff;
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -2px 5px rgba(0, 0, 0, 0.8), 0 5px 15px rgba(0, 0, 0, 0.5);
-            transition: all 0.15s ease;
-        }
-        .btn-main:hover { background: linear-gradient(180deg, #444 0%, #222 100%); transform: translateY(-2px); box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -2px 5px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6); }
-        .btn-main:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 2px 5px rgba(0, 0, 0, 0.3); }
-
-        .btn-outline { 
-            padding: 10px; border-radius: 8px; background: #1a1b26; border: 1px solid #2a2b3d; color: var(--text-muted); 
-            font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s;
-        }
-        .btn-outline:hover { background: #222333; color: #fff; }
-        .btn-outline:active { box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); transform: translateY(1px); }
-        
-        .btn-export-group { display: flex; gap: 10px; }
-
-        /* ======================================================== */
-        /* GLOSSY GLASS BUTTONS (NÚT XUẤT FILE THỦY TINH V89)       */
+        /* GLOSSY GLASS BUTTONS (HỆ THỐNG NÚT THỦY TINH ĐỒNG BỘ)    */
         /* ======================================================== */
         .btn-glass {
-            flex: 1; padding: 14px 10px;
-            border-radius: 20px; /* Bo tròn mạnh giống viên thuốc/thủy tinh */
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;
+            padding: 14px 10px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2);
+            font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: 0.5px;
             cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
             color: #fff; position: relative; overflow: hidden;
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
-            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 1;
         }
 
-        /* Lớp lóa sáng thủy tinh (Glossy Highlight) ở nửa trên nút */
         .btn-glass::before {
             content: ''; position: absolute; top: 0; left: 5%; width: 90%; height: 45%;
             background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.05));
-            border-radius: 20px 20px 100px 100px; /* Làm cong mượt vết lóa */
-            z-index: -1; pointer-events: none;
+            border-radius: 20px 20px 100px 100px; z-index: -1; pointer-events: none;
+        }
+        .btn-glass:active { transform: translateY(2px); box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2); }
+
+        /* Nút QUÉT ĐỊA HÌNH */
+        .btn-glass-scan {
+            width: 100%; font-size: 13px; margin-bottom: 16px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.5), rgba(0, 243, 255, 0.5));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), inset 0 -4px 10px rgba(0, 255, 136, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+        .btn-glass-scan:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(0, 243, 255, 0.7));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), inset 0 -4px 10px rgba(0, 255, 136, 0.8), 0 10px 20px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 255, 136, 0.5);
+        }
+        /* Chế độ Sáng -> Cam/Vàng */
+        body.theme-light .btn-glass-scan {
+            background: linear-gradient(135deg, rgba(255, 170, 0, 0.6), rgba(255, 230, 0, 0.6));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -4px 10px rgba(255, 170, 0, 0.8), 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 170, 0, 0.3);
+        }
+        body.theme-light .btn-glass-scan:hover {
+            background: linear-gradient(135deg, rgba(255, 170, 0, 0.8), rgba(255, 230, 0, 0.8));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), inset 0 -4px 10px rgba(255, 170, 0, 1), 0 10px 20px rgba(0, 0, 0, 0.5), 0 0 25px rgba(255, 170, 0, 0.6);
         }
 
-        /* 2D CAD Glass */
+        /* Nút LÀM MỚI (Reset) */
+        .btn-glass-reset {
+            flex: 1; padding: 10px; border-radius: 12px; font-size: 11px;
+            background: linear-gradient(135deg, rgba(255, 0, 127, 0.3), rgba(157, 0, 255, 0.3));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -3px 6px rgba(255, 0, 127, 0.4), 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .btn-glass-reset:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(255, 0, 127, 0.5), rgba(157, 0, 255, 0.5));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), inset 0 -3px 6px rgba(255, 0, 127, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+        /* Chế độ Sáng -> Đỏ/Hồng */
+        body.theme-light .btn-glass-reset {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.5), rgba(225, 29, 72, 0.5));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), inset 0 -3px 6px rgba(244, 63, 94, 0.6), 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        body.theme-light .btn-glass-reset:hover {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.7), rgba(225, 29, 72, 0.7));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7), inset 0 -3px 6px rgba(244, 63, 94, 0.8), 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 15px rgba(244, 63, 94, 0.4);
+        }
+
+        /* Nút XUẤT FILE 2D & 3D */
+        .btn-export-group { display: flex; gap: 10px; }
         .btn-glass-cad {
+            flex: 1; font-size: 12px;
             background: linear-gradient(135deg, rgba(0, 85, 255, 0.6), rgba(0, 243, 255, 0.6));
-            box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.6),  /* Viền sáng trên */
-                inset 0 -4px 10px rgba(0, 85, 255, 0.8),    /* Đáy xanh đậm */
-                0 6px 12px rgba(0, 0, 0, 0.4),              /* Bóng đổ đen */
-                0 0 15px rgba(0, 243, 255, 0.2);            /* Glow nhẹ */
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -4px 10px rgba(0, 85, 255, 0.8), 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 243, 255, 0.2);
         }
         .btn-glass-cad:hover {
-            transform: translateY(-3px);
-            background: linear-gradient(135deg, rgba(0, 85, 255, 0.8), rgba(0, 243, 255, 0.8));
-            box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.8),
-                inset 0 -4px 10px rgba(0, 85, 255, 1),
-                0 10px 20px rgba(0, 0, 0, 0.5),
-                0 0 25px rgba(0, 243, 255, 0.5);
+            transform: translateY(-3px); background: linear-gradient(135deg, rgba(0, 85, 255, 0.8), rgba(0, 243, 255, 0.8));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), inset 0 -4px 10px rgba(0, 85, 255, 1), 0 10px 20px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 243, 255, 0.5);
         }
-
-        /* 3D DAE Glass */
         .btn-glass-3d {
+            flex: 1; font-size: 12px;
             background: linear-gradient(135deg, rgba(157, 0, 255, 0.6), rgba(255, 0, 127, 0.6));
-            box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.6),
-                inset 0 -4px 10px rgba(157, 0, 255, 0.8),
-                0 6px 12px rgba(0, 0, 0, 0.4),
-                0 0 15px rgba(255, 0, 127, 0.2);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -4px 10px rgba(157, 0, 255, 0.8), 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 0, 127, 0.2);
         }
         .btn-glass-3d:hover {
-            transform: translateY(-3px);
-            background: linear-gradient(135deg, rgba(157, 0, 255, 0.8), rgba(255, 0, 127, 0.8));
-            box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.8),
-                inset 0 -4px 10px rgba(157, 0, 255, 1),
-                0 10px 20px rgba(0, 0, 0, 0.5),
-                0 0 25px rgba(255, 0, 127, 0.5);
+            transform: translateY(-3px); background: linear-gradient(135deg, rgba(157, 0, 255, 0.8), rgba(255, 0, 127, 0.8));
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), inset 0 -4px 10px rgba(157, 0, 255, 1), 0 10px 20px rgba(0, 0, 0, 0.5), 0 0 25px rgba(255, 0, 127, 0.5);
         }
 
-        .btn-glass:active {
-            transform: translateY(2px);
-            box-shadow: 
-                inset 0 4px 10px rgba(0, 0, 0, 0.6), 
-                inset 0 1px 1px rgba(255, 255, 255, 0.2);
-        }
-
-        /* ======================================================== */
-
+        /* ĐỒNG BỘ THANH TIẾN TRÌNH & HUD */
         .prog-container { margin-top: 12px; }
-        .prog-wrap { height: 8px; background: #000; border-radius: 4px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); border: 1px solid #333; }
-        #progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple), var(--neon-pink)); transition: width 0.3s ease; box-shadow: 0 0 10px rgba(157, 0, 255, 0.5); }
-        #stt { font-size: 11px; text-align: center; color: var(--text-muted); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 8px; line-height: 1.4;}
+        .prog-wrap { height: 8px; background: #000; border-radius: 4px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); border: 1px solid #333; transition: 0.5s;}
+        body.theme-light .prog-wrap { background: #1e293b; border-color: #475569; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+        
+        #progress { width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple), var(--neon-pink)); transition: width 0.3s ease, background 0.5s ease; box-shadow: 0 0 10px rgba(157, 0, 255, 0.5); }
+        body.theme-light #progress { background: linear-gradient(90deg, var(--neon-orange), #fde047, #f59e0b); box-shadow: 0 0 10px rgba(255, 170, 0, 0.5); }
+        
+        #stt { font-size: 11px; text-align: center; color: var(--text-muted); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 8px; line-height: 1.4; transition: 0.5s;}
 
-        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 8px 24px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 8px 24px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); box-shadow: 0 10px 30px rgba(0,0,0,0.6); transition: 0.5s; }
+        body.theme-light .hud-bottom { background: rgba(255, 255, 255, 0.85); border-color: #e2e8f0; color: #475569; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .hud-item { display: flex; align-items: center; gap: 6px; }
-        .hud-val { color: var(--neon-blue); font-weight: 700; text-shadow: 0 0 8px rgba(0, 243, 255, 0.3); }
+        
+        .hud-val { color: var(--neon-blue); font-weight: 700; text-shadow: 0 0 8px rgba(0, 243, 255, 0.3); transition: 0.5s;}
+        body.theme-light .hud-val { color: var(--neon-orange); text-shadow: 0 0 8px rgba(255, 170, 0, 0.3); }
         
         .core-badge { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: var(--text-muted); }
-        .core-badge.online { color: var(--neon-green); text-shadow: 0 0 8px rgba(0, 255, 136, 0.5); }
+        .core-badge.online { color: var(--neon-green); text-shadow: 0 0 8px rgba(0, 255, 136, 0.5); transition: 0.5s;}
+        body.theme-light .core-badge.online { color: #f59e0b; text-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
+        
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: inset 0 0 3px rgba(0,0,0,0.5); }
         .core-badge.online .pulse-dot { box-shadow: 0 0 8px var(--neon-green); animation: pulse 2s infinite; }
+        body.theme-light .core-badge.online .pulse-dot { box-shadow: 0 0 8px #f59e0b; }
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(0.95); opacity: 1; } }
     </style>
 </head>
@@ -247,7 +255,7 @@
         
         <div class="brand-header">
             <h1>NAM ARCH <span>PRO</span></h1>
-            <span class="tagline">V89 • GLOSSY GLASS EDITION</span>
+            <span class="tagline">V90 • UNIFIED GLASS UI</span>
         </div>
 
         <div class="panel-card">
@@ -308,24 +316,25 @@
                     <div class="star s3"></div>
                     <div class="star s4"></div>
                 </div>
-
                 <div class="toggle-text">
                     <span class="txt-dark">NỀN TỐI</span>
                     <span class="txt-light">NỀN SÁNG</span>
                 </div>
                 <div class="glass-thumb" id="themeThumbIcon">🌙</div>
             </div>
-
         </div>
 
-        <button class="btn-main" onclick="startMegaScan()">
+        <button class="btn-glass btn-glass-scan" onclick="startMegaScan()">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
             QUÉT ĐỊA HÌNH (SPACE)
         </button>
 
         <div class="panel-card" style="padding: 12px 16px;">
             <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                <button class="btn-outline" style="flex: 1;" onclick="resetScan()" title="Xóa toàn bộ bộ nhớ Cache">Làm mới dữ liệu</button>
+                <button class="btn-glass btn-glass-reset" onclick="resetScan()" title="Xóa toàn bộ bộ nhớ Cache">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    LÀM MỚI DỮ LIỆU
+                </button>
             </div>
             
             <div class="btn-export-group">
@@ -360,7 +369,7 @@
 
 <script>
     // =========================================================================
-    // LÕI THUẬT TOÁN V82 GIỮ NGUYÊN 100% - KHÔNG CHỈNH SỬA BẤT KỲ ĐIỀU GÌ
+    // LÕI THUẬT TOÁN V82 GIỮ NGUYÊN 100% - KHÔNG CHỈNH SỬA
     // =========================================================================
     
     let sidebarOpen = true;
@@ -410,6 +419,9 @@
     let isLightMap = false;
     function toggleMapTheme() {
         isLightMap = !isLightMap;
+        
+        // CẬP NHẬT THEME CHO BODY ĐỂ ĐỒNG BỘ TOÀN BỘ MÀU SLIDER/HUD/PROGRESS
+        document.body.classList.toggle('theme-light', isLightMap);
         
         const toggleBtn = document.getElementById('themeToggleBtn');
         const thumbIcon = document.getElementById('themeThumbIcon');
@@ -510,7 +522,11 @@
         pBar.style.width = percent + '%';
         stt.innerText = text;
         if(isActive) pWrap.classList.add('active'); else pWrap.classList.remove('active');
-        stt.style.color = (percent >= 100) ? "var(--neon-green)" : "var(--neon-blue)";
+        
+        // Đổi màu text theo theme
+        stt.style.color = (percent >= 100) ? 
+            (isLightMap ? "#f59e0b" : "var(--neon-green)") : 
+            (isLightMap ? "var(--neon-orange)" : "var(--neon-blue)");
     }
 
     function resetScan() {
