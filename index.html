@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v63 - 3D City Builder</title>
+    <title>NAM ARCH PRO v65 - Solid Faces & Blocks</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -51,21 +51,11 @@
         .zoom-slider { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.3); border-radius: 2px; outline: none; margin-top: 5px; }
         .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--primary); cursor: pointer; transition: 0.2s; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
         
-        .btn-glow { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent-3d) 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px; }
+        .btn-glow { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 20px rgba(0, 229, 255, 0.25); transition: all 0.3s ease; margin-bottom: 12px; margin-top: 5px; }
         .btn-glow:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4); }
         
         .btn-outline { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-main); font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
         .btn-outline:hover { background: rgba(128,128,128,0.15); }
-
-        /* SWITCH ĐỔI CHẾ ĐỘ 3D */
-        .switch-container { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px;}
-        .switch-label { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; border: 1px solid var(--border); }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-3d); border-color: var(--accent-3d); box-shadow: 0 0 10px var(--accent-3d); }
-        input:checked + .slider:before { transform: translateX(24px); }
 
         .prog-container { margin: 15px 0; }
         .prog-wrap { height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
@@ -104,7 +94,7 @@
 <div class="sidebar-container">
     <div class="sidebar" id="sidebar">
         <h1>NAM ARCH <span>PRO</span></h1>
-        <span class="tagline">V63 - 3D CITY BUILDER</span>
+        <span class="tagline">V65 - SOLID FACES & BLOCKS</span>
 
         <div class="ctrl-box">
             <div class="row"><span>Cấp độ Zoom</span><span class="val-hl" id="z-val">16.0</span></div>
@@ -112,12 +102,8 @@
         </div>
 
         <div class="ctrl-box">
-            <div class="switch-container">
-                <span class="switch-label" id="modeLabel">MÔ HÌNH: 2D PHẲNG CƠ BẢN</span>
-                <label class="switch">
-                    <input type="checkbox" id="mode3D" onchange="toggle3DMode()">
-                    <span class="slider"></span>
-                </label>
+            <div class="row" style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+                <span style="color: var(--primary); text-transform: uppercase; font-size: 11px;">⚙️ TRÍCH XUẤT LỚP BẢN ĐỒ</span>
             </div>
 
             <button id="mapThemeBtn" class="btn-outline" style="margin-bottom: 15px; width: 100%;" onclick="toggleMapTheme()">🗺️ NỀN BẢN ĐỒ: TỐI (DARK)</button>
@@ -152,9 +138,12 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-outline" style="margin-top: 0; flex: 1; padding: 12px 0;" onclick="resetScan()">🔄 LÀM MỚI</button>
-            <button class="btn-outline" style="margin-top: 0; flex: 1.5; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe()">📥 XUẤT CAD / 3D SU</button>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn-outline" style="margin-top: 0; padding: 12px 0;" onclick="resetScan()">🔄 LÀM MỚI BẢN ĐỒ</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-outline" style="margin-top: 0; flex: 1; border-color: var(--primary); color: var(--primary);" onclick="exportDxfSafe(false)" title="Xuất nét 2D phẳng (Plan)">📥 XUẤT CAD 2D</button>
+                <button class="btn-outline" style="margin-top: 0; flex: 1.2; border-color: var(--accent-3d); color: var(--accent-3d);" onclick="exportDxfSafe(true)" title="Tự động Make Face & Đóng Khối 3D">🏙️ XUẤT 3D (FACES)</button>
+            </div>
         </div>
     </div>
     
@@ -177,18 +166,6 @@
         sidebarOpen = !sidebarOpen;
         sb.classList.toggle('hidden', !sidebarOpen);
         document.getElementById('toggle-icon').innerText = sidebarOpen ? '◀' : '▶';
-    }
-
-    function toggle3DMode() {
-        const is3D = document.getElementById('mode3D').checked;
-        const label = document.getElementById('modeLabel');
-        if(is3D) {
-            label.innerText = "MÔ HÌNH: 3D SKETCHUP (EXTRUDE)";
-            label.style.color = "var(--accent-3d)";
-        } else {
-            label.innerText = "MÔ HÌNH: 2D PHẲNG CƠ BẢN";
-            label.style.color = "var(--primary)";
-        }
     }
 
     document.addEventListener('keydown', e => {
@@ -261,7 +238,6 @@
     document.getElementById('zoomSlider').addEventListener('input', e => map.setZoom(e.target.value));
     map.on('move zoomend', updateHUD); updateHUD();
 
-    // Data structure modified to hold height for 3D extrusion
     var geoData = { nha: [], duong: [], viahe: [], nuoc: [] };
     var layers = { nha: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map) };
 
@@ -332,14 +308,13 @@
         return turf.polygon([ring]);
     }
 
-    // Thuật toán gán chiều cao đùn khối
+    // Tự động gán chiều cao chân thực (Randomized cho tự nhiên nếu data trống)
     function calculateBuildingHeight(tags) {
         if(tags['building:levels']) return parseFloat(tags['building:levels']) * 3.5;
-        // Randomize cho tự nhiên: 70% thấp tầng (9-15m), 20% trung tầng (15-30m), 10% cao tầng (30-60m)
         const rand = Math.random();
-        if(rand < 0.7) return 9 + Math.random() * 6;
-        if(rand < 0.9) return 15 + Math.random() * 15;
-        return 30 + Math.random() * 30;
+        if(rand < 0.7) return 9 + Math.random() * 6;     // 70% thấp tầng
+        if(rand < 0.9) return 15 + Math.random() * 15;   // 20% trung tầng
+        return 30 + Math.random() * 30;                  // 10% cao tầng
     }
 
     async function startMegaScan() {
@@ -374,12 +349,13 @@
 
                 if (e.tags.building) {
                     const poly = turf.bboxClip(makeClosedPolygon(pts), screenBox);
-                    // Lưu kèm chiều cao đùn khối
-                    geoData.nha.push({ geometry: poly, height: calculateBuildingHeight(e.tags) });
+                    // Gắn thêm thuộc tính chiều cao (height) vào feature
+                    poly.height = calculateBuildingHeight(e.tags);
+                    geoData.nha.push(poly);
                     L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha);
                 } else if (e.tags.natural === 'water') {
                     const poly = turf.bboxClip(makeClosedPolygon(pts), screenBox);
-                    geoData.nuoc.push({ geometry: poly });
+                    geoData.nuoc.push(poly);
                     L.geoJSON(poly, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc);
                 } else if (e.tags.highway) {
                     const line = turf.lineString(pts);
@@ -392,18 +368,18 @@
             if (rBufs.length > 0) {
                 updateProgress(70, "XỬ LÝ MẶT PHẲNG ĐƯỜNG...", true);
                 let mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG");
-                if (mR) { geoData.duong.push({geometry: mR}); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
+                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
 
                 updateProgress(85, "XỬ LÝ MẶT PHẲNG VỈA HÈ...", true);
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 try {
                     let viahe = turf.difference(mS, mR);
-                    if(viahe) { geoData.viahe.push({geometry: viahe}); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
+                    if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
                 } catch(e) { 
-                    if (mS) { geoData.viahe.push({geometry: mS}); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
+                    if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); }
                 }
             }
-            updateProgress(100, "HOÀN TẤT! SẴN SÀNG XUẤT FILE.", false);
+            updateProgress(100, "HOÀN TẤT! CHỌN PHƯƠNG THỨC XUẤT.", false);
         } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU QUÁ LỚN!", false); }
     }
 
@@ -418,45 +394,112 @@
         return rings;
     }
 
-    async function exportDxfSafe() {
+    // --- HÀM ĐAN LƯỚI TẠO MẶT (Tessellation) ---
+    function tesselateToTriangles(feature) {
+        let triangles = [];
+        if (!feature || !feature.geometry) return triangles;
+        
+        const tessellatePoly = (polyCoords) => {
+            try {
+                let poly = turf.polygon(polyCoords);
+                let cleaned = turf.cleanCoords(poly);
+                let res = turf.tesselate(cleaned);
+                res.features.forEach(f => triangles.push(f));
+            } catch(e) { } // Bỏ qua nếu hình lỗi
+        };
+
+        if (feature.geometry.type === 'Polygon') {
+            tessellatePoly(feature.geometry.coordinates);
+        } else if (feature.geometry.type === 'MultiPolygon') {
+            feature.geometry.coordinates.forEach(coords => tesselatePoly(coords));
+        }
+        return triangles;
+    }
+
+    // --- XUẤT FILE DXF (2D POLYLINE VÀ 3D FACES) ---
+    async function exportDxfSafe(is3D) {
         if(geoData.nha.length === 0 && geoData.duong.length === 0) return alert("Chưa có dữ liệu!");
         
-        const is3D = document.getElementById('mode3D').checked;
-        updateProgress(90, is3D ? "ĐANG BIÊN DỊCH KHỐI 3D..." : "ĐANG GHI FILE CAD 2D...", true);
+        updateProgress(90, is3D ? "ĐANG ĐAN LƯỚI TẠO MẶT 3D..." : "ĐANG GHI FILE CAD 2D...", true);
         
         const center = map.getCenter();
         const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
         let dxf = "0\nSECTION\n2\nENTITIES\n";
 
-        const writeToDxf = async (dataArray, layerName) => {
+        const tx = (pt) => ((pt[0] - center.lng) * sx).toFixed(3);
+        const ty = (pt) => ((pt[1] - center.lat) * sy).toFixed(3);
+
+        const processLayer = async (dataArray, layerName, baseZ) => {
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 10 === 0) await yieldCPU();
-                const item = dataArray[i];
-                const rings = extractRings(item.geometry);
-                
-                rings.forEach(ring => {
-                    if(!ring || ring.length < 2) return;
+                const feature = dataArray[i];
+
+                if (!is3D) {
+                    // XUẤT 2D BÌNH THƯỜNG (Polyline nét thanh)
+                    let rings = extractRings(feature.geometry);
+                    rings.forEach(ring => {
+                        if(!ring || ring.length < 2) return;
+                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
+                        ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${tx(pt)}\n20\n${ty(pt)}\n30\n0\n`; });
+                        dxf += "0\nSEQEND\n";
+                    });
+                } else {
+                    // XUẤT 3D FACES (Lưới đan mặt và Tường bao)
+                    let height = feature.height || 0;
                     
-                    dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
-                    // THUẬT TOÁN ĐÙN KHỐI 3D (THICKNESS)
-                    if(is3D && item.height > 0) {
-                        dxf += `39\n${item.height.toFixed(2)}\n`; 
+                    // 1. Tạo Mái và Sàn (Bằng cách đan lưới tam giác)
+                    let triangles = tesselateToTriangles(feature);
+                    triangles.forEach(geom => {
+                        let pts = geom.geometry.coordinates[0];
+                        if (pts && pts.length >= 4) { // Tam giác có 4 điểm (đóng)
+                            // Vẽ sàn (mọi object đều có sàn)
+                            if (height === 0 || layerName === "V21_NHA") {
+                                dxf += `0\n3DFACE\n8\n${layerName}\n`;
+                                dxf += `10\n${tx(pts[0])}\n20\n${ty(pts[0])}\n30\n${baseZ}\n`;
+                                dxf += `11\n${tx(pts[1])}\n20\n${ty(pts[1])}\n30\n${baseZ}\n`;
+                                dxf += `12\n${tx(pts[2])}\n20\n${ty(pts[2])}\n30\n${baseZ}\n`;
+                                dxf += `13\n${tx(pts[2])}\n20\n${ty(pts[2])}\n30\n${baseZ}\n`; // 3D Face yêu cầu 4 góc
+                            }
+                            // Vẽ mái (nếu là nhà)
+                            if (height > 0) {
+                                dxf += `0\n3DFACE\n8\n${layerName}\n`;
+                                dxf += `10\n${tx(pts[0])}\n20\n${ty(pts[0])}\n30\n${baseZ + height}\n`;
+                                dxf += `11\n${tx(pts[1])}\n20\n${ty(pts[1])}\n30\n${baseZ + height}\n`;
+                                dxf += `12\n${tx(pts[2])}\n20\n${ty(pts[2])}\n30\n${baseZ + height}\n`;
+                                dxf += `13\n${tx(pts[2])}\n20\n${ty(pts[2])}\n30\n${baseZ + height}\n`;
+                            }
+                        }
+                    });
+
+                    // 2. Tạo Tường bao quanh (Nếu là nhà)
+                    if (height > 0) {
+                        let rings = extractRings(feature.geometry);
+                        rings.forEach(ring => {
+                            for(let j=0; j<ring.length-1; j++) {
+                                let p1 = ring[j];
+                                let p2 = ring[j+1];
+                                dxf += `0\n3DFACE\n8\n${layerName}\n`;
+                                dxf += `10\n${tx(p1)}\n20\n${ty(p1)}\n30\n${baseZ}\n`;
+                                dxf += `11\n${tx(p2)}\n20\n${ty(p2)}\n30\n${baseZ}\n`;
+                                dxf += `12\n${tx(p2)}\n20\n${ty(p2)}\n30\n${baseZ + height}\n`;
+                                dxf += `13\n${tx(p1)}\n20\n${ty(p1)}\n30\n${baseZ + height}\n`;
+                            }
+                        });
                     }
-                    
-                    ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n`; });
-                    dxf += "0\nSEQEND\n";
-                });
+                }
             }
         };
 
-        if(document.getElementById('showNha').checked) await writeToDxf(geoData.nha, "V21_NHA");
-        if(document.getElementById('showDuong').checked) await writeToDxf(geoData.duong, "V21_DUONG");
-        if(document.getElementById('showViahe').checked) await writeToDxf(geoData.viahe, "V21_VIAHE");
-        if(document.getElementById('showNuoc').checked) await writeToDxf(geoData.nuoc, "V21_NUOC");
+        // Đẩy tuần tự các Layer với cao độ Z-Fighting khác nhau
+        if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "V21_NUOC", -0.1);
+        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "V21_DUONG", 0);
+        if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "V21_VIAHE", 0.15);
+        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "V21_NHA", 0.15);
 
         dxf += "0\nENDSEC\n0\nEOF";
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'}));
+        
         a.download = is3D ? "NAM_ARCH_3D_CITY.dxf" : "NAM_ARCH_2D_PLAN.dxf"; 
         a.click();
         
