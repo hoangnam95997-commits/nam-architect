@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v88 - Micro-Universe Switch</title>
+    <title>NAM ARCH PRO v89 - Glossy Glass UI</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -77,189 +77,147 @@
         .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch { background: rgba(0, 243, 255, 0.2); border: 1px solid var(--neon-blue); box-shadow: 0 0 10px rgba(0, 243, 255, 0.2), inset 0 2px 4px rgba(0,0,0,0.5); }
         .layer-item input[type="checkbox"]:checked + .layer-left + .toggle-switch::after { transform: translateX(16px); background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue), inset 0 1px 2px rgba(255,255,255,0.8); }
 
-        /* ======================================================== */
-        /* CÔNG TẮC NGÀY / ĐÊM CÓ MÂY & SAO BÊN TRONG (V88)         */
-        /* ======================================================== */
+        /* CÔNG TẮC NGÀY/ĐÊM (V88) */
         .glass-toggle-container {
-            position: relative;
-            width: 100%;
-            height: 48px;
-            border-radius: 24px;
-            cursor: pointer;
-            margin-top: 15px;
-            overflow: hidden;
-            transition: background 0.5s ease, box-shadow 0.5s ease;
+            position: relative; width: 100%; height: 48px; border-radius: 24px; cursor: pointer; margin-top: 15px; overflow: hidden; transition: background 0.5s ease, box-shadow 0.5s ease;
         }
-
-        /* Lớp kính mờ phủ ngoài rãnh */
         .glass-toggle-container::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
-            pointer-events: none; z-index: 5; border-radius: 24px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); pointer-events: none; z-index: 5; border-radius: 24px;
         }
-
-        /* TRẠNG THÁI TỐI (Mặt Trăng + Sao) */
         .glass-toggle-container.dark-mode {
-            background: linear-gradient(180deg, #0f172a, #1e293b);
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.8), 0 0 15px rgba(0, 243, 255, 0.1);
-            border: 1px solid rgba(0, 243, 255, 0.2);
+            background: linear-gradient(180deg, #0f172a, #1e293b); box-shadow: inset 0 4px 10px rgba(0,0,0,0.8), 0 0 15px rgba(0, 243, 255, 0.1); border: 1px solid rgba(0, 243, 255, 0.2);
         }
-        
-        /* TRẠNG THÁI SÁNG (Mặt Trời + Mây) */
         .glass-toggle-container.light-mode {
-            background: linear-gradient(180deg, #38bdf8, #7dd3fc);
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3), 0 0 15px rgba(255, 170, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: linear-gradient(180deg, #38bdf8, #7dd3fc); box-shadow: inset 0 4px 10px rgba(0,0,0,0.3), 0 0 15px rgba(255, 170, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.5);
         }
-
-        /* CỤC TRƯỢT 3D (Thumb) */
         .glass-thumb {
-            position: absolute;
-            top: 4px;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; z-index: 6;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: absolute; top: 4px; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; z-index: 6; transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        .glass-toggle-container.dark-mode .glass-thumb { left: 5px; background: #e2e8f0; box-shadow: inset -4px -2px 6px rgba(0,0,0,0.3), inset 2px 2px 4px #fff, 0 0 15px rgba(0, 243, 255, 0.5); }
+        .glass-toggle-container.light-mode .glass-thumb { left: calc(100% - 43px); background: #fbbf24; box-shadow: inset -3px -3px 6px rgba(180, 83, 9, 0.5), inset 2px 2px 4px #fef3c7, 0 0 20px rgba(255, 170, 0, 0.8); transform: rotate(360deg); }
 
-        .glass-toggle-container.dark-mode .glass-thumb {
-            left: 5px;
-            background: #e2e8f0; 
-            box-shadow: inset -4px -2px 6px rgba(0,0,0,0.3), inset 2px 2px 4px #fff, 0 0 15px rgba(0, 243, 255, 0.5);
-        }
-
-        .glass-toggle-container.light-mode .glass-thumb {
-            left: calc(100% - 43px); 
-            background: #fbbf24; 
-            box-shadow: inset -3px -3px 6px rgba(180, 83, 9, 0.5), inset 2px 2px 4px #fef3c7, 0 0 20px rgba(255, 170, 0, 0.8);
-            transform: rotate(360deg); 
-        }
-
-        /* CHỮ HIỂN THỊ NỔI LÊN TRÊN */
-        .toggle-text {
-            position: absolute; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: space-around;
-            padding: 0 20px; font-size: 12px; font-weight: 800; letter-spacing: 1px;
-            z-index: 4; pointer-events: none; transition: 0.5s;
-        }
+        .toggle-text { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-around; padding: 0 20px; font-size: 12px; font-weight: 800; letter-spacing: 1px; z-index: 4; pointer-events: none; transition: 0.5s; }
         .glass-toggle-container.dark-mode .txt-dark { color: #fff; text-shadow: 0 0 5px rgba(0, 243, 255, 0.8); opacity: 1; margin-left: 20px;}
         .glass-toggle-container.dark-mode .txt-light { color: rgba(255,255,255,0.2); opacity: 0.5; }
         .glass-toggle-container.light-mode .txt-dark { color: rgba(0,0,0,0.3); opacity: 0.5; margin-left: 20px;}
         .glass-toggle-container.light-mode .txt-light { color: #fff; text-shadow: 0 0 5px rgba(255, 170, 0, 0.8); opacity: 1; }
 
-        /* VŨ TRỤ THU NHỎ NẰM DƯỚI ĐÁY CÔNG TẮC (Z-INDEX: 1) */
-        .bg-decorations {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
-        }
-
-        /* NHỮNG ĐÁM MÂY (Light Mode) */
-        .clouds {
-            position: absolute; width: 100%; height: 100%;
-            opacity: 0; transform: translateY(10px); transition: all 0.5s ease;
-        }
+        .bg-decorations { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .clouds { position: absolute; width: 100%; height: 100%; opacity: 0; transform: translateY(10px); transition: all 0.5s ease; }
         .glass-toggle-container.light-mode .clouds { opacity: 1; transform: translateY(0); }
-        
-        /* CSS vẽ Mây không cần ảnh */
         .cloud { position: absolute; background: rgba(255,255,255,0.8); border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
         .cloud::before, .cloud::after { content: ''; position: absolute; background: rgba(255,255,255,0.8); border-radius: 50%; }
-        
         .c1 { width: 36px; height: 12px; top: 22px; left: 15px; }
         .c1::before { width: 18px; height: 18px; bottom: 2px; left: 4px; }
         .c1::after { width: 22px; height: 22px; bottom: 2px; right: 2px; }
-        
         .c2 { width: 24px; height: 8px; top: 12px; left: 55px; opacity: 0.6; }
         .c2::before { width: 12px; height: 12px; bottom: 2px; left: 3px; }
         .c2::after { width: 16px; height: 16px; bottom: 2px; right: 2px; }
-
-        /* NHỮNG NGÔI SAO LẤP LÁNH (Dark Mode) */
-        .stars {
-            position: absolute; width: 100%; height: 100%;
-            opacity: 1; transform: translateY(0); transition: all 0.5s ease;
-        }
+        .stars { position: absolute; width: 100%; height: 100%; opacity: 1; transform: translateY(0); transition: all 0.5s ease; }
         .glass-toggle-container.light-mode .stars { opacity: 0; transform: translateY(-10px); }
-
         .star { position: absolute; background: #fff; border-radius: 50%; box-shadow: 0 0 4px #fff; animation: twinkle 1.5s infinite alternate; }
         .s1 { width: 2px; height: 2px; top: 15px; right: 20px; animation-delay: 0s; }
         .s2 { width: 3px; height: 3px; top: 25px; right: 60px; animation-delay: 0.5s; }
         .s3 { width: 2px; height: 2px; top: 10px; right: 40px; animation-delay: 1s; }
         .s4 { width: 1.5px; height: 1.5px; top: 35px; right: 30px; animation-delay: 0.8s; }
-
         @keyframes twinkle { 0% { opacity: 0.2; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
 
         /* ======================================================== */
-        /* CÁC NÚT BẤM CHÍNH                                        */
+        /* NÚT BẤM CƠ BẢN                                           */
         /* ======================================================== */
         
         .btn-main { 
-            width: 100%; padding: 14px; margin-bottom: 16px;
-            border: none; border-radius: var(--radius-md); 
+            width: 100%; padding: 14px; margin-bottom: 16px; border: none; border-radius: var(--radius-md); 
             font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
             cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-            background: linear-gradient(180deg, #333 0%, #111 100%);
-            color: #fff;
+            background: linear-gradient(180deg, #333 0%, #111 100%); color: #fff;
             box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -2px 5px rgba(0, 0, 0, 0.8), 0 5px 15px rgba(0, 0, 0, 0.5);
             transition: all 0.15s ease;
         }
-        .btn-main:hover { 
-            background: linear-gradient(180deg, #444 0%, #222 100%);
-            transform: translateY(-2px); 
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -2px 5px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6); 
-        }
+        .btn-main:hover { background: linear-gradient(180deg, #444 0%, #222 100%); transform: translateY(-2px); box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -2px 5px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6); }
         .btn-main:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8), 0 2px 5px rgba(0, 0, 0, 0.3); }
 
         .btn-outline { 
-            padding: 10px; border-radius: 8px; 
-            background: #1a1b26; border: 1px solid #2a2b3d;
-            color: var(--text-muted); font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; text-transform: uppercase;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 5px rgba(0,0,0,0.2);
-            transition: 0.2s;
+            padding: 10px; border-radius: 8px; background: #1a1b26; border: 1px solid #2a2b3d; color: var(--text-muted); 
+            font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 5px rgba(0,0,0,0.2); transition: 0.2s;
         }
         .btn-outline:hover { background: #222333; color: #fff; }
         .btn-outline:active { box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); transform: translateY(1px); }
         
         .btn-export-group { display: flex; gap: 10px; }
-        
-        .btn-3d-neon {
-            flex: 1; padding: 12px 10px;
-            border-radius: var(--radius-md); border: none;
-            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; letter-spacing: 0.5px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+
+        /* ======================================================== */
+        /* GLOSSY GLASS BUTTONS (NÚT XUẤT FILE THỦY TINH V89)       */
+        /* ======================================================== */
+        .btn-glass {
+            flex: 1; padding: 14px 10px;
+            border-radius: 20px; /* Bo tròn mạnh giống viên thuốc/thủy tinh */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
             color: #fff; position: relative; overflow: hidden;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.3), inset 0 -4px 6px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.4);
-        }
-        
-        .btn-cad {
-            background: linear-gradient(135deg, #0055ff, #00f3ff); background-size: 200% 200%; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .btn-cad:hover {
-            animation: gradientMove 2s ease infinite; transform: translateY(-2px);
-            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -4px 6px rgba(0, 0, 0, 0.4), 0 8px 25px rgba(0, 243, 255, 0.5);
-        }
-        
-        .btn-3d {
-            background: linear-gradient(135deg, #9d00ff, #ff007f); background-size: 200% 200%; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .btn-3d:hover {
-            animation: gradientMove 2s ease infinite; transform: translateY(-2px);
-            box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -4px 6px rgba(0, 0, 0, 0.4), 0 8px 25px rgba(255, 0, 127, 0.5);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+            z-index: 1;
         }
 
-        .btn-3d-neon::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transform: skewX(-20deg); transition: 0.5s;
+        /* Lớp lóa sáng thủy tinh (Glossy Highlight) ở nửa trên nút */
+        .btn-glass::before {
+            content: ''; position: absolute; top: 0; left: 5%; width: 90%; height: 45%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.05));
+            border-radius: 20px 20px 100px 100px; /* Làm cong mượt vết lóa */
+            z-index: -1; pointer-events: none;
         }
-        .btn-3d-neon:hover::after { left: 200%; }
-        .btn-3d-neon:active { transform: translateY(2px); box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.6), 0 2px 5px rgba(0,0,0,0.2); }
 
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; }
+        /* 2D CAD Glass */
+        .btn-glass-cad {
+            background: linear-gradient(135deg, rgba(0, 85, 255, 0.6), rgba(0, 243, 255, 0.6));
+            box-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.6),  /* Viền sáng trên */
+                inset 0 -4px 10px rgba(0, 85, 255, 0.8),    /* Đáy xanh đậm */
+                0 6px 12px rgba(0, 0, 0, 0.4),              /* Bóng đổ đen */
+                0 0 15px rgba(0, 243, 255, 0.2);            /* Glow nhẹ */
         }
+        .btn-glass-cad:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, rgba(0, 85, 255, 0.8), rgba(0, 243, 255, 0.8));
+            box-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.8),
+                inset 0 -4px 10px rgba(0, 85, 255, 1),
+                0 10px 20px rgba(0, 0, 0, 0.5),
+                0 0 25px rgba(0, 243, 255, 0.5);
+        }
+
+        /* 3D DAE Glass */
+        .btn-glass-3d {
+            background: linear-gradient(135deg, rgba(157, 0, 255, 0.6), rgba(255, 0, 127, 0.6));
+            box-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.6),
+                inset 0 -4px 10px rgba(157, 0, 255, 0.8),
+                0 6px 12px rgba(0, 0, 0, 0.4),
+                0 0 15px rgba(255, 0, 127, 0.2);
+        }
+        .btn-glass-3d:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, rgba(157, 0, 255, 0.8), rgba(255, 0, 127, 0.8));
+            box-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.8),
+                inset 0 -4px 10px rgba(157, 0, 255, 1),
+                0 10px 20px rgba(0, 0, 0, 0.5),
+                0 0 25px rgba(255, 0, 127, 0.5);
+        }
+
+        .btn-glass:active {
+            transform: translateY(2px);
+            box-shadow: 
+                inset 0 4px 10px rgba(0, 0, 0, 0.6), 
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        /* ======================================================== */
 
         .prog-container { margin-top: 12px; }
         .prog-wrap { height: 8px; background: #000; border-radius: 4px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); border: 1px solid #333; }
@@ -289,7 +247,7 @@
         
         <div class="brand-header">
             <h1>NAM ARCH <span>PRO</span></h1>
-            <span class="tagline">V88 • MICRO-UNIVERSE SWITCH</span>
+            <span class="tagline">V89 • GLOSSY GLASS EDITION</span>
         </div>
 
         <div class="panel-card">
@@ -371,11 +329,11 @@
             </div>
             
             <div class="btn-export-group">
-                <button class="btn-3d-neon btn-cad" onclick="export2DDXF()">
+                <button class="btn-glass btn-glass-cad" onclick="export2DDXF()">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     2D CAD
                 </button>
-                <button class="btn-3d-neon btn-3d" onclick="export3DDAE()" title="Mô hình Khớp Nối, Chuẩn Cao Độ 100%">
+                <button class="btn-glass btn-glass-3d" onclick="export3DDAE()" title="Mô hình Khớp Nối, Chuẩn Cao Độ 100%">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                     3D DAE
                 </button>
@@ -402,7 +360,7 @@
 
 <script>
     // =========================================================================
-    // LÕI THUẬT TOÁN V82 GIỮ NGUYÊN 100% - KHÔNG CHỈNH SỬA
+    // LÕI THUẬT TOÁN V82 GIỮ NGUYÊN 100% - KHÔNG CHỈNH SỬA BẤT KỲ ĐIỀU GÌ
     // =========================================================================
     
     let sidebarOpen = true;
