@@ -2,130 +2,129 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Three.js True Optical Glass</title>
+    <title>Giao Diện Nút Thủy Tinh NAM ARCH</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #eaf0f6; }
-        #canvas-container { width: 100vw; height: 100vh; }
-        #loading {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: sans-serif; font-weight: bold; color: #333;
+        /* Nền tối chuẩn theo giao diện gốc của app bạn */
+        body {
+            background-color: #0b101e;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px; /* Khoảng cách giữa 2 nút */
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        /* ================================================= */
+        /* CẤU TRÚC CHUNG CỦA NÚT THỦY TINH (THE GLASS PILL) */
+        /* ================================================= */
+        .glass-btn {
+            position: relative;
+            width: 280px;
+            padding: 18px 0;
+            border-radius: 50px; /* Nút hình viên thuốc (Pill) */
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            
+            /* BÍ QUYẾT XUYÊN SÁNG (Bẻ cong nền tối phía sau) */
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%);
+            
+            /* Viền quang học mỏng bọc ngoài */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top-color: rgba(255, 255, 255, 0.5);
+            border-left-color: rgba(255, 255, 255, 0.3);
+            
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* VỆT CẮT BÓNG GƯƠNG (The Polished Gloss Cut) */
+        /* Đây là lớp phủ tạo cảm giác mặt kính được mài nhẵn */
+        .glass-btn::before {
+            content: '';
+            position: absolute;
+            inset: 1px;
+            border-radius: 50px;
+            background: linear-gradient(
+                135deg, 
+                rgba(255, 255, 255, 0.35) 0%,   /* Sáng chói ở góc trên */
+                rgba(255, 255, 255, 0.05) 45%,  /* Mờ dần */
+                transparent 45.2%,              /* CẮT ĐỨT ĐOẠN TẠO MẶT PHẲNG */
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+
+        /* ================================================= */
+        /* 1. NÚT THUẬT TOÁN CYAN                            */
+        /* ================================================= */
+        .btn-cyan {
+            /* Lõi kính trong suốt nhẹ */
+            background: linear-gradient(135deg, rgba(0, 180, 255, 0.2) 0%, rgba(0, 255, 255, 0.05) 100%);
+            
+            /* TỔNG HỢP VẬT LÝ QUANG HỌC */
+            box-shadow: 
+                /* Highlight viền sáng mặt trên */
+                inset 2px 2px 5px rgba(255, 255, 255, 0.6),
+                
+                /* VÁCH KÍNH: Đổ bóng đen chìm để tạo cảm giác "nút dày" và sâu */
+                inset 10px 10px 20px rgba(0, 0, 0, 0.6),
+                inset -10px -10px 20px rgba(0, 0, 0, 0.4),
+                
+                /* TỤ QUANG ĐÁY: Mép dưới phản xạ toàn phần màu Cyan rực rỡ */
+                inset -3px -5px 15px rgba(0, 255, 255, 0.8),
+                
+                /* BÓNG HẮT (Outer Glow): Ánh sáng tản ra nền tối */
+                0 15px 35px rgba(0, 255, 255, 0.25),
+                0 5px 15px rgba(0, 0, 0, 0.5); /* Bóng vật lý */
+        }
+
+        /* ================================================= */
+        /* 2. NÚT THUẬT TOÁN MAGENTA                         */
+        /* ================================================= */
+        .btn-magenta {
+            /* Lõi kính trong suốt nhẹ */
+            background: linear-gradient(135deg, rgba(200, 0, 255, 0.2) 0%, rgba(255, 0, 150, 0.05) 100%);
+            
+            /* TỔNG HỢP VẬT LÝ QUANG HỌC */
+            box-shadow: 
+                inset 2px 2px 5px rgba(255, 255, 255, 0.6),
+                
+                /* VÁCH KÍNH */
+                inset 10px 10px 20px rgba(0, 0, 0, 0.6),
+                inset -10px -10px 20px rgba(0, 0, 0, 0.4),
+                
+                /* TỤ QUANG ĐÁY Magenta rực rỡ */
+                inset -3px -5px 15px rgba(255, 0, 150, 0.8),
+                
+                /* BÓNG HẮT */
+                0 15px 35px rgba(255, 0, 150, 0.25),
+                0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* HIỆU ỨNG KHI BẤM VÀO */
+        .glass-btn:active {
+            transform: scale(0.96) translateY(2px);
+            /* Sáng rực viền dưới khi bị ép xuống */
+            box-shadow: 
+                inset 2px 2px 5px rgba(255, 255, 255, 0.6),
+                inset 10px 10px 20px rgba(0, 0, 0, 0.6),
+                inset -3px -5px 25px rgba(255, 255, 255, 0.6),
+                0 5px 15px rgba(0, 0, 0, 0.3);
         }
     </style>
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
 </head>
 <body>
-    <div id="loading">Đang nạp cỗ máy vật lý 3D...</div>
-    <div id="canvas-container"></div>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+    <div class="glass-btn btn-cyan">Thuật toán Cyan</div>
+    <div class="glass-btn btn-magenta">Thuật toán Magenta</div>
 
-        // 1. KHỞI TẠO SCENE, CAMERA, RENDERER
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        // Cài màu nền giống với ảnh mẫu của bạn
-        scene.background = new THREE.Color('#8ab6d6'); 
-
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.set(0, 0, 10);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
-
-        document.getElementById('loading').style.display = 'none';
-
-        // 2. MÔI TRƯỜNG ÁNH SÁNG (Lighting)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
-        scene.add(ambientLight);
-
-        // Nguồn sáng chính hắt từ góc Trên-Trái (Tạo vệt bóng gương)
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
-        directionalLight.position.set(5, 5, 5);
-        scene.add(directionalLight);
-
-        // 3. TẠO CÁC VẬT THỂ NỀN ĐỂ TEST ĐỘ KHÚC XẠ (Refraction)
-        // Mình tạo 3 khối cầu Tím - Hồng - Cam đặt phía sau tấm kính
-        const bgGroup = new THREE.Group();
-        const sphereGeo = new THREE.SphereGeometry(1.5, 32, 32);
-        
-        const mat1 = new THREE.MeshBasicMaterial({ color: '#440c88' });
-        const sphere1 = new THREE.Mesh(sphereGeo, mat1);
-        sphere1.position.set(-2, 2, -4);
-        bgGroup.add(sphere1);
-
-        const mat2 = new THREE.MeshBasicMaterial({ color: '#e31b64' });
-        const sphere2 = new THREE.Mesh(sphereGeo, mat2);
-        sphere2.position.set(2, 0, -5);
-        bgGroup.add(sphere2);
-
-        const mat3 = new THREE.MeshBasicMaterial({ color: '#ff6b15' });
-        const sphere3 = new THREE.Mesh(sphereGeo, mat3);
-        sphere3.position.set(-1, -2, -3);
-        bgGroup.add(sphere3);
-        
-        scene.add(bgGroup);
-
-        // 4. CHẤT LIỆU THỦY TINH VẬT LÝ (MeshPhysicalMaterial)
-        // Đây chính là "phép màu" mà CSS không bao giờ làm được
-        const glassMaterial = new THREE.MeshPhysicalMaterial({
-            color: 0xffffff,          // Kính không màu (Clear Glass)
-            metalness: 0.1,           // Độ phản quang nhẹ như kính
-            roughness: 0.05,          // Bề mặt cực nhẵn (Tạo độ bóng gương tự nhiên)
-            transmission: 1.0,        // ĐỘ XUYÊN SÁNG TUYỆT ĐỐI
-            ior: 1.5,                 // CHỈ SỐ KHÚC XẠ (Index of Refraction của thủy tinh)
-            thickness: 2.0,           // ĐỘ DÀY CỦA KHỐI (Tạo vách kính và độ uốn cong)
-            clearcoat: 1.0,           // Lớp phủ bóng lộn bên ngoài
-            clearcoatRoughness: 0.1,
-            side: THREE.DoubleSide    // Render cả mặt trong lẫn ngoài của kính
-        });
-
-        // 5. KHỐI KÍNH SQUIRCLE
-        const geometry = new RoundedBoxGeometry(4, 4, 1.5, 6, 0.6);
-        const glassMesh = new THREE.Mesh(geometry, glassMaterial);
-        scene.add(glassMesh);
-
-        // 6. THÊM TƯƠNG TÁC XOAY CHUỘT
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-
-        // 7. VÒNG LẶP RENDER VÀ CHUYỂN ĐỘNG (Animation Loop)
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // Xoay các quả cầu phía sau để bạn thấy kính bẻ cong ánh sáng realtime
-            bgGroup.rotation.z += 0.005;
-            bgGroup.rotation.x += 0.002;
-
-            // Xoay nhẹ khối kính
-            glassMesh.rotation.y = Math.sin(Date.now() * 0.001) * 0.1;
-            glassMesh.rotation.x = Math.sin(Date.now() * 0.0015) * 0.1;
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        animate();
-
-        // Xử lý khi đổi kích thước màn hình
-        window.addEventListener('resize', onWindowResize, false);
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-    </script>
 </body>
 </html>
