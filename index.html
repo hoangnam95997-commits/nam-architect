@@ -59,41 +59,112 @@
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .panel-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* SLIDER NEUMORPHISM - CHỈNH SỬA CHÍNH TẠI ĐÂY */
+        /* SLIDER NEUMORPHISM */
         .val-hl { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: bold; }
-        
-        /* Tạo container cho thanh trượt trông nổi khối */
         .zoom-slider-container { background: var(--bg-main); border-radius: 20px; padding: 4px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); margin-top: 8px; display: flex; align-items: center; }
-        
-        /* Thanh trượt thực tế trông lõm sâu */
         .zoom-slider { -webkit-appearance: none; width: 100%; height: 28px; background: transparent; outline: none; margin: 0; padding: 0;}
-        
-        /* Cục tròn nổi - Tạo kiểu trông nổi khối và rực rỡ */
         .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light), 0 0 10px rgba(213, 50, 178, 0.4); transition: 0.2s; position: relative; z-index: 2; margin-top: 2px; }
         .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(213, 50, 178, 0.6); }
-
-        /* Track trông nổi khối */
         .zoom-slider::-webkit-slider-runnable-track { width: 100%; height: 28px; background: transparent; border-radius: 20px; position: relative; }
-        
-        /* Firefox style */
         .zoom-slider::-moz-range-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light), 0 0 10px rgba(213, 50, 178, 0.4); transition: 0.2s; z-index: 2;}
         .zoom-slider::-moz-range-track { width: 100%; height: 28px; background: transparent; border-radius: 20px; }
 
-        /* TOGGLE SWITCH CỰC NGẦU */
+        /* TOGGLE SWITCH CÁC LAYER */
         .layer-list { display: flex; flex-direction: column; gap: 6px; }
         .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; background: transparent; border: none; cursor: pointer; }
         .layer-left { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--text-primary);}
         .color-dot { width: 10px; height: 10px; border-radius: 2px; }
-        
         .layer-item input[type="checkbox"] { display: none; }
-        
-        /* Rãnh gạt lõm */
         .toggle-switch { width: 44px; height: 24px; background: var(--bg-main); border-radius: 20px; position: relative; transition: 0.3s; box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
-        /* Cục tròn nổi */
         .toggle-switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; background: var(--text-secondary); border-radius: 50%; transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light); }
-        
-        /* Khi bật */
         .layer-item input[type="checkbox"]:checked ~ .toggle-switch::after { transform: translateX(20px); background: var(--gradient-brand); box-shadow: 0 0 8px rgba(79, 172, 254, 0.6); }
+
+        /* ==========================================================
+           CÔNG TẮC DAY/NIGHT MỚI (LÀM THEO VIDEO BẠN GỬI) 
+           ========================================================== */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dn-switch {
+            position: relative;
+            display: inline-block;
+            width: 72px;
+            height: 34px;
+        }
+        .dn-switch input { opacity: 0; width: 0; height: 0; }
+        
+        .dn-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1a1c23; /* Nền ban đêm */
+            transition: .5s ease;
+            border-radius: 34px;
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            overflow: hidden;
+        }
+        
+        /* Viên bi tròn (Mặt trăng lúc mặc định) */
+        .dn-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #eccc68; /* Màu trăng vàng */
+            border-radius: 50%;
+            transition: .5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: inset -4px -2px 6px rgba(0,0,0,0.3), 0 0 10px rgba(236, 204, 104, 0.5);
+            z-index: 2;
+        }
+
+        /* Biểu tượng phụ trong rãnh (Ngôi sao/Mặt trăng) */
+        .dn-slider:after {
+            content: '🌙';
+            position: absolute;
+            right: 10px;
+            top: 6px;
+            font-size: 14px;
+            transition: 0.5s;
+            opacity: 0.6;
+        }
+        
+        /* KHI GẠT SANG CHẾ ĐỘ SÁNG (CHECKED) */
+        .dn-switch input:checked + .dn-slider {
+            background-color: #74b9ff; /* Nền mây trời ban ngày */
+            box-shadow: inset 4px 4px 8px rgba(0,0,0,0.2), inset -4px -4px 8px rgba(255,255,255,0.2);
+        }
+        
+        /* Viên bi biến thành Mặt Trời */
+        .dn-switch input:checked + .dn-slider:before {
+            transform: translateX(38px);
+            background-color: #ffffff; /* Mặt trời trắng sáng */
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.1), 0 0 15px #fff;
+        }
+
+        .dn-switch input:checked + .dn-slider:after {
+            content: '☀️';
+            left: 10px;
+            right: auto;
+            opacity: 0.9;
+        }
+
+        .theme-label-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--success);
+            transition: 0.3s;
+            min-width: 90px;
+        }
+        /* ========================================================== */
 
         /* NÚT BẤM NEUMORPHISM */
         .btn-main { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); background: var(--gradient-brand); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(213, 50, 178, 0.3); margin-bottom: 16px; }
@@ -194,10 +265,14 @@
                 </label>
             </div>
             
-            <div style="display: flex; gap: 6px; margin-top: 16px;">
-                <button id="mapThemeBtnLight" class="btn-outline" style="flex: 1; box-shadow: none; border: 1px solid rgba(255,255,255,0.05); color: #eccc68;" onclick="toggleMapTheme('light')">☀️ Sáng</button>
-                <button id="mapThemeBtnDark" class="btn-outline" style="flex: 1; box-shadow: none; border: 1px solid rgba(255,255,255,0.05); color: var(--success); font-weight: bold; box-shadow: 0 0 10px rgba(46, 213, 115, 0.4);" onclick="toggleMapTheme('dark')">🌙 Tối</button>
+            <div class="theme-switch-wrapper">
+                <span class="theme-label-text" id="themeStatusText">Chế độ Tối</span>
+                <label class="dn-switch" title="Chuyển đổi giao diện Bản đồ">
+                    <input type="checkbox" id="mapThemeToggle" onchange="toggleMapThemeSwitch(this.checked)">
+                    <span class="dn-slider"></span>
+                </label>
             </div>
+            
         </div>
 
         <button class="btn-main" onclick="startMegaScan()">
@@ -264,10 +339,13 @@
     });
     new L.GridLayer.Graticule({maxZoom: 100}).addTo(map);
 
+    /* HÀM LOGIC XỬ LÝ CHUYỂN ĐỔI MAP ĐƯỢC CẬP NHẬT ĐỂ ĐỌC TỪ CÔNG TẮC TRƯỢT */
     let currentMapTheme = 'dark';
-    function toggleMapTheme(theme) {
-        currentMapTheme = theme;
-        if(theme === 'light') {
+    function toggleMapThemeSwitch(isLight) {
+        currentMapTheme = isLight ? 'light' : 'dark';
+        const statusText = document.getElementById('themeStatusText');
+        
+        if(isLight) {
             map.removeLayer(darkT); lightT.addTo(map);
             document.getElementById('dot-nha').style.background = '#dc2626';
             document.getElementById('dot-duong').style.background = '#1e293b';
@@ -275,10 +353,9 @@
             document.getElementById('dot-nuoc').style.background = '#0284c7';
             document.getElementById('dot-cay').style.background = '#16a34a';
             document.getElementById('dot-dat').style.background = '#94a3b8';
-            document.getElementById('mapThemeBtnLight').style.fontWeight = 'bold';
-            document.getElementById('mapThemeBtnLight').style.boxShadow = '0 0 10px rgba(236, 204, 104, 0.4)';
-            document.getElementById('mapThemeBtnDark').style.fontWeight = 'normal';
-            document.getElementById('mapThemeBtnDark').style.boxShadow = 'none';
+            
+            statusText.innerText = 'Chế độ Sáng';
+            statusText.style.color = '#74b9ff';
         } else {
             map.removeLayer(lightT); darkT.addTo(map);
             document.getElementById('dot-nha').style.background = '#f43f5e';
@@ -287,10 +364,9 @@
             document.getElementById('dot-nuoc').style.background = '#0ea5e9';
             document.getElementById('dot-cay').style.background = '#10b981';
             document.getElementById('dot-dat').style.background = '#64748b';
-            document.getElementById('mapThemeBtnDark').style.fontWeight = 'bold';
-            document.getElementById('mapThemeBtnDark').style.boxShadow = '0 0 10px rgba(46, 213, 115, 0.4)';
-            document.getElementById('mapThemeBtnLight').style.fontWeight = 'normal';
-            document.getElementById('mapThemeBtnLight').style.boxShadow = 'none';
+            
+            statusText.innerText = 'Chế độ Tối';
+            statusText.style.color = 'var(--success)';
         }
         updateLineStyles();
     }
