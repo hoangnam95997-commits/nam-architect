@@ -2,106 +2,151 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán 3D Glass Icon - Sandbox V6</title>
+    <title>Thuật Toán Kính Đa Lớp (Layer Compositing) - V8</title>
     <style>
-        /* Nền sáng để đối chiếu chuẩn xác với ảnh gốc */
+        /* Nền xám sáng nhạt để test độ xuyên sáng và bóng đổ */
         body {
-            background-color: #f2f5f9;
+            background-color: #eef2f6;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: sans-serif;
             margin: 0;
+            /* Thêm lưới mờ để nhìn rõ hiệu ứng khúc xạ kính lúp */
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        /* KHỐI KÍNH TÍM HỒNG (The Tinted Glass Body) */
-        .glass-icon {
-            width: 250px;
-            height: 250px;
-            border-radius: 60px; /* Bo tròn chuẩn Squircle */
+        /* KHUNG CHỨA (Artboard) */
+        /* Định hình kích thước chuẩn của nút */
+        .glass-composite {
+            width: 240px;
+            height: 240px;
             position: relative;
             cursor: pointer;
-            
-            /* MÀU KÍNH (Tint): Tím than -> Hồng rực -> Cam sáng */
-            /* Dùng Alpha 0.8 để tạo độ xuyên thấu nhưng không bị loãng màu */
-            background: linear-gradient(135deg, rgba(60, 10, 120, 0.8) 0%, rgba(220, 20, 100, 0.8) 50%, rgba(255, 100, 0, 0.85) 100%);
-            
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            
-            /* KHỐI LƯỢNG 3D & KHÚC XẠ (Volume & Refraction Shadows) */
-            box-shadow: 
-                /* 1. Highlight viền trong góc Trên-Trái (Bắt sáng) */
-                inset 3px 3px 6px rgba(255, 255, 255, 0.6),
-                inset 1px 1px 15px rgba(255, 255, 255, 0.3),
-
-                /* 2. Vách kính tối góc Dưới-Phải (Tạo độ dày) */
-                inset -6px -6px 20px rgba(0, 0, 0, 0.6),
-
-                /* 3. Viền khúc xạ sáng rực ở đáy (Bắt sáng môi trường) */
-                inset -1.5px -3px 8px rgba(255, 200, 50, 0.8),
-
-                /* 4. Bóng vật lý hắt xuống nền (Ambient Occlusion) */
-                10px 20px 30px rgba(0, 0, 0, 0.15),
-
-                /* 5. Ánh sáng xuyên thấu (Caustic Glow) toả màu hồng/cam ra ngoài */
-                -5px 25px 40px rgba(233, 30, 99, 0.5);
-            
-            /* Outer Rim (Viền ngoài cùng) */
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-bottom-color: rgba(255, 255, 255, 0.05);
-            border-right-color: rgba(255, 255, 255, 0.05);
-            
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 60px; /* Độ bo góc chuẩn Apple Squircle */
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        .glass-composite:active {
+            transform: scale(0.95);
         }
 
-        /* VỆT SÁNG BÓNG GƯƠNG (The Hard-Stop Glossy Cut) */
-        /* Đã xóa lệnh mask lỗi. Chuyển sang cắt màu trực tiếp! */
-        .glass-icon::before {
-            content: '';
+        /* Định dạng chung cho TẤT CẢ các layer để xếp chồng chính xác 100% */
+        .layer {
             position: absolute;
-            inset: 2px; /* Thụt vào một chút so với border ngoài */
-            border-radius: 56px; 
-            
-            /* BÍ QUYẾT: Gradient chuyển từ Trắng sang Trong suốt đột ngột tại 48% */
-            background: linear-gradient(
-                135deg, 
-                rgba(255, 255, 255, 0.6) 0%, 
-                rgba(255, 255, 255, 0.1) 48%, 
-                rgba(255, 255, 255, 0) 48.1%, 
-                rgba(255, 255, 255, 0) 100%
-            );
-            pointer-events: none;
+            inset: 0;
+            border-radius: inherit; /* Kế thừa độ bo góc của khung chứa */
+            pointer-events: none;   /* Không cản trở click chuột */
         }
 
-        /* Đốm sáng nhỏ (Glints) phản quang ở bề mặt (Tuỳ chọn thêm cho sinh động) */
-        .glass-icon::after {
+        /* ======================================================== */
+        /* LAYER 1: MÔI TRƯỜNG TỎA SÁNG (Environment Shadows)       */
+        /* ======================================================== */
+        .layer-1-shadow-glow {
+            /* Bóng hắt màu (Caustics tỏa xuống nền) */
+            background: linear-gradient(135deg, #420b78 0%, #d1206f 50%, #fb6c2c 100%);
+            filter: blur(25px);
+            transform: translateY(15px) scale(0.85); /* Đẩy lùi xuống và thu nhỏ lại */
+            opacity: 0.6;
+        }
+        .layer-1-shadow-glow::after {
             content: '';
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            background: 
-                radial-gradient(circle at 15% 15%, rgba(255,255,255,0.4) 0%, transparent 10%),
-                radial-gradient(circle at 85% 85%, rgba(255,255,255,0.2) 0%, transparent 8%);
-            pointer-events: none;
+            /* Bóng đen vật lý ghim khối kính xuống mặt bàn */
+            box-shadow: 15px 25px 35px rgba(0, 0, 0, 0.3);
         }
 
-        .glass-icon:active {
-            transform: scale(0.96) translateY(4px);
+        /* ======================================================== */
+        /* LAYER 2: LÕI KÍNH LÚP (Base Blur & Translucent Tint)     */
+        /* ======================================================== */
+        .layer-2-base-glass {
+            /* Kéo ảnh nền bị nhòe và tăng độ tương phản để tạo chất liệu kính */
+            backdrop-filter: blur(15px) saturate(150%);
+            -webkit-backdrop-filter: blur(15px) saturate(150%);
+            
+            /* Màu gốc của nút NHƯNG CÓ ĐỘ TRONG SUỐT CAO (Alpha 0.35) */
+            background: linear-gradient(135deg, 
+                rgba(66, 11, 120, 0.35) 0%,   /* Tím */
+                rgba(209, 32, 111, 0.35) 50%, /* Hồng */
+                rgba(251, 108, 44, 0.45) 100% /* Cam */
+            );
+        }
+
+        /* ======================================================== */
+        /* LAYER 3: VÁCH TỐI TẠO KHỐI (Inner Volume Darkness)       */
+        /* ======================================================== */
+        .layer-3-inner-dark {
+            /* Đổ bóng đen chìm vào góc đáy-phải để làm kính có vẻ "dày" và lõm vào */
+            box-shadow: inset -15px -15px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        /* ======================================================== */
+        /* LAYER 4: TỤ QUANG ĐÁY (Inner Caustics Refraction)        */
+        /* ======================================================== */
+        .layer-4-inner-caustic {
+            /* Ánh sáng hội tụ rực rỡ ôm sát mép đáy */
             box-shadow: 
-                inset 3px 3px 8px rgba(255, 255, 255, 0.8),
-                inset -8px -8px 25px rgba(0, 0, 0, 0.7),
-                inset -1.5px -3px 8px rgba(255, 200, 50, 1),
-                5px 10px 15px rgba(0, 0, 0, 0.1),
-                -2px 15px 25px rgba(233, 30, 99, 0.6);
+                inset -3px -6px 15px rgba(255, 200, 100, 0.7), /* Rực cam vàng */
+                inset 4px 4px 10px rgba(255, 255, 255, 0.3);   /* Hắt nhẹ mép trên */
         }
 
+        /* ======================================================== */
+        /* LAYER 5: VẾT CẮT BÓNG GƯƠNG (Surface Hard-stop Gloss)    */
+        /* ======================================================== */
+        .layer-5-surface-gloss {
+            /* Thu nhỏ lại 2px để không đè lên đường viền quang học */
+            inset: 2px; 
+            border-radius: 58px;
+            /* Phủ lớp Trắng cắt chéo siêu bén tại 45% */
+            background: linear-gradient(
+                135deg, 
+                rgba(255, 255, 255, 0.6) 0%,   /* Rất chói góc Top-Left */
+                rgba(255, 255, 255, 0.1) 45%,  /* Mờ dần */
+                rgba(255, 255, 255, 0) 45.1%,  /* CẮT ĐỨT ĐOẠN ĐỂ TẠO ĐỘ BÓNG KÍNH */
+                transparent 100%
+            );
+        }
+
+        /* ======================================================== */
+        /* LAYER 6: VIỀN PHẢN QUANG (Edge Rim Light)                */
+        /* ======================================================== */
+        .layer-6-edge-rim {
+            /* Tạo một viền gradient 2px bằng kỹ thuật Mask */
+            padding: 2px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.9) 0%,   /* Bắt sáng trắng góc trên */
+                transparent 40%, 
+                transparent 60%, 
+                rgba(255, 150, 50, 0.8) 100%   /* Bắt sáng cam góc đáy */
+            );
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+        }
+
+        /* Bổ sung: Bụi sáng mô phỏng ảnh mẫu của bạn */
+        .sparkle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.6);
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
 
-    <div class="glass-icon"></div>
+    <div class="glass-composite">
+        
+        <div class="layer layer-1-shadow-glow"></div>    <div class="layer layer-2-base-glass"></div>     <div class="layer layer-3-inner-dark"></div>     <div class="layer layer-4-inner-caustic"></div>  <div class="layer layer-5-surface-gloss"></div>  <div class="layer layer-6-edge-rim"></div>       <div class="sparkle" style="width:3px; height:3px; top:35%; left:15%;"></div>
+        <div class="sparkle" style="width:2px; height:2px; top:45%; left:25%;"></div>
+        <div class="sparkle" style="width:1.5px; height:1.5px; bottom:25%; right:22%;"></div>
+
+    </div>
 
 </body>
 </html>
