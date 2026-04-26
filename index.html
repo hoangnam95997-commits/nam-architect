@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v110 - Vibrant Multi-Color Glass</title>
+    <title>NAM ARCH PRO v111 - Prismatic Art Glass</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -14,19 +14,22 @@
     
     <style>
         /* ========================================================= */
-        /* MÔI TRƯỜNG TỐI SÂU ĐỂ TÔN LÊN ÁNH SÁNG NEON               */
+        /* PHẦN 1: ÁNH SÁNG MÔI TRƯỜNG & PANEL NỀN ĐẶC               */
         /* ========================================================= */
         :root { 
-            --bg-base: #0b0f17; /* Đen xanh rất thẫm giống ảnh mẫu */
-            --panel-bg: #141b29; /* Panel tối màu đặc */
+            --bg-base: #0f131a; /* Tối sâu để tôn ánh sáng chói */
+            --panel-bg: #151a23; /* Panel đặc màu xám đen */
             --panel-border: rgba(255, 255, 255, 0.05);
             
-            --cyan-glow: #00f0ff;
-            --magenta-glow: #ff0055;
-            --purple-glow: #8a2be2;
+            /* Các điểm sáng (Point Lights) dùng cho tán sắc */
+            --light-cyan: #00ffff;
+            --light-blue: #0066ff;
+            --light-purple: #8a2be2;
+            --light-pink: #ff0055;
+            --light-orange: #ff8800;
             
             --text-main: #ffffff;
-            --text-muted: #7b8a9e;
+            --text-muted: #8b95a5;
         }
 
         * { box-sizing: border-box; }
@@ -35,7 +38,6 @@
         .ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; pointer-events: none; }
         .ui-layer > * { pointer-events: auto; }
 
-        /* THEME SÁNG VẪN ĐƯỢC GIỮ NGUYÊN ĐỘ SẮC NÉT */
         body.theme-light { 
             --bg-base: #e6ecf0; 
             --panel-bg: #ffffff; 
@@ -44,98 +46,80 @@
             --text-muted: #64748b; 
         }
 
-        /* ========================================================= */
-        /* GIAO DIỆN PANEL (Làm mờ nền bản đồ tối đa để nổi bật nút) */
-        /* ========================================================= */
-        .search-box { position: absolute; top: 24px; right: 24px; display: flex; background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.5); transition: 0.3s;}
+        /* GIAO DIỆN PANEL CHÍNH */
+        .search-box { position: absolute; top: 24px; right: 24px; display: flex; background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.5); transition: 0.3s;}
         body.theme-light .search-box { box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 1px solid rgba(255,255,255,0.8); }
-        .search-box:focus-within { border-color: var(--cyan-glow); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(0, 240, 255, 0.25); }
+        .search-box:focus-within { border-color: var(--light-cyan); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(0, 255, 255, 0.2); }
         .search-box input { background: transparent; border: none; padding: 14px 20px; width: 280px; color: var(--text-main); font-size: 14px; outline: none; }
-        .search-box button { background: transparent; border: none; border-left: 1px solid var(--panel-border); padding: 0 20px; color: var(--cyan-glow); font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .search-box button:hover { background: rgba(0, 240, 255, 0.1); text-shadow: 0 0 8px var(--cyan-glow); }
+        .search-box button { background: transparent; border: none; border-left: 1px solid var(--panel-border); padding: 0 20px; color: var(--light-cyan); font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .search-box button:hover { background: rgba(0, 255, 255, 0.08); text-shadow: 0 0 8px var(--light-cyan); }
 
         .sidebar-container { position: absolute; top: 24px; left: 24px; display: flex; gap: 16px; align-items: flex-start; }
         .sidebar { width: 360px; background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.08); border-radius: 32px; padding: 28px; box-shadow: 0 30px 60px rgba(0,0,0,0.6); max-height: calc(100vh - 48px); overflow-y: auto; transition: 0.4s; }
         body.theme-light .sidebar { box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-top: 1px solid rgba(255,255,255,0.8);}
         .sidebar::-webkit-scrollbar { width: 0; }
 
-        .toggle-btn { background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.1); color: var(--text-main); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.4); transition: 0.3s; margin-top: 10px; }
+        .toggle-btn { background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.1); color: var(--text-main); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 15px 25px rgba(0,0,0,0.4); transition: 0.3s; margin-top: 10px; }
         body.theme-light .toggle-btn { box-shadow: 0 8px 16px rgba(0,0,0,0.05); border-top: 1px solid rgba(255,255,255,0.8);}
-        .toggle-btn:hover { border-color: var(--cyan-glow); color: var(--cyan-glow); box-shadow: 0 0 20px rgba(0,240,255,0.3); transform: scale(1.05); }
+        .toggle-btn:hover { border-color: var(--light-cyan); color: var(--light-cyan); box-shadow: 0 0 20px rgba(0,255,255,0.25); transform: translateY(-2px); }
 
         .brand-header { margin-bottom: 24px; text-align: center; position: relative;}
         h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main); }
-        .tagline { font-size: 11px; font-weight: 800; color: var(--cyan-glow); margin-top: 6px; display: block; letter-spacing: 3px; text-shadow: 0 0 15px rgba(0,240,255,0.6); }
+        .tagline { font-size: 11px; font-weight: 800; color: var(--light-cyan); margin-top: 6px; display: block; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,255,0.4); }
 
-        .panel-card { margin-bottom: 24px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.02); box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); }
+        .panel-card { margin-bottom: 24px; background: rgba(0,0,0,0.2); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.02); box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); }
         body.theme-light .panel-card { background: #f8fafc; border: 1px solid #f1f5f9; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .panel-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
-        .val-hl { color: var(--cyan-glow); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; text-shadow: 0 0 10px rgba(0,240,255,0.5);}
+        .val-hl { color: var(--light-cyan); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; text-shadow: 0 0 8px rgba(0,255,255,0.3);}
 
-        .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 4px; outline: none; margin-top: 6px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);}
+        .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(0,0,0,0.4); border-radius: 4px; outline: none; margin-top: 6px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);}
         body.theme-light .zoom-slider { background: #e2e8f0; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(0,240,255,0.4); border: 5px solid var(--cyan-glow); transition: 0.3s; }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.4); border: 4px solid var(--light-cyan); transition: 0.3s; }
 
-        /* ========================================================= */
-        /* CÔNG TẮC THỦY TINH ĐA SẮC                                 */
-        /* ========================================================= */
-        .layer-list { display: flex; flex-direction: column; gap: 14px; }
-        .layer-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 6px 8px; transition: 0.3s; border-radius: 12px;}
-        .layer-item:hover { background: rgba(255,255,255,0.03); }
-        body.theme-light .layer-item:hover { background: rgba(0,0,0,0.02); }
-        .layer-left { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 500; color: var(--text-muted); transition: 0.3s; }
-        .layer-item:hover .layer-left { color: var(--text-main); }
-        .color-dot { width: 12px; height: 12px; border-radius: 4px; }
-
-        .layer-item input[type="checkbox"] { display: none; }
+        /* CÔNG TẮC VŨ TRỤ (DARK/LIGHT MODE) */
+        .theme-toggle { position: relative; width: 100%; height: 48px; border-radius: 24px; cursor: pointer; margin-top: 24px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-shadow: inset 0 4px 10px rgba(0,0,0,0.5); transition: 0.5s; overflow: hidden; }
+        body.theme-light .theme-toggle { background: #f8fafc; border-color: #e2e8f0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);}
         
-        .toggle-switch { 
-            width: 46px; height: 26px; border-radius: 20px; position: relative; transition: 0.4s;
-            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-        }
-        body.theme-light .toggle-switch { background: #e2e8f0; border-color: #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-        
-        .toggle-switch::after { 
-            content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; 
-            background: #64748b; border-radius: 50%; transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-        }
-        body.theme-light .toggle-switch::after { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-        
-        .layer-item input[type="checkbox"]:checked + .toggle-switch { 
-            background: linear-gradient(90deg, #00d2ff, #007bff); /* Trục sáng màu pha gradient */
-            border-color: var(--cyan-glow); 
-            box-shadow: 0 0 15px rgba(0,240,255,0.4), inset 0 2px 6px rgba(0,0,0,0.3); 
-        }
-        .layer-item input[type="checkbox"]:checked + .toggle-switch::after { 
-            transform: translateX(20px); background: #ffffff; box-shadow: -2px 4px 8px rgba(0,0,0,0.4); 
-        }
-        .layer-item input[type="checkbox"]:checked ~ .layer-left { color: var(--text-main); text-shadow: 0 0 8px rgba(255,255,255,0.3); }
-
-        .theme-toggle { position: relative; width: 100%; height: 48px; border-radius: 24px; cursor: pointer; margin-top: 24px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; transition: 0.5s; overflow: hidden; }
-        body.theme-light .theme-toggle { background: #f8fafc; border-color: #e2e8f0; }
-        
-        .theme-toggle.dark-mode { 
-            background: linear-gradient(135deg, rgba(138,43,226,0.15), rgba(0,0,0,0.3)); 
-            border-color: rgba(138, 43, 226, 0.4); 
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.2), inset 0 2px 8px rgba(0,0,0,0.4); 
-        }
+        .theme-toggle.dark-mode { background: linear-gradient(135deg, rgba(138,43,226,0.1), rgba(0,0,0,0.3)); border-color: rgba(138, 43, 226, 0.3); box-shadow: 0 0 15px rgba(138, 43, 226, 0.15), inset 0 2px 8px rgba(0,0,0,0.5); }
         .theme-toggle.light-mode { background: rgba(255, 157, 0, 0.1); border-color: rgba(255, 157, 0, 0.4); box-shadow: 4px 8px 15px rgba(255, 157, 0, 0.15), inset 0 2px 5px rgba(0,0,0,0.1); }
         
-        .theme-thumb { position: absolute; top: 4px; width: 38px; height: 38px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 5; }
-        .theme-toggle.dark-mode .theme-thumb { left: 4px; border: 1px solid rgba(138,43,226,0.3); box-shadow: 0 0 15px var(--purple-glow); }
+        .theme-thumb { position: absolute; top: 4px; width: 38px; height: 38px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 5px 12px rgba(0,0,0,0.5); z-index: 5; }
+        .theme-toggle.dark-mode .theme-thumb { left: 4px; border: 1px solid rgba(138,43,226,0.2); box-shadow: 0 0 12px var(--light-purple); }
         .theme-toggle.light-mode .theme-thumb { left: calc(100% - 42px); border: 1px solid rgba(255,157,0,0.3); transform: rotate(360deg); }
         .theme-text { font-size: 11px; font-weight: 800; z-index: 2; transition: 0.3s; letter-spacing: 1.5px;}
-        .theme-toggle.dark-mode .t-dark { color: #fff; text-shadow: 0 0 10px var(--purple-glow);} .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
-        .theme-toggle.light-mode .t-dark { color: #94a3b8; } .theme-toggle.light-mode .t-light { color: #f59e0b; }
+        .theme-toggle.dark-mode .t-dark { color: #fff; text-shadow: 0 0 8px var(--light-purple); } .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
+        .theme-toggle.light-mode .t-dark { color: #94a3b8; } .theme-toggle.light-mode .t-light { color: #f59e0b; text-shadow: 0 0 8px #f59e0b;}
         
+        .decor { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .stars { opacity: 1; transition: 0.5s; } .theme-toggle.light-mode .stars { opacity: 0; }
+        .star { position: absolute; background: #fff; border-radius: 50%; box-shadow: 0 0 4px #fff; animation: twinkle 1.5s infinite alternate; }
+        .s1 { width: 2px; height: 2px; top: 12px; right: 35px; } .s2 { width: 3px; height: 3px; top: 24px; right: 20px; animation-delay: 0.5s;}
+        .clouds { opacity: 0; transition: 0.5s; transform: translateY(5px); } .theme-toggle.light-mode .clouds { opacity: 1; transform: translateY(0); }
+        .cloud { position: absolute; background: #fff; border-radius: 50%; opacity: 0.8; filter: blur(1px); }
+        .c1 { width: 20px; height: 20px; top: 8px; left: 30px; } .c2 { width: 15px; height: 15px; top: 15px; left: 45px; }
+        @keyframes twinkle { from {opacity: 0.2;} to {opacity: 1;} }
+
+        /* LA BÀN HUD */
+        .hud-bottom { 
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            background: var(--panel-bg); 
+            border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px; padding: 14px 40px; display: flex; gap: 40px; 
+            font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); z-index: 1000;
+        }
+        body.theme-light .hud-bottom { box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-top: 1px solid #fff;}
+        .hud-val { color: var(--text-main); font-weight: 800; transition: 0.5s;}
+
+        .core-badge { font-size: 10px; font-weight: 800; color: var(--light-cyan); display: flex; align-items: center; gap: 6px; background: rgba(0, 255, 255, 0.1); padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);}
+        .pulse-dot { width: 6px; height: 6px; background: var(--light-cyan); border-radius: 50%; box-shadow: 0 0 10px var(--light-cyan); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.4; } 100% { transform: scale(0.8); opacity: 1; } }
         /* ========================================================================= */
-        /* THUẬT TOÁN KÍNH LỎNG ĐA SẮC (VIBRANT MULTI-COLOR GLASS - V110)            */
-        /* 1. Nền kính Dùng Gradient trộn màu (Cyan -> Blue) (Purple -> Pink -> Cam) */
-        /* 2. Ánh sáng: Tăng độ chói viền trên, Tăng rực rỡ mép dưới.                 */
-        /* 3. Phân tách rõ: Bóng đen sâu (Grounding) và Hào quang tỏa màu (Bloom).   */
+        /* PHẦN 2: THUẬT TOÁN KÍNH PHA LÊ TÁN SẮC (PRISMATIC ART GLASS - V111)       */
+        /* 1. Giảm Blur để trong hơn, tăng độ rực màu bên trong (Tint Volume).       */
+        /* 2. Đa sắc (Multi-color): Cyan -> Lam -> Tím / Tím -> Hồng -> Cam.         */
+        /* 3. Lóa sáng đỉnh sắc nét (Glossy Specular). Rực đáy (Refraction).         */
         /* ========================================================================= */
         
         .btn-liquid {
@@ -146,110 +130,98 @@
             display: flex; align-items: center; justify-content: center; gap: 8px;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
             
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            /* GIẢM Blur để tăng độ trong suốt pha lê, kết hợp tăng sáng nhẹ */
+            backdrop-filter: blur(6px) brightness(1.1); -webkit-backdrop-filter: blur(6px) brightness(1.1);
             
-            /* Viền chói sáng, mảnh nét. Bắt sáng mạnh ở góc Top-Left */
+            /* Viền gọt sắc bén: Bắt sáng cực mạnh ở viền trên/trái */
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-top: 1px solid rgba(255, 255, 255, 0.6);
-            border-left: 1px solid rgba(255, 255, 255, 0.2);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+            border-top: 1.5px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.5);
         }
 
         .btn-liquid:active { transform: translateY(3px); box-shadow: none !important; }
 
-        /* NÚT ĐA SẮC CYAN (CYAN -> ROYAL BLUE) */
+        /* NÚT CYAN TÁN SẮC (CYAN -> DEEP BLUE -> PURPLE) */
         .btn-cyan {
-            /* MÀU ĐA SẮC: Chuyển từ Cyan chói sang Xanh lam đậm ở dưới */
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.45) 0%, rgba(0, 80, 255, 0.25) 100%);
+            /* Tán sắc 3 màu gradient bên trong khối kính */
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.35) 0%, rgba(0, 102, 255, 0.25) 50%, rgba(138, 43, 226, 0.15) 100%);
             box-shadow: 
-                /* 1. Lóa sáng viền trong (Top/Left Specular) */
-                inset 0 3px 5px rgba(255, 255, 255, 0.7),
-                inset 0 1px 1px rgba(255, 255, 255, 0.9),
-                /* 2. Đáy rực sáng rực rỡ (Bottom Inner Glow) */
-                inset 0 -6px 15px rgba(0, 100, 255, 0.8),
-                inset 0 -2px 5px rgba(0, 240, 255, 0.6), /* Đường lân tinh đáy */
-                /* 3. Bóng đen vật lý sâu để ghim khối */
+                /* 1. Lóa sáng mặt trên sắc nét (Specular) - Không dùng viền mờ nữa */
+                inset 0 3px 6px rgba(255, 255, 255, 0.8),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                /* 2. Ánh sáng đọng ở đáy cực mạnh (Refraction) */
+                inset 0 -8px 20px rgba(0, 102, 255, 0.8),
+                inset 0 -2px 5px rgba(138, 43, 226, 0.7),
+                /* 3. Bóng đen vật lý sâu ghim chặt xuống nền */
                 0 15px 25px rgba(0, 0, 0, 0.6),
-                /* 4. Hào quang Neon lan rộng ra nền tối */
-                0 10px 40px -5px rgba(0, 200, 255, 0.6);
-            
-            text-shadow: 0 2px 5px rgba(0,0,0,0.4); /* Chữ dễ đọc trên nền sáng */
+                /* 4. Bóng tụ quang đa sắc (Caustics) lan tỏa 2 màu */
+                0 15px 40px -5px rgba(0, 102, 255, 0.5),
+                0 5px 25px rgba(0, 255, 255, 0.3);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
         
         .btn-cyan:hover { 
-            /* Rực rỡ hơn khi Hover */
-            background: linear-gradient(135deg, rgba(0, 255, 255, 0.6) 0%, rgba(0, 100, 255, 0.35) 100%);
+            /* Đẩy cường độ quang phổ khi Hover */
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.45) 0%, rgba(0, 102, 255, 0.35) 50%, rgba(138, 43, 226, 0.25) 100%);
             box-shadow: 
-                inset 0 4px 6px rgba(255, 255, 255, 0.9),
-                inset 0 -6px 15px rgba(0, 120, 255, 0.9),
-                inset 0 -2px 5px rgba(0, 255, 255, 0.8),
-                0 15px 30px rgba(0, 0, 0, 0.6),
-                0 15px 50px rgba(0, 220, 255, 0.8); /* Tỏa sáng mạnh hơn */
+                inset 0 4px 8px rgba(255, 255, 255, 0.9),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                inset 0 -8px 20px rgba(0, 102, 255, 0.9),
+                inset 0 -2px 5px rgba(138, 43, 226, 0.8),
+                0 15px 25px rgba(0, 0, 0, 0.7),
+                0 20px 50px rgba(0, 102, 255, 0.6),
+                0 10px 30px rgba(0, 255, 255, 0.4);
             transform: translateY(-2px);
         }
 
         .btn-group { display: flex; gap: 14px; margin-top: 18px; }
 
-        /* NÚT ĐA SẮC MAGENTA (PURPLE -> HOT PINK -> ORANGE HINT) */
+        /* NÚT MAGENTA TÁN SẮC (PURPLE -> HOT PINK -> ORANGE) */
         .btn-magenta {
             flex: 1; font-size: 12px;
-            /* MÀU ĐA SẮC: Chuyển từ Tím sang Hồng rực */
-            background: linear-gradient(135deg, rgba(170, 0, 255, 0.45) 0%, rgba(255, 0, 85, 0.35) 100%);
+            /* Tán sắc từ Tím -> Hồng dạ quang -> Cam */
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.35) 0%, rgba(255, 0, 85, 0.25) 50%, rgba(255, 136, 0, 0.15) 100%);
             box-shadow: 
-                inset 0 3px 5px rgba(255, 255, 255, 0.7),
-                inset 0 1px 1px rgba(255, 255, 255, 0.9),
-                inset 0 -6px 15px rgba(255, 0, 85, 0.8), /* Đáy hồng rực */
-                inset 0 -2px 5px rgba(255, 100, 150, 0.6),
+                inset 0 3px 6px rgba(255, 255, 255, 0.8),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                inset 0 -8px 20px rgba(255, 0, 85, 0.8), 
+                inset 0 -2px 5px rgba(255, 136, 0, 0.7),
                 0 15px 25px rgba(0, 0, 0, 0.6), 
-                0 10px 40px -5px rgba(200, 0, 255, 0.5); /* Hào quang tím hồng */
-                
-            text-shadow: 0 2px 5px rgba(0,0,0,0.4);
+                0 15px 40px -5px rgba(255, 0, 85, 0.5), 
+                0 5px 25px rgba(138, 43, 226, 0.3);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
 
         .btn-magenta:hover { 
-            background: linear-gradient(135deg, rgba(200, 0, 255, 0.6) 0%, rgba(255, 50, 100, 0.45) 100%);
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.45) 0%, rgba(255, 0, 85, 0.35) 50%, rgba(255, 136, 0, 0.25) 100%);
             box-shadow: 
-                inset 0 4px 6px rgba(255, 255, 255, 0.9),
-                inset 0 -6px 15px rgba(255, 0, 100, 0.9),
-                inset 0 -2px 5px rgba(255, 150, 200, 0.8),
-                0 15px 30px rgba(0, 0, 0, 0.6),
-                0 15px 50px rgba(255, 0, 150, 0.7);
+                inset 0 4px 8px rgba(255, 255, 255, 0.9),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                inset 0 -8px 20px rgba(255, 0, 85, 0.9),
+                inset 0 -2px 5px rgba(255, 136, 0, 0.8),
+                0 15px 25px rgba(0, 0, 0, 0.7),
+                0 20px 50px rgba(255, 0, 85, 0.6),
+                0 10px 30px rgba(138, 43, 226, 0.4);
             transform: translateY(-2px);
         }
 
-        /* THANH TIẾN TRÌNH LOADER ĐA SẮC RỰC RỠ */
+        /* THANH TIẾN TRÌNH LOADER ĐA SẮC QUANG PHỔ */
         .prog-container { margin-top: 25px; text-align: center;}
         .prog-wrap { height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; padding: 2px; position: relative; box-shadow: inset 0 2px 6px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.05); }
         body.theme-light .prog-wrap { background: #e2e8f0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); border: none; }
         
         #progress { 
             width: 0%; height: 100%; border-radius: 6px; 
-            /* Gradient pha 3 màu cực chói */
-            background: linear-gradient(90deg, #00f0ff, #8a2be2, #ff0055, #ffaa00); 
+            /* Gradient pha 5 màu quang phổ */
+            background: linear-gradient(90deg, #00ffff, #0066ff, #8a2be2, #ff0055, #ff8800); 
             background-size: 300% 100%; animation: liquidFlow 2s linear infinite; 
-            box-shadow: 0 0 15px rgba(255, 0, 85, 0.7), inset 0 2px 3px rgba(255,255,255,0.6); 
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.8), inset 0 2px 3px rgba(255,255,255,0.8); 
             transition: width 0.4s ease;
         }
         @keyframes liquidFlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
         #stt { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-top: 12px; text-transform: uppercase; letter-spacing: 2px; }
 
-        /* ========================================================= */
-        /* LA BÀN & TỌA ĐỘ (HUD)                                     */
-        /* ========================================================= */
-        .hud-bottom { 
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); 
-            background: var(--panel-bg); 
-            border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.15);
-            border-radius: 50px; padding: 14px 40px; display: flex; gap: 40px; 
-            font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6); z-index: 1000;
-        }
-        body.theme-light .hud-bottom { box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-top: 1px solid #fff;}
-        .hud-val { color: var(--text-main); font-weight: 800; transition: 0.5s;}
-
-        .core-badge { font-size: 10px; font-weight: 800; color: var(--cyan-glow); display: flex; align-items: center; gap: 6px; background: rgba(0, 240, 255, 0.1); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(0, 240, 255, 0.3); box-shadow: 0 0 10px rgba(0,240,255,0.2);}
-        .pulse-dot { width: 6px; height: 6px; background: var(--cyan-glow); border-radius: 50%; box-shadow: 0 0 10px var(--cyan-glow); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.4; } 100% { transform: scale(0.8); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -265,7 +237,7 @@
             
             <div class="brand-header">
                 <h1>NAM ARCH</h1>
-                <span class="tagline">V110 • VIBRANT MULTI-COLOR GLASS</span>
+                <span class="tagline">V111 • PRISMATIC ART GLASS</span>
             </div>
 
             <div class="panel-card">
@@ -286,7 +258,7 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:var(--magenta-glow);"></span> Tòa Nhà</div>
+                        <div class="layer-left"><span class="color-dot" style="background:var(--light-pink);"></span> Tòa Nhà</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')">
@@ -296,17 +268,17 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#f59e0b;"></span> Vỉa Hè</div>
+                        <div class="layer-left"><span class="color-dot" style="background:var(--light-orange);"></span> Vỉa Hè</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:var(--cyan-glow);"></span> Sông Hồ</div>
+                        <div class="layer-left"><span class="color-dot" style="background:var(--light-cyan);"></span> Sông Hồ</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#10b981;"></span> Cây Xanh</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#00ff88;"></span> Cây Xanh</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')">
@@ -371,11 +343,10 @@
     });
 
     // =========================================================================
-    // 2. KHỞI TẠO BẢN ĐỒ VÀ GIAO DIỆN SÁNG/TỐI (V110 RỰC RỠ)
+    // 2. KHỞI TẠO BẢN ĐỒ VÀ GIAO DIỆN SÁNG/TỐI
     // =========================================================================
     var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
     
-    // Bản đồ nền tối sâu hơn / sáng trong trẻo
     var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
     var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 100, maxNativeZoom: 19 });
     
@@ -386,7 +357,7 @@
         let zoom = map.getZoom();
         
         let step = zoom >= 18 ? 0.0005 : (zoom >= 16 ? 0.002 : (zoom >= 14 ? 0.01 : 0.05));
-        let gridColor = isLightMap ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.03)'; // Lưới tối màu mờ hơn
+        let gridColor = isLightMap ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.03)';
         
         let startLat = Math.floor(bounds.getSouth() / step) * step;
         let endLat = Math.ceil(bounds.getNorth() / step) * step;
@@ -455,21 +426,21 @@
         else map.removeLayer(layers[type]);
     }
 
-    // V110: Đồng bộ màu bản đồ với màu giao diện Neon rực rỡ
+    // V111: Tinh chỉnh màu layer bản đồ khớp với bảng màu Prismatic
     function getLayerStyle(type) {
         const config = isLightMap ? {
             nha: { color: '#ff0055', weight: 1.5, fillOpacity: 0.15 }, 
             duong: { color: '#1e293b', weight: 1.5, fillOpacity: 0.08 }, 
-            viahe: { color: '#f59e0b', weight: 1.5, fillOpacity: 0.15 }, 
-            nuoc: { color: '#00f0ff', weight: 1.5, fillOpacity: 0.15 },
-            cayxanh: { color: '#10b981', weight: 1.5, fillOpacity: 0.12 },
+            viahe: { color: '#ff8800', weight: 1.5, fillOpacity: 0.15 }, 
+            nuoc: { color: '#00ffff', weight: 1.5, fillOpacity: 0.15 },
+            cayxanh: { color: '#00ff88', weight: 1.5, fillOpacity: 0.12 },
             dattrong: { color: '#cbd5e1', weight: 1.5, fillOpacity: 0.1 }  
         } : {
             nha: { color: '#ff0055', weight: 1.5, fillOpacity: 0.15 }, 
             duong: { color: '#ffffff', weight: 1.5, fillOpacity: 0.05 }, 
-            viahe: { color: '#f59e0b', weight: 1.5, fillOpacity: 0.15 }, 
-            nuoc: { color: '#00f0ff', weight: 1.5, fillOpacity: 0.15 },
-            cayxanh: { color: '#10b981', weight: 1.5, fillOpacity: 0.12 },
+            viahe: { color: '#ff8800', weight: 1.5, fillOpacity: 0.15 }, 
+            nuoc: { color: '#00ffff', weight: 1.5, fillOpacity: 0.15 },
+            cayxanh: { color: '#00ff88', weight: 1.5, fillOpacity: 0.12 },
             dattrong: { color: '#8b95a5', weight: 1.5, fillOpacity: 0.1 }  
         };
         return config[type];
@@ -480,7 +451,7 @@
     function updateProgress(percent, text, isActive = true) {
         const pBar = document.getElementById('progress'); const stt = document.getElementById('stt');
         pBar.style.width = percent + '%'; stt.innerText = text;
-        stt.style.color = (percent >= 100) ? "var(--cyan-glow)" : "var(--magenta-glow)";
+        stt.style.color = (percent >= 100) ? "var(--light-cyan)" : "var(--light-pink)";
     }
 
     function resetScan() {
@@ -644,7 +615,7 @@
         updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true); await yieldCPU();
 
         const daeXML = `<?xml version="1.0" encoding="utf-8"?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"><asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset><library_geometries><geometry id="geom-0" name="CityMesh"><mesh><source id="geom-0-positions"><float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array><technique_common><accessor source="#geom-0-positions-array" count="${positions.length}" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source><vertices id="geom-0-vertices"><input semantic="POSITION" source="#geom-0-positions"/></vertices><triangles count="${indices.length / 3}"><input semantic="VERTEX" source="#geom-0-vertices" offset="0"/><p>${indices.join(' ')}</p></triangles></mesh></geometry></library_geometries><library_visual_scenes><visual_scene id="Scene" name="Scene"><node id="CityNode" name="CityNode"><instance_geometry url="#geom-0"/></node></visual_scene></library_visual_scenes><scene><instance_visual_scene url="#Scene"/></scene></COLLADA>`;
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); a.download = "NAM_ARCH_3D_VIBRANT.dae"; a.click(); 
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); a.download = "NAM_ARCH_3D_ARTGLASS.dae"; a.click(); 
         updateProgress(100, "XUẤT MÔ HÌNH 3D THÀNH CÔNG!", false);
     }
 
