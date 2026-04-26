@@ -1,79 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clear 3D Glass Button</title>
-<style>
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #81c0eb; 
-    margin: 0;
-    font-family: sans-serif;
-  }
-
-  .glass-button {
-    width: 160px;
-    height: 160px;
-    border-radius: 40px; /* Bo góc vuông vức hơn một chút */
-    
-    /* 1. Nền GẦN NHƯ TRONG SUỐT HOÀN TOÀN để thấy rõ phía sau */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
-    
-    /* 2. Tạo viền bắt sáng (Highlight) cực gắt ở mép trên và mép trái */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1.5px solid rgba(255, 255, 255, 0.8);
-    border-left: 1.5px solid rgba(255, 255, 255, 0.6);
-    
-    position: relative;
-    cursor: pointer;
-    outline: none;
-    
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    text-shadow: 0px 1px 3px rgba(0,0,0,0.2);
-    
-    /* 3. Giảm Blur lại để thuỷ tinh trông TRONG VẮT */
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    
-    /* 4. Đổ bóng tinh chỉnh: Tạo độ dày, khối đặc và ánh sáng hắt */
-    box-shadow: 
-      /* Bóng đổ xuống nền */
-      15px 15px 25px rgba(0, 0, 0, 0.15),
-      /* Ánh sáng hắt viền ngoài (Glow) */
-      -5px -5px 15px rgba(255, 255, 255, 0.1),
-      
-      /* Viền sáng trắng bên trong (tạo cảm giác khối kính dày) */
-      inset 4px 4px 8px rgba(255, 255, 255, 0.6),
-      inset 10px 10px 20px rgba(255, 255, 255, 0.15),
-      
-      /* Viền tối bên trong góc dưới (tạo chiều sâu của khối đặc) */
-      inset -5px -5px 15px rgba(0, 0, 0, 0.08),
-      
-      /* VỆT SÁNG VÀNG/CAM đặc trưng ở góc dưới y hệt ảnh gốc */
-      inset -2px -2px 6px rgba(230, 160, 50, 0.4);
-
-    transition: all 0.2s ease;
-  }
-
-  /* Hiệu ứng khi bấm vào */
-  .glass-button:active {
-    transform: scale(0.95);
-    box-shadow: 
-      5px 5px 15px rgba(0, 0, 0, 0.1),
-      inset 2px 2px 5px rgba(255, 255, 255, 0.4),
-      inset -2px -2px 5px rgba(0, 0, 0, 0.05);
-  }
-</style>
+    <meta charset="UTF-8">
+    <title>Three.js True Optical Glass</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #eaf0f6; }
+        #canvas-container { width: 100vw; height: 100vh; }
+        #loading {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: sans-serif; font-weight: bold; color: #333;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 </head>
 <body>
+    <div id="loading">Đang nạp cỗ máy vật lý 3D...</div>
+    <div id="canvas-container"></div>
 
-  <button class="glass-button">Click Me</button>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
+        // 1. KHỞI TẠO SCENE, CAMERA, RENDERER
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        // Cài màu nền giống với ảnh mẫu của bạn
+        scene.background = new THREE.Color('#8ab6d6'); 
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 0, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        document.getElementById('loading').style.display = 'none';
+
+        // 2. MÔI TRƯỜNG ÁNH SÁNG (Lighting)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+        scene.add(ambientLight);
+
+        // Nguồn sáng chính hắt từ góc Trên-Trái (Tạo vệt bóng gương)
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        // 3. TẠO CÁC VẬT THỂ NỀN ĐỂ TEST ĐỘ KHÚC XẠ (Refraction)
+        // Mình tạo 3 khối cầu Tím - Hồng - Cam đặt phía sau tấm kính
+        const bgGroup = new THREE.Group();
+        const sphereGeo = new THREE.SphereGeometry(1.5, 32, 32);
+        
+        const mat1 = new THREE.MeshBasicMaterial({ color: '#440c88' });
+        const sphere1 = new THREE.Mesh(sphereGeo, mat1);
+        sphere1.position.set(-2, 2, -4);
+        bgGroup.add(sphere1);
+
+        const mat2 = new THREE.MeshBasicMaterial({ color: '#e31b64' });
+        const sphere2 = new THREE.Mesh(sphereGeo, mat2);
+        sphere2.position.set(2, 0, -5);
+        bgGroup.add(sphere2);
+
+        const mat3 = new THREE.MeshBasicMaterial({ color: '#ff6b15' });
+        const sphere3 = new THREE.Mesh(sphereGeo, mat3);
+        sphere3.position.set(-1, -2, -3);
+        bgGroup.add(sphere3);
+        
+        scene.add(bgGroup);
+
+        // 4. CHẤT LIỆU THỦY TINH VẬT LÝ (MeshPhysicalMaterial)
+        // Đây chính là "phép màu" mà CSS không bao giờ làm được
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,          // Kính không màu (Clear Glass)
+            metalness: 0.1,           // Độ phản quang nhẹ như kính
+            roughness: 0.05,          // Bề mặt cực nhẵn (Tạo độ bóng gương tự nhiên)
+            transmission: 1.0,        // ĐỘ XUYÊN SÁNG TUYỆT ĐỐI
+            ior: 1.5,                 // CHỈ SỐ KHÚC XẠ (Index of Refraction của thủy tinh)
+            thickness: 2.0,           // ĐỘ DÀY CỦA KHỐI (Tạo vách kính và độ uốn cong)
+            clearcoat: 1.0,           // Lớp phủ bóng lộn bên ngoài
+            clearcoatRoughness: 0.1,
+            side: THREE.DoubleSide    // Render cả mặt trong lẫn ngoài của kính
+        });
+
+        // 5. KHỐI KÍNH SQUIRCLE
+        const geometry = new RoundedBoxGeometry(4, 4, 1.5, 6, 0.6);
+        const glassMesh = new THREE.Mesh(geometry, glassMaterial);
+        scene.add(glassMesh);
+
+        // 6. THÊM TƯƠNG TÁC XOAY CHUỘT
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // 7. VÒNG LẶP RENDER VÀ CHUYỂN ĐỘNG (Animation Loop)
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Xoay các quả cầu phía sau để bạn thấy kính bẻ cong ánh sáng realtime
+            bgGroup.rotation.z += 0.005;
+            bgGroup.rotation.x += 0.002;
+
+            // Xoay nhẹ khối kính
+            glassMesh.rotation.y = Math.sin(Date.now() * 0.001) * 0.1;
+            glassMesh.rotation.x = Math.sin(Date.now() * 0.0015) * 0.1;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Xử lý khi đổi kích thước màn hình
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
 </body>
 </html>
