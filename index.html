@@ -2,130 +2,97 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán Liquid Glass - Sandbox V2</title>
+    <title>Thuật Toán Icon Mobile - Sandbox V3</title>
     <style>
-        /* Nền xanh đen sâu thẳm giống hệt ảnh gốc của bạn để dễ đối chiếu */
+        /* Nền sáng để test độ trong vắt và bóng đổ của thuỷ tinh màu */
         body {
-            background-color: #0b101e;
+            background-color: #f0f4f8;
             height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 40px;
-            font-family: 'Inter', sans-serif;
+            font-family: sans-serif;
             margin: 0;
         }
 
-        /* KHUNG CHUNG CHO KÍNH LỎNG */
-        .glass-btn {
-            width: 280px;
-            padding: 22px;
-            border-radius: 40px;
-            color: #fff;
-            font-size: 15px;
-            font-weight: 800;
-            text-transform: uppercase;
-            text-align: center;
-            cursor: pointer;
+        /* KHỐI KÍNH (Base Volume) */
+        .glass-icon {
+            width: 240px;
+            height: 240px;
+            border-radius: 60px; /* Bo góc kiểu Squircle của iOS */
             position: relative;
-            outline: none;
+            cursor: pointer;
             
-            /* Độ mờ nền cực mạnh để tạo chất kính đặc */
-            backdrop-filter: blur(24px) saturate(120%);
-            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            /* Dải màu lõi: Tím -> Hồng -> Cam */
+            background: linear-gradient(135deg, #4a148c 0%, #e91e63 50%, #ff5722 100%);
             
-            /* Viền vật lý ngoài cùng cực mỏng, sáng mép trên, tối mép dưới */
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-top-color: rgba(255, 255, 255, 0.3);
-            border-left-color: rgba(255, 255, 255, 0.2);
-            
-            transition: all 0.3s ease;
+            /* LỚP BÓNG TẠO ĐỘ DÀY (Thickness) VÀ TỤ QUANG (Caustics) */
+            box-shadow: 
+                /* Viền sáng cực gắt ở góc Trên-Trái */
+                inset 2px 3px 8px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 2px rgba(255, 255, 255, 1),
+                
+                /* Viền tối ở góc Dưới-Phải tạo chiều sâu cho khối */
+                inset -5px -5px 15px rgba(0, 0, 0, 0.5),
+                
+                /* Viền đọng màu rực rỡ ở đáy (Refraction) */
+                inset -2px -8px 20px rgba(255, 200, 0, 0.7),
+                
+                /* Bóng đen vật lý ghim nút xuống sàn */
+                10px 20px 30px rgba(0, 0, 0, 0.2),
+                
+                /* Ánh sáng xuyên thấu (Caustic Drop) hắt màu đỏ/cam xuống nền trắng */
+                5px 25px 40px rgba(233, 30, 99, 0.5);
+                
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* LÓA BỀ MẶT TẠO ĐỘ LỒI (Surface Glare) */
-        .glass-btn::after {
-            content: "";
+        /* LỚP PHỦ MẶT KÍNH BÓNG BẨY (Glossy Overlay - Điểm mấu chốt của bức ảnh) */
+        .glass-icon::before {
+            content: '';
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            /* Phủ lớp sáng trắng nhẹ từ góc 11h, tan dần ra giữa nút */
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 50%);
+            /* Cắt chéo cực sắc lẹm ở vị trí 45% */
+            background: linear-gradient(
+                135deg, 
+                rgba(255, 255, 255, 0.4) 0%, 
+                rgba(255, 255, 255, 0.1) 45%, 
+                transparent 45.1%, 
+                transparent 100%
+            );
             pointer-events: none;
         }
-
-        /* ---------------------------------------------------- */
-        /* NÚT CYAN TÁI TẠO TỪ ẢNH GỐC                           */
-        /* ---------------------------------------------------- */
-        .btn-cyan {
-            /* MÀU LÕI: Loang màu Cyan nhẹ từ góc dưới phải lên */
-            background: radial-gradient(100% 100% at 100% 100%, rgba(0, 240, 255, 0.25) 0%, rgba(255, 255, 255, 0.02) 100%);
-            
-            box-shadow: 
-                /* LỚP 1: Viền highlight TRẮNG DÀY & MƯỢT ở góc Trên-Trái */
-                inset 2px 3px 6px rgba(255, 255, 255, 0.7),
-                inset 1px 1px 15px rgba(255, 255, 255, 0.2),
-
-                /* LỚP 2: Khúc xạ viền MÀU GẮT ở góc Dưới-Phải */
-                inset -3px -5px 12px rgba(0, 240, 255, 0.6),
-
-                /* LỚP 3: Bóng đen vật lý xô chéo xuống Dưới-Phải (Tạo khối 3D) */
-                8px 12px 20px rgba(0, 0, 0, 0.6),
-
-                /* LỚP 4: Ánh sáng xuyên thấu rực rỡ tỏa ra nền */
-                0px 10px 40px -5px rgba(0, 240, 255, 0.5);
+        
+        /* VIỀN QUANG HỌC BÊN NGOÀI (Outer Rim Light) */
+        .glass-icon::after {
+            content: '';
+            position: absolute;
+            inset: -1.5px; /* Lớn hơn nút một chút để tạo viền */
+            border-radius: 62px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, transparent 50%, rgba(255, 100, 0, 0.6) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: -1;
         }
 
-        .btn-cyan:hover {
-            transform: translateY(-2px);
-            background: radial-gradient(100% 100% at 100% 100%, rgba(0, 240, 255, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
+        .glass-icon:active {
+            transform: scale(0.95);
             box-shadow: 
                 inset 2px 3px 8px rgba(255, 255, 255, 0.9),
-                inset 1px 1px 15px rgba(255, 255, 255, 0.3),
-                inset -3px -5px 15px rgba(0, 240, 255, 0.8),
-                10px 15px 25px rgba(0, 0, 0, 0.7),
-                0px 15px 50px -5px rgba(0, 240, 255, 0.7);
-        }
-
-        /* ---------------------------------------------------- */
-        /* NÚT MAGENTA TÁI TẠO TỪ ẢNH GỐC                       */
-        /* ---------------------------------------------------- */
-        .btn-magenta {
-            /* MÀU LÕI: Loang màu Magenta nhẹ từ góc dưới phải lên */
-            background: radial-gradient(100% 100% at 100% 100%, rgba(255, 0, 150, 0.25) 0%, rgba(255, 255, 255, 0.02) 100%);
-            
-            box-shadow: 
-                /* LỚP 1: Viền highlight TRẮNG DÀY & MƯỢT ở góc Trên-Trái */
-                inset 2px 3px 6px rgba(255, 255, 255, 0.7),
-                inset 1px 1px 15px rgba(255, 255, 255, 0.2),
-
-                /* LỚP 2: Khúc xạ viền MÀU GẮT ở góc Dưới-Phải */
-                inset -3px -5px 12px rgba(255, 0, 150, 0.6),
-
-                /* LỚP 3: Bóng đen vật lý xô chéo xuống Dưới-Phải (Tạo khối 3D) */
-                8px 12px 20px rgba(0, 0, 0, 0.6),
-
-                /* LỚP 4: Ánh sáng xuyên thấu rực rỡ tỏa ra nền */
-                0px 10px 40px -5px rgba(255, 0, 150, 0.5);
-        }
-
-        .btn-magenta:hover {
-            transform: translateY(-2px);
-            background: radial-gradient(100% 100% at 100% 100%, rgba(255, 0, 150, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
-            box-shadow: 
-                inset 2px 3px 8px rgba(255, 255, 255, 0.9),
-                inset 1px 1px 15px rgba(255, 255, 255, 0.3),
-                inset -3px -5px 15px rgba(255, 0, 150, 0.8),
-                10px 15px 25px rgba(0, 0, 0, 0.7),
-                0px 15px 50px -5px rgba(255, 0, 150, 0.7);
+                inset -5px -5px 15px rgba(0, 0, 0, 0.6),
+                inset -2px -8px 20px rgba(255, 200, 0, 0.8),
+                5px 10px 15px rgba(0, 0, 0, 0.2),
+                2px 15px 25px rgba(233, 30, 99, 0.5);
         }
 
     </style>
 </head>
 <body>
 
-    <button class="glass-btn btn-cyan">Thuật toán Cyan</button>
-    <button class="glass-btn btn-magenta">Thuật toán Magenta</button>
+    <div class="glass-icon"></div>
 
 </body>
 </html>
