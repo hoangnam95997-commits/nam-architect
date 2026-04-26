@@ -41,21 +41,22 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); overflow: hidden; }
         #map { height: 100vh; width: 100vw; background: #1e2026; }
         
-        /* THANH TÌM KIẾM NEUMORPHISM */
-        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--bg-main); border-radius: var(--radius-md); overflow: hidden; box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); transition: all 0.3s ease; }
+        /* THANH TÌM KIẾM NEUMORPHISM - ĐÃ XÓA BÓNG ĐỔ NGOÀI */
+        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--bg-main); border-radius: var(--radius-md); overflow: hidden; transition: all 0.3s ease; }
         .search-box input { background: transparent; border: none; padding: 14px 18px; width: 280px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
         .search-box input::placeholder { color: var(--text-secondary); }
         .search-box button { background: transparent; border: none; border-left: 2px solid rgba(0,0,0,0.1); padding: 0 20px; cursor: pointer; color: var(--text-primary); font-weight: 600; font-size: 14px; transition: 0.2s; box-shadow: inset 2px 0 5px rgba(0,0,0,0.1); }
         .search-box button:hover { color: #FFB608; } /* Đổi màu hover theo tone vàng mới */
         .search-box button:active { box-shadow: inset 4px 0 8px rgba(0,0,0,0.2); }
 
-        /* BẢNG ĐIỀU KHIỂN CHÍNH (NỔI KHỐI 3D) */
+        /* BẢNG ĐIỀU KHIỂN CHÍNH - ĐÃ XÓA BÓNG ĐỔ NGOÀI */
         .sidebar-container { position: absolute; top: 24px; left: 24px; z-index: 1000; display: flex; gap: 16px; align-items: flex-start; }
-        .sidebar { width: 340px; background: var(--bg-main); border-radius: var(--radius-lg); padding: 24px; box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light); max-height: calc(100vh - 48px); overflow-y: auto; }
+        .sidebar { width: 340px; background: var(--bg-main); border-radius: var(--radius-lg); padding: 24px; max-height: calc(100vh - 48px); overflow-y: auto; }
         .sidebar::-webkit-scrollbar { width: 0px; } 
         .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; }
 
-        .toggle-btn { background: var(--bg-main); color: var(--night-text-color); text-shadow: var(--night-text-glow); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: 0.3s; border: none; margin-top: 8px; font-size: 14px;}
+        /* NÚT ĐÓNG MỞ SIDEBAR - ĐÃ XÓA BÓNG ĐỔ NGOÀI */
+        .toggle-btn { background: var(--bg-main); color: var(--night-text-color); text-shadow: var(--night-text-glow); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; border: none; margin-top: 8px; font-size: 14px;}
         .toggle-btn:hover { color: var(--text-primary); text-shadow: none; }
         .toggle-btn:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
 
@@ -197,8 +198,8 @@
         #progress { width: 0%; height: 100%; background: var(--gradient-brand); transition: width 0.3s ease; box-shadow: 0 0 10px rgba(255, 37, 83, 0.5); }
         #stt { font-size: 11px; text-align: center; color: var(--night-text-color); text-shadow: var(--night-text-glow); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 10px; line-height: 1.4; transition: 0.3s;}
 
-        /* HUD ĐÁY MÀN HÌNH NỔI KHỐI */
-        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--bg-main); border-radius: 30px; padding: 10px 24px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--night-text-color); text-shadow: var(--night-text-glow); box-shadow: 6px 6px 15px var(--shadow-dark), -6px -6px 15px var(--shadow-light); transition: 0.3s; }
+        /* HUD ĐÁY MÀN HÌNH - ĐÃ XÓA BÓNG ĐỔ NGOÀI */
+        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--bg-main); border-radius: 30px; padding: 10px 24px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--night-text-color); text-shadow: var(--night-text-glow); transition: 0.3s; }
         .hud-item { display: flex; align-items: center; gap: 6px; }
         .hud-val { color: #fff; font-weight: 600; text-shadow: none; }
         
