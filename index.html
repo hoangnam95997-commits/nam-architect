@@ -2,90 +2,126 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán Kính Trong Suốt (Clear Glass) - V19</title>
+    <title>Thuật Toán Kính Pha Lê Quang Học - Sandbox V15</title>
     <style>
-        /* ĐỔI NỀN SANG MÀU XANH GIỐNG ẢNH MẪU ĐỂ TEST ĐỘ TRONG SUỐT */
+        /* Nền xám xanh sáng để dễ đối chiếu với ảnh gốc */
         body {
-            background-color: #8ab6d6; /* Màu xanh thiên thanh */
+            background-color: #eaf0f6;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: sans-serif;
             margin: 0;
-            /* Thêm gradient nhẹ cho nền có chiều sâu */
-            background-image: radial-gradient(circle at 50% 0%, #b0d4ef 0%, #689dc3 100%);
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        /* KHỐI KÍNH TRONG SUỐT (CLEAR GLASS VOLUME) */
-        .clear-glass {
-            width: 240px;
-            height: 240px;
-            border-radius: 65px; /* Bo góc cực tròn trịa */
+        .optical-glass {
+            width: 250px;
+            height: 250px;
+            border-radius: 64px; /* Bo góc cực êm (Squircle form) */
             position: relative;
             cursor: pointer;
             
-            /* 1. KHẮC PHỤC LỖI NHỰA ĐỤC: 
-               - Trả khối kính về trạng thái KHÔNG MÀU (Chỉ phủ một lớp trắng cực kỳ mờ 5%)
-               - Dùng Blur để bẻ cong nền xanh phía sau, tạo chất liệu kính */
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.0) 100%);
-            backdrop-filter: blur(10px) saturate(110%);
-            -webkit-backdrop-filter: blur(10px) saturate(110%);
+            /* ========================================================== */
+            /* 1. ĐỘ XUYÊN SÁNG (Transparency) & MÀU LÕI (Tinted Core)   */
+            /* ========================================================== */
+            /* Dùng RGBA thay vì Hex đặc. Sắc Tím -> Hồng -> Cam cháy mờ mịt */
+            background: linear-gradient(135deg, 
+                rgba(68, 12, 136, 0.45) 0%,   /* Tím */
+                rgba(227, 27, 100, 0.35) 50%,  /* Hồng */
+                rgba(255, 107, 21, 0.55) 100%  /* Cam cháy */
+            );
+            
+            /* BÍ QUYẾT TRONG SUỐT: Bẻ cong màu nền đằng sau giống kính lúp */
+            backdrop-filter: blur(16px) saturate(130%);
+            -webkit-backdrop-filter: blur(16px) saturate(130%);
 
-            /* 2. KHẮC PHỤC THIẾU ĐỘ DÀY & PHẢN QUANG YẾU (The 3D Geometry) */
+            /* ========================================================== */
+            /* 2. KHỐI LƯỢNG 3D (Volume) & TỤ QUANG ĐÁY (Inner Caustics)  */
+            /* ========================================================== */
             box-shadow: 
-                /* A. Dải sáng Top-Left (Nguồn sáng chính): Dày, rực rỡ và uốn cong */
-                inset 5px 5px 15px rgba(255, 255, 255, 0.6),  /* Vầng sáng rộng */
-                inset 2px 2px 5px rgba(255, 255, 255, 1),     /* Sống kính bén ngót */
+                /* A. Highlight viền trắng gắt ở Trên-Trái (Đón nguồn sáng chính) */
+                inset 2px 2px 5px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 1px rgba(255, 255, 255, 1),
                 
-                /* B. Vách kính tối (Tạo độ dày và sâu cho lòng kính) */
-                inset -12px -12px 25px rgba(0, 0, 0, 0.15),
-                inset 8px 8px 20px rgba(0, 0, 0, 0.05),
+                /* B. Vách kính tối (The Inner Edge): Tạo cảm giác "nhìn xuyên qua" khối dày */
+                inset 10px 10px 20px rgba(0, 0, 0, 0.3),
+                inset -10px -10px 20px rgba(0, 0, 0, 0.15),
                 
-                /* C. Khúc xạ hắt sáng ở đáy (Bottom-Right Bounce Light) */
-                inset -4px -4px 10px rgba(255, 255, 255, 0.7), /* Ánh sáng dội ngược lên */
-                inset -1px -2px 3px rgba(255, 180, 50, 0.4),   /* Đốm màu cam nhiễu quang học ở mép (Giống ảnh gốc) */
-
-                /* D. Bóng đổ vật lý (Ambient Drop Shadow) */
-                12px 25px 40px rgba(0, 50, 100, 0.2), /* Bóng tiệp với màu nền xanh */
+                /* C. TỤ QUANG VIỀN ĐÁY (Inner Caustic Refraction): Sáng rực rỡ vàng/cam */
+                inset -3px -6px 15px rgba(255, 200, 50, 0.85),
+                inset -1px -2px 3px rgba(255, 255, 255, 0.7),
                 
-                /* E. Quầng tụ quang hắt xuyên thấu xuống bàn (Caustics) */
-                5px 10px 20px rgba(255, 255, 255, 0.4);
-
-            /* Viền bao ngoài cùng để định hình khối */
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-bottom-color: rgba(255, 255, 255, 0.1);
-            border-right-color: rgba(255, 255, 255, 0.1);
+                /* D. Bóng đổ vật lý (Drop Shadow): Ghim nút sát mặt sàn, không trôi nổi */
+                5px 15px 30px rgba(0, 0, 0, 0.25),
+                
+                /* E. QUẦNG CAUSTICS NGOÀI (Outer Drop Glow): Ánh sáng hồng tỏa ra nền */
+                0px 20px 45px rgba(233, 30, 99, 0.5);
+                
+            /* Viền quang học ngoài cùng để định hình khối kính */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top-color: rgba(255, 255, 255, 0.4);
+            border-left-color: rgba(255, 255, 255, 0.2);
             
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* 3. LÓA BỀ MẶT HỮU CƠ (Organic Surface Gloss) */
-        /* Không dùng đường vát chéo cứng đơ nữa, dùng vầng sáng tỏa nhẹ */
-        .clear-glass::before {
+        /* ========================================================== */
+        /* 3. PHẢN QUANG BỀ MẶT (Surface Gloss - PURE FRESNEL)       */
+        /* ========================================================== */
+        /* ĐÃ XÓA VỆT CẮT LỖI. Dùng một mảng bóng mượt mà, tỏa nhẹ */
+        .optical-glass::before {
             content: '';
             position: absolute;
-            inset: 2px;
-            border-radius: 60px;
-            background: radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.4) 0%, transparent 60%);
+            inset: 0;
+            border-radius: 60px; /* Thụt vào nhẹ so với viền ngoài */
+            /* Mảng bóng mượt mà lan tỏa từ góc Trên-Trái xuống giữa */
+            background: linear-gradient(
+                135deg, 
+                rgba(255, 255, 255, 0.45) 0%,   /* Chói ở trên trái */
+                rgba(255, 255, 255, 0.1) 45%,   /* Nhạt dần */
+                transparent 60%,                /* Tan biến hoàn toàn */
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+        
+        /* 4. CHẤM BỤI SÁNG PHẢN QUANG (The Precision Glints)         */
+        /* Tái hiện 100% chi tiết đắt giá của ảnh gốc */
+        .optical-glass::after {
+            content: '';
+            position: absolute;
+            width: 3.5px; height: 3.5px;
+            background: white;
+            border-radius: 50%;
+            top: 32%; left: 16%;
+            /* 3 chấm bụi sáng y hệt ảnh mẫu */
+            box-shadow: 
+                0 0 5px 2px rgba(255, 255, 255, 0.7),
+                18px 25px 0 -1.5px white, 
+                18px 25px 4px 0 rgba(255, 255, 255, 0.5),
+                135px 105px 0 -1.5px white, 
+                135px 105px 4px 0 rgba(255, 255, 255, 0.5);
             pointer-events: none;
         }
 
-        /* Hiệu ứng vật lý khi nhấn */
-        .clear-glass:active {
-            transform: scale(0.96) translateY(4px);
+        .optical-glass:active {
+            transform: scale(0.96) translateY(5px);
             box-shadow: 
-                inset 5px 5px 20px rgba(255, 255, 255, 0.8),
-                inset -12px -12px 30px rgba(0, 0, 0, 0.25),
-                inset -3px -3px 8px rgba(255, 255, 255, 0.9),
-                5px 10px 15px rgba(0, 50, 100, 0.2),
-                2px 5px 10px rgba(255, 255, 255, 0.5);
+                inset 2px 2px 10px rgba(255, 255, 255, 0.9),
+                inset 15px 15px 30px rgba(0, 0, 0, 0.4),
+                inset -3px -6px 20px rgba(255, 200, 50, 1),
+                8px 15px 20px rgba(0, 0, 0, 0.15),
+                0px 15px 35px rgba(233, 30, 99, 0.6);
         }
+
     </style>
 </head>
 <body>
 
-    <div class="clear-glass"></div>
+    <div class="optical-glass"></div>
 
 </body>
 </html>
