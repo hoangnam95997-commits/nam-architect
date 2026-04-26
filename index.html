@@ -2,91 +2,100 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán Kính Nguyên Bản - Sandbox V17</title>
+    <title>Thuật Toán Kính 3D Thực Tế - Sandbox V18</title>
     <style>
-        /* Nền sáng, sạch sẽ */
+        /* Nền xám/xanh nhẹ để tôn lên ánh sáng và bóng đổ */
         body {
-            background-color: #f2f5f9;
+            background-color: #eaf0f6;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: sans-serif;
             margin: 0;
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        /* KHỐI KÍNH DUY NHẤT (Không viền vỏ rườm rà) */
-        .pure-glass {
+        .real-glass {
             width: 250px;
             height: 250px;
-            border-radius: 60px; /* Bo góc chuẩn */
+            border-radius: 64px; /* Bo góc cực cong */
             position: relative;
             cursor: pointer;
             
-            /* 1. MÀU SẮC RỰC RỠ (Không dùng RGBA loãng, không bóng đen đục) */
+            /* MÀU GỐC CỦA KÍNH (Không bị loãng) */
             background: linear-gradient(135deg, #440c88 0%, #e31b64 50%, #ff6b15 100%);
             
-            /* 2. VIỀN ÁNH SÁNG & BÓNG XUYÊN THẤU */
+            /* KÍNH LÚP TẠO ĐỘ XUYÊN THẤU THẬT */
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%);
+
+            /* KIẾN TẠO THỂ TÍCH (Volume) VÀ ÁNH SÁNG BẰNG SHADOW */
             box-shadow: 
-                /* Viền trên đón sáng: Sáng rực rỡ, sắc nét */
-                inset 2px 2px 6px rgba(255, 255, 255, 0.7),
-                inset 1px 1px 1px rgba(255, 255, 255, 0.9),
+                /* KHẮC PHỤC LỖI 3: NGUỒN SÁNG CHÍNH (TOP-LEFT) SÁNG RỰC LÊN */
+                /* Đẩy độ trắng lên mức tối đa để tạo độ "căng bóng" cho khối */
+                inset 6px 6px 15px rgba(255, 255, 255, 0.85),
+                inset 2px 2px 4px rgba(255, 255, 255, 1),
                 
-                /* Viền dưới tụ quang: Màu vàng/cam rực rỡ (Tuyệt đối không dùng bóng đen ở đây nữa) */
-                inset -3px -3px 12px rgba(255, 200, 50, 0.8),
-                inset -1px -1px 2px rgba(255, 255, 255, 0.4),
+                /* KHẮC PHỤC LỖI 1: PHẢN QUANG ĐÁY CHƯA ĐỦ SÁNG */
+                /* Thêm ánh sáng trắng chói kết hợp với màu Cam rực rỡ ở đáy */
+                inset -6px -8px 18px rgba(255, 200, 50, 0.95),
+                inset -1px -2px 3px rgba(255, 255, 255, 0.8),
                 
-                /* Quầng màu xuyên thấu hắt xuống mặt bàn */
-                10px 25px 45px rgba(233, 30, 99, 0.4),
-                /* Bóng ghim vật lý rất nhẹ */
-                5px 10px 15px rgba(0, 0, 0, 0.1);
+                /* VÁCH KÍNH BÊN TRONG: Tạo chiều sâu rỗng cho thủy tinh */
+                inset -12px -12px 30px rgba(0, 0, 0, 0.45),
+                inset 10px 10px 25px rgba(0, 0, 0, 0.15),
                 
-            transition: transform 0.2s ease;
+                /* BÓNG ĐỔ MÔI TRƯỜNG (Hắt màu xuyên thấu và bóng ghim vật lý) */
+                0px 25px 45px -5px rgba(233, 30, 99, 0.45),
+                10px 15px 25px rgba(0, 0, 0, 0.15);
+                
+            /* Ranh giới mép ngoài cùng (Edge Reflection) */
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-top-color: rgba(255, 255, 255, 0.6);
+            border-left-color: rgba(255, 255, 255, 0.4);
+            
+            transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* 3. VỆT CẮT BÓNG GƯƠNG BỀ MẶT */
-        .pure-glass::before {
+        /* KHẮC PHỤC LỖI 2: TÁN SÁC BỀ MẶT MƯỢT MÀ (Loại bỏ vệt cắt cứng) */
+        .real-glass::before {
             content: '';
             position: absolute;
-            inset: 1px; /* Thụt vào 1px để chừa đường viền ngoài */
-            border-radius: 59px;
+            inset: 1px;
+            border-radius: 62px;
             
-            /* Vết cắt chéo tuyệt đối sắc lẹm tại 45% */
+            /* Dùng Soft Gradient: Ánh sáng lan tỏa tự nhiên, hòa quyện vào khối kính thay vì bị cắt đứt gắt gao */
             background: linear-gradient(
                 135deg, 
-                rgba(255, 255, 255, 0.5) 0%, 
-                rgba(255, 255, 255, 0.05) 45%, 
-                transparent 45.2%, 
+                rgba(255, 255, 255, 0.6) 0%,   /* Rất chói ở góc đón sáng */
+                rgba(255, 255, 255, 0.15) 35%, /* Nhạt dần mượt mà */
+                transparent 65%,               /* Tan biến hoàn toàn vào lõi kính */
                 transparent 100%
             );
             pointer-events: none;
         }
-
-        /* 4. ĐIỂM BỤI SÁNG (Giống hệt ảnh gốc) */
-        .pure-glass::after {
+        
+        /* QUẦNG SÁNG CHÍNH (Core Glare) ĐỂ TĂNG CƯỜNG ĐỘ BÓNG TỰ NHIÊN */
+        .real-glass::after {
             content: '';
             position: absolute;
-            width: 3px; height: 3px;
-            background: white;
-            border-radius: 50%;
-            top: 33%; left: 16%;
-            box-shadow: 
-                0 0 5px 2px rgba(255, 255, 255, 0.7),
-                18px 25px 0 -1px white, 
-                18px 25px 4px 0 rgba(255, 255, 255, 0.5),
-                135px 105px 0 -1px white, 
-                135px 105px 4px 0 rgba(255, 255, 255, 0.5);
+            inset: 0;
+            border-radius: inherit;
+            /* Một luồng sáng tròn (radial) hắt từ góc Trên-Trái xuống làm khối kính căng phồng lên */
+            background: radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.4) 0%, transparent 50%);
             pointer-events: none;
         }
 
-        .pure-glass:active {
-            transform: scale(0.96);
+        .real-glass:active {
+            transform: scale(0.96) translateY(3px);
         }
     </style>
 </head>
 <body>
 
-    <div class="pure-glass"></div>
+    <div class="real-glass"></div>
 
 </body>
 </html>
