@@ -21,11 +21,14 @@
             --gradient-brand: linear-gradient(135deg, #FFB608 0%, #FF2553 50%, #00103C 100%);
             --text-primary: #ffffff;
             --text-secondary: #8b95a5;
-            --success: #2ed573;
+            
+            /* ĐỒNG BỘ MÀU TRẠNG THÁI SANG VÀNG ẤM KHI Ở CHẾ ĐỘ TỐI */
+            --success: #fcebb6; 
+            
             --radius-lg: 20px;
             --radius-md: 12px;
 
-            /* HIỆU ỨNG ĐÈN ĐÊM CHO TEXT (Vàng Ấm) */
+            /* HIỆU ỨNG ĐÈN ĐÊM CHO TEXT */
             --night-text-color: #fcebb6; 
             --night-text-glow: 0 0 8px rgba(252, 235, 182, 0.5);
         }
@@ -40,18 +43,20 @@
             --night-text-color: #2d3436; 
             --night-text-glow: none;     
             --gradient-brand: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%);
+            
+            /* Ban ngày giữ màu xanh dịu để dễ phân biệt trạng thái */
+            --success: #34A853; 
         }
 
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); overflow: hidden; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #map { height: 100vh; width: 100vw; background: #1e2026; transition: all 0.5s; }
         
-        /* THANH TÌM KIẾM NEUMORPHISM - THẮP SÁNG CHỮ KHI Ở CHẾ ĐỘ TỐI */
+        /* THANH TÌM KIẾM NEUMORPHISM */
         .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--bg-main); border-radius: 50px; padding: 6px; box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .search-box input { background: transparent; border: none; padding: 10px 16px; width: 250px; color: var(--night-text-color); text-shadow: var(--night-text-glow); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: all 0.3s; }
         .search-box input::placeholder { color: var(--text-secondary); text-shadow: none; transition: all 0.5s; }
         .search-box button { background: var(--bg-main); border: none; border-radius: 50px; padding: 0 24px; cursor: pointer; color: var(--night-text-color); text-shadow: var(--night-text-glow); font-weight: 600; font-size: 14px; transition: all 0.3s; box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); }
-        
         .search-box button:hover { color: #FFB608; } 
         .light-theme .search-box button:hover { color: #A6C1EE; } 
         .search-box button:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
@@ -72,7 +77,7 @@
         h1 span { color: transparent; background: var(--gradient-brand); -webkit-background-clip: text; }
         .tagline { font-size: 10px; font-weight: 600; color: var(--night-text-color); text-shadow: var(--night-text-glow); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-top: 6px; transition: all 0.3s; }
 
-        /* KHỐI CHỨA CÀI ĐẶT (LÕM XUỐNG) */
+        /* KHỐI CHỨA CÀI ĐẶT */
         .panel-card { background: var(--bg-main); border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px; box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .panel-title { font-size: 11px; font-weight: 700; color: var(--night-text-color); text-shadow: var(--night-text-glow); text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
@@ -148,7 +153,7 @@
         body.light-theme .theme-label-text { color: #A6C1EE; }
 
         /* NÚT BẤM NEUMORPHISM */
-        .btn-main { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); background: var(--gradient-brand); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(255, 37, 83, 0.3); margin-bottom: 16px; }
+        .btn-main { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); background: var(--gradient-brand); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s cubic-edge; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(255, 37, 83, 0.3); margin-bottom: 16px; }
         .btn-main:hover { filter: brightness(1.1); }
         .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 5px rgba(255, 37, 83, 0.3); }
         .light-theme .btn-main { background: var(--gradient-brand); box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); }
@@ -158,7 +163,6 @@
         .btn-outline:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
         
         .btn-export-2d { flex: 1; }
-        
         .btn-export-3d { flex: 1; color: #FF2553 !important; text-shadow: 0 0 8px rgba(255, 37, 83, 0.4) !important; }
         body.light-theme .btn-export-3d { text-shadow: none !important; }
 
@@ -167,9 +171,11 @@
         .prog-wrap { height: 8px; background: var(--bg-main); border-radius: 4px; overflow: hidden; position: relative; box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #progress { width: 0%; height: 100%; background: var(--gradient-brand); transition: width 0.3s ease; box-shadow: 0 0 10px rgba(255, 37, 83, 0.5); }
         .light-theme #progress { background: var(--gradient-brand); box-shadow: none; }
-        #stt { font-size: 11px; text-align: center; color: var(--night-text-color); text-shadow: var(--night-text-glow); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 10px; line-height: 1.4; transition: 0.3s;}
+        
+        /* CHỮ THÔNG BÁO TRẠNG THÁI (ĐÃ ĐỒNG BỘ VÀNG ẤM ĐÊM) */
+        #stt { font-size: 11px; text-align: center; color: var(--success); text-shadow: var(--night-text-glow); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 10px; line-height: 1.4; transition: 0.3s;}
 
-        /* HUD ĐÁY MÀN HÌNH - THẮP SÁNG CHỮ KHI Ở CHẾ ĐỘ TỐI */
+        /* HUD ĐÁY MÀN HÌNH */
         .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--bg-main); border-radius: 30px; padding: 10px 24px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--night-text-color); text-shadow: var(--night-text-glow); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .hud-item { display: flex; align-items: center; gap: 6px; }
         .hud-val { color: var(--night-text-color); text-shadow: var(--night-text-glow); font-weight: 600; transition: 0.3s; }
@@ -179,12 +185,10 @@
         .crosshair::after { content: ''; position: absolute; top: 0; left: 11px; width: 2px; height: 24px; background: var(--text-primary); border-radius: 2px; transition: 0.3s;}
         .leaflet-interactive { pointer-events: none; }
         
-        .core-badge { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: var(--night-text-color); text-shadow: var(--night-text-glow); transition: 0.3s; }
-        .core-badge.online { color: var(--success); text-shadow: 0 0 8px rgba(46, 213, 115, 0.5); }
-        .light-theme .core-badge.online { color: #34A853; text-shadow: none; }
+        /* CORE BADGE TRẠNG THÁI (ĐÃ ĐỒNG BỘ VÀNG ẤM ĐÊM) */
+        .core-badge { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: var(--success); text-shadow: var(--night-text-glow); transition: 0.3s; }
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
         .core-badge.online .pulse-dot { box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
-        .light-theme .core-badge.online .pulse-dot { box-shadow: 0 0 8px #34A853; }
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(0.95); opacity: 1; } }
     </style>
 </head>
@@ -429,7 +433,7 @@
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [], cayxanh: [], dattrong: [], o_pho: [] };
         updateProgress(0, "Đã dọn dẹp Cache. Sẵn sàng!", false);
-        document.getElementById('stt').style.color = "var(--night-text-color)";
+        document.getElementById('stt').style.color = "var(--success)";
     }
 
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 0));
