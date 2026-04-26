@@ -59,11 +59,25 @@
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .panel-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* SLIDER NEUMORPHISM */
+        /* SLIDER NEUMORPHISM - CHỈNH SỬA CHÍNH TẠI ĐÂY */
         .val-hl { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: bold; }
-        .zoom-slider { -webkit-appearance: none; width: 100%; height: 8px; background: var(--bg-main); border-radius: 4px; outline: none; margin-top: 8px; box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light); }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; box-shadow: 0 0 10px rgba(213, 50, 178, 0.4); transition: 0.2s; }
+        
+        /* Tạo container cho thanh trượt trông nổi khối */
+        .zoom-slider-container { background: var(--bg-main); border-radius: 20px; padding: 4px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); margin-top: 8px; display: flex; align-items: center; }
+        
+        /* Thanh trượt thực tế trông lõm sâu */
+        .zoom-slider { -webkit-appearance: none; width: 100%; height: 28px; background: transparent; outline: none; margin: 0; padding: 0;}
+        
+        /* Cục tròn nổi - Tạo kiểu trông nổi khối và rực rỡ */
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light), 0 0 10px rgba(213, 50, 178, 0.4); transition: 0.2s; position: relative; z-index: 2; margin-top: 2px; }
         .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(213, 50, 178, 0.6); }
+
+        /* Track trông nổi khối */
+        .zoom-slider::-webkit-slider-runnable-track { width: 100%; height: 28px; background: transparent; border-radius: 20px; position: relative; }
+        
+        /* Firefox style */
+        .zoom-slider::-moz-range-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light), 0 0 10px rgba(213, 50, 178, 0.4); transition: 0.2s; z-index: 2;}
+        .zoom-slider::-moz-range-track { width: 100%; height: 28px; background: transparent; border-radius: 20px; }
 
         /* TOGGLE SWITCH CỰC NGẦU */
         .layer-list { display: flex; flex-direction: column; gap: 6px; }
@@ -136,7 +150,9 @@
                 <span class="panel-title">Mức Độ Thu Phóng</span>
                 <span class="val-hl" id="z-val">16.0</span>
             </div>
-            <input type="range" id="zoomSlider" min="1" max="100" step="0.5" value="16" class="zoom-slider">
+            <div class="zoom-slider-container">
+                <input type="range" id="zoomSlider" min="1" max="100" step="0.5" value="16" class="zoom-slider">
+            </div>
         </div>
 
         <div class="panel-card">
@@ -178,7 +194,10 @@
                 </label>
             </div>
             
-            <button id="mapThemeBtn" class="btn-outline" style="margin-top: 16px; width: 100%; box-shadow: none; border: 1px solid rgba(255,255,255,0.05);" onclick="toggleMapTheme()">🌓 Đổi Nền Bản Đồ (Sáng/Tối)</button>
+            <div style="display: flex; gap: 6px; margin-top: 16px;">
+                <button id="mapThemeBtnLight" class="btn-outline" style="flex: 1; box-shadow: none; border: 1px solid rgba(255,255,255,0.05); color: #eccc68;" onclick="toggleMapTheme('light')">☀️ Sáng</button>
+                <button id="mapThemeBtnDark" class="btn-outline" style="flex: 1; box-shadow: none; border: 1px solid rgba(255,255,255,0.05); color: var(--success); font-weight: bold; box-shadow: 0 0 10px rgba(46, 213, 115, 0.4);" onclick="toggleMapTheme('dark')">🌙 Tối</button>
+            </div>
         </div>
 
         <button class="btn-main" onclick="startMegaScan()">
@@ -197,7 +216,7 @@
 
             <div class="prog-container">
                 <div class="prog-wrap" id="progWrap"><div id="progress"></div></div>
-                <div id="stt">Đã dọn dẹp Cache. Sẵn sàng!</div>
+                <div id="stt">Đang chờ lệnh...</div>
             </div>
         </div>
     </div>
@@ -245,10 +264,10 @@
     });
     new L.GridLayer.Graticule({maxZoom: 100}).addTo(map);
 
-    let isLightMap = false;
-    function toggleMapTheme() {
-        isLightMap = !isLightMap;
-        if(isLightMap) {
+    let currentMapTheme = 'dark';
+    function toggleMapTheme(theme) {
+        currentMapTheme = theme;
+        if(theme === 'light') {
             map.removeLayer(darkT); lightT.addTo(map);
             document.getElementById('dot-nha').style.background = '#dc2626';
             document.getElementById('dot-duong').style.background = '#1e293b';
@@ -256,6 +275,10 @@
             document.getElementById('dot-nuoc').style.background = '#0284c7';
             document.getElementById('dot-cay').style.background = '#16a34a';
             document.getElementById('dot-dat').style.background = '#94a3b8';
+            document.getElementById('mapThemeBtnLight').style.fontWeight = 'bold';
+            document.getElementById('mapThemeBtnLight').style.boxShadow = '0 0 10px rgba(236, 204, 104, 0.4)';
+            document.getElementById('mapThemeBtnDark').style.fontWeight = 'normal';
+            document.getElementById('mapThemeBtnDark').style.boxShadow = 'none';
         } else {
             map.removeLayer(lightT); darkT.addTo(map);
             document.getElementById('dot-nha').style.background = '#f43f5e';
@@ -264,6 +287,10 @@
             document.getElementById('dot-nuoc').style.background = '#0ea5e9';
             document.getElementById('dot-cay').style.background = '#10b981';
             document.getElementById('dot-dat').style.background = '#64748b';
+            document.getElementById('mapThemeBtnDark').style.fontWeight = 'bold';
+            document.getElementById('mapThemeBtnDark').style.boxShadow = '0 0 10px rgba(46, 213, 115, 0.4)';
+            document.getElementById('mapThemeBtnLight').style.fontWeight = 'normal';
+            document.getElementById('mapThemeBtnLight').style.boxShadow = 'none';
         }
         updateLineStyles();
     }
@@ -304,7 +331,7 @@
     }
 
     function getLayerStyle(type) {
-        const config = isLightMap ? {
+        const config = currentMapTheme === 'light' ? {
             nha: { color: '#dc2626', weight: 2, fillOpacity: 0.15 },
             duong: { color: '#1e293b', weight: 2, fillOpacity: 0.1 },
             viahe: { color: '#ea580c', weight: 2, fillOpacity: 0.15 },
