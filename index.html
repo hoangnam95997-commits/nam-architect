@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Glass Button</title>
+<title>Clear 3D Glass Button</title>
 <style>
-  /* Thiết lập nền giống với màu trong ảnh để làm nổi bật hiệu ứng kính */
   body {
     display: flex;
     justify-content: center;
@@ -19,64 +18,56 @@
   .glass-button {
     width: 160px;
     height: 160px;
-    border-radius: 45px; /* Tạo hình vuông bo góc (squircle) */
+    border-radius: 40px; /* Bo góc vuông vức hơn một chút */
     
-    /* Làm nền trong suốt nhẹ với dải màu gradient */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
+    /* 1. Nền GẦN NHƯ TRONG SUỐT HOÀN TOÀN để thấy rõ phía sau */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
     
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* 2. Tạo viền bắt sáng (Highlight) cực gắt ở mép trên và mép trái */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1.5px solid rgba(255, 255, 255, 0.8);
+    border-left: 1.5px solid rgba(255, 255, 255, 0.6);
+    
     position: relative;
     cursor: pointer;
     outline: none;
     
-    /* Chữ hiển thị trên nút */
     color: white;
     font-size: 18px;
     font-weight: bold;
-    text-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+    text-shadow: 0px 1px 3px rgba(0,0,0,0.2);
     
-    /* Tạo hiệu ứng kính mờ (nếu phía sau có chi tiết) */
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    /* 3. Giảm Blur lại để thuỷ tinh trông TRONG VẮT */
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     
-    /* TRỌNG TÂM: Sử dụng nhiều lớp box-shadow để tạo độ dày, ánh sáng và bóng đổ */
+    /* 4. Đổ bóng tinh chỉnh: Tạo độ dày, khối đặc và ánh sáng hắt */
     box-shadow: 
-      /* 1. Bóng đổ bên ngoài (tạo độ nổi cho khối) */
-      15px 15px 30px rgba(0, 0, 0, 0.1),
-      /* 2. Ánh sáng hắt bên ngoài (góc trên trái) */
-      -10px -10px 20px rgba(255, 255, 255, 0.5),
-      /* 3. Vệt sáng trắng dày bên trong (mô phỏng độ dày của kính ở góc trên trái) */
-      inset 8px 8px 20px rgba(255, 255, 255, 0.8),
-      inset 2px 2px 5px rgba(255, 255, 255, 1),
-      /* 4. Bóng tối bên trong (tạo chiều sâu ở góc dưới phải) */
-      inset -8px -8px 20px rgba(0, 0, 0, 0.08),
-      /* 5. Điểm xuyết chút ánh sáng vàng cam hắt lên ở cạnh dưới (giống chi tiết nhỏ trong ảnh) */
-      inset -2px -2px 10px rgba(255, 200, 100, 0.15);
+      /* Bóng đổ xuống nền */
+      15px 15px 25px rgba(0, 0, 0, 0.15),
+      /* Ánh sáng hắt viền ngoài (Glow) */
+      -5px -5px 15px rgba(255, 255, 255, 0.1),
+      
+      /* Viền sáng trắng bên trong (tạo cảm giác khối kính dày) */
+      inset 4px 4px 8px rgba(255, 255, 255, 0.6),
+      inset 10px 10px 20px rgba(255, 255, 255, 0.15),
+      
+      /* Viền tối bên trong góc dưới (tạo chiều sâu của khối đặc) */
+      inset -5px -5px 15px rgba(0, 0, 0, 0.08),
+      
+      /* VỆT SÁNG VÀNG/CAM đặc trưng ở góc dưới y hệt ảnh gốc */
+      inset -2px -2px 6px rgba(230, 160, 50, 0.4);
 
-    transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease;
   }
 
-  /* Hiệu ứng khi di chuột vào (Hover) */
-  .glass-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 
-      20px 20px 35px rgba(0, 0, 0, 0.12),
-      -10px -10px 20px rgba(255, 255, 255, 0.6),
-      inset 8px 8px 20px rgba(255, 255, 255, 0.9),
-      inset 2px 2px 5px rgba(255, 255, 255, 1),
-      inset -8px -8px 20px rgba(0, 0, 0, 0.08),
-      inset -2px -2px 10px rgba(255, 200, 100, 0.15);
-  }
-
-  /* Hiệu ứng khi bấm vào (Active) */
+  /* Hiệu ứng khi bấm vào */
   .glass-button:active {
-    transform: translateY(2px);
+    transform: scale(0.95);
     box-shadow: 
       5px 5px 15px rgba(0, 0, 0, 0.1),
-      -5px -5px 15px rgba(255, 255, 255, 0.4),
-      inset 4px 4px 15px rgba(255, 255, 255, 0.6),
-      inset 1px 1px 3px rgba(255, 255, 255, 0.8),
-      inset -4px -4px 15px rgba(0, 0, 0, 0.05);
+      inset 2px 2px 5px rgba(255, 255, 255, 0.4),
+      inset -2px -2px 5px rgba(0, 0, 0, 0.05);
   }
 </style>
 </head>
