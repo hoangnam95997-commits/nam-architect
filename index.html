@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v127 - The Ultimate Glass Masterpiece</title>
+    <title>NAM ARCH PRO v128 - True Directional Light Fix</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
     
     <style>
         /* ========================================================= */
-        /* MÔI TRƯỜNG NỀN VẬT LÝ (Bản 116/118)                        */
+        /* MÔI TRƯỜNG NỀN VẬT LÝ (Tối xanh thẫm của V118)             */
         /* ========================================================= */
         :root { 
             --bg-base: #0c111a; 
@@ -62,7 +61,6 @@
             pointer-events: auto; 
         }
 
-        /* THEME LIGHT - KHÔNG RÚT GỌN */
         body.theme-light { 
             --bg-base: #e6ecf0; 
             --panel-bg: #ffffff; 
@@ -72,7 +70,7 @@
         }
 
         /* ========================================================= */
-        /* UI COMPONENTS - CHI TIẾT TỪNG DÒNG                        */
+        /* UI COMPONENTS - PANEL & SEARCH BOX                        */
         /* ========================================================= */
         .search-box { 
             position: absolute; 
@@ -213,7 +211,6 @@
             cursor: pointer; 
         }
 
-        /* LAYER CONTROLS */
         .layer-list { 
             display: flex; 
             flex-direction: column; 
@@ -323,7 +320,10 @@
         }
 
         /* ========================================================================= */
-        /* TUYỆT TÁC QUANG HỌC V127: FIXED HIGHLIGHT (V118) + DOUBLE BRIGHTNESS (V123) */
+        /* TUYỆT TÁC QUANG HỌC V128: FIX LỖI ĐẢO NGƯỢC NGUỒN SÁNG                     */
+        /* 1. KEY LIGHT (TOP-LEFT): Chói lòa trắng tinh khiết, mỏng và bén (V118).   */
+        /* 2. CORE SHADOW (CENTER): Kính trong suốt, chuyển sắc đúng hướng 135 độ.  */
+        /* 3. CAUSTICS (BOTTOM-RIGHT): Chỉ cho phép màu Neon hội tụ ở góc dưới phải. */
         /* ========================================================================= */
         
         .btn-liquid {
@@ -347,28 +347,27 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             z-index: 1;
             
-            /* TĂNG CƯỜNG ĐỘ SÁNG X2 (V123) */
-            backdrop-filter: blur(8px) saturate(220%) brightness(1.6); 
-            -webkit-backdrop-filter: blur(8px) saturate(220%) brightness(1.6);
+            /* CƯỜNG ĐỘ SÁNG CAO (V123) */
+            backdrop-filter: blur(8px) saturate(200%) brightness(1.4); 
+            -webkit-backdrop-filter: blur(8px) saturate(200%) brightness(1.4);
             
-            /* XÓA BORDER CŨ GÂY LỖI VIỀN */
             border: none;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
         }
 
-        /* 1. KHÔI PHỤC VỆT SÁNG BỀ MẶT V118 (MỎNG & BÉN) */
-        /* Sử dụng Masking, cường độ trắng 1.0, cắt dứt khoát tại 26% */
+        /* FIX: HIGHLIGHT CHÍNH XÁC GÓC TRÊN TRÁI (TOP-LEFT) */
+        /* Tuyệt đối không để vệt trắng xuất hiện bên phải */
         .btn-liquid::before {
             content: "";
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            padding: 1.5px; 
+            padding: 1.8px; 
             background: linear-gradient(
-                110deg, 
-                rgba(255, 255, 255, 1) 0%, 
+                135deg, 
+                rgba(255, 255, 255, 1) 0%,      /* Đập sáng trắng ở trên trái */
                 rgba(255, 255, 255, 0.4) 15%, 
-                transparent 26%
+                transparent 30%                 /* Cắt dứt khoát nửa nút để kính trong */
             );
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
@@ -377,14 +376,14 @@
             z-index: 5;
         }
 
-        /* 2. LÓA BỀ MẶT THỨ CẤP (V118) */
+        /* PHẢN QUANG BỀ MẶT PHỤ (TOP-LEFT ONLY) */
         .btn-liquid::after {
             content: ''; 
             position: absolute; 
             inset: 0;
             background: radial-gradient(
-                circle at 15% 15%, 
-                rgba(255, 255, 255, 0.4) 0%, 
+                circle at 0% 0%, 
+                rgba(255, 255, 255, 0.5) 0%, 
                 transparent 40%
             );
             border-radius: inherit; 
@@ -397,42 +396,38 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT CYAN (FORM V118 - CƯỜNG ĐỘ V123)                      */
+        /* NÚT CYAN (FIX NGUỒN SÁNG CHÉO CHUẨN VẬT LÝ)               */
         /* --------------------------------------------------------- */
         .btn-cyan {
-            /* Tụ quang tròn chói lóa góc đáy phải */
+            /* Tụ quang màu ở BOTTOM-RIGHT (Góc khuất sáng) */
             background: radial-gradient(
-                circle at 85% 90%, 
-                rgba(0, 255, 255, 0.95) 0%, 
-                rgba(0, 100, 255, 0.2) 60%, 
+                circle at 90% 100%, 
+                rgba(0, 240, 255, 0.9) 0%, 
+                rgba(0, 100, 255, 0.1) 60%, 
                 transparent 100%
             );
             
             box-shadow: 
-                /* Viền sáng cực chói ở trên trái */
+                /* Lóa viền Top-Left trắng tinh */
                 inset 2px 2px 4px rgba(255, 255, 255, 1),
-                /* Phản xạ đáy rực rỡ */
+                /* Phản xạ đáy đúng hướng xô ánh sáng sang phải */
                 inset -2px -5px 12px rgba(0, 240, 255, 1),
-                /* Bóng đen vật lý */
-                8px 15px 25px rgba(0, 0, 0, 0.8),
-                /* TỤ QUANG (CAUSTICS) SÁNG RỰC GẤP ĐÔI */
-                12px 20px 35px -5px rgba(0, 255, 255, 1);
+                /* Bóng vật lý đổ chéo sang Bottom-Right */
+                10px 15px 25px rgba(0, 0, 0, 0.8),
+                /* TỤ QUANG (CAUSTICS) ĐỔ CHÉO 135 ĐỘ */
+                15px 25px 35px -5px rgba(0, 255, 255, 1);
                 
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         
         .btn-cyan:hover { 
-            background: radial-gradient(
-                circle at 85% 90%, 
-                rgba(0, 255, 255, 1) 0%, 
-                rgba(0, 150, 255, 0.3) 60%, 
-                transparent 100%
-            );
+            background: radial-gradient(circle at 90% 100%, rgba(0, 255, 255, 1) 0%, rgba(0, 150, 255, 0.2) 60%, transparent 100%);
             box-shadow: 
                 inset 3px 3px 6px rgba(255, 255, 255, 1),
-                inset -2px -5px 15px rgba(255, 255, 255, 1),
-                10px 18px 30px rgba(0, 0, 0, 0.9),
-                15px 25px 45px -5px rgba(0, 255, 255, 1);
+                inset -2px -5px 15px rgba(255, 255, 255, 0.4),
+                inset -2px -5px 15px rgba(0, 255, 255, 1),
+                12px 20px 30px rgba(0, 0, 0, 0.9),
+                18px 28px 45px -5px rgba(0, 255, 255, 1);
             transform: translateY(-2px);
         }
 
@@ -443,43 +438,38 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT MAGENTA (FORM V118 - CƯỜNG ĐỘ V123)                   */
+        /* NÚT MAGENTA (FIX NGUỒN SÁNG CHÉO CHUẨN VẬT LÝ)            */
         /* --------------------------------------------------------- */
         .btn-magenta {
             flex: 1; 
             font-size: 12px;
             background: radial-gradient(
-                circle at 85% 90%, 
-                rgba(255, 0, 100, 0.95) 0%, 
-                rgba(150, 0, 255, 0.2) 60%, 
+                circle at 90% 100%, 
+                rgba(255, 0, 100, 0.9) 0%, 
+                rgba(150, 0, 255, 0.1) 60%, 
                 transparent 100%
             );
             
             box-shadow: 
                 inset 2px 2px 4px rgba(255, 255, 255, 1),
-                inset -2px -4px 12px rgba(255, 50, 150, 1),
-                10px 15px 22px rgba(0, 0, 0, 0.8),
-                15px 22px 35px -5px rgba(255, 50, 150, 1);
+                inset -2px -5px 12px rgba(255, 50, 150, 1),
+                10px 15px 25px rgba(0, 0, 0, 0.8),
+                15px 25px 35px -5px rgba(255, 50, 150, 1);
                 
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
 
         .btn-magenta:hover { 
-            background: radial-gradient(
-                circle at 85% 90%, 
-                rgba(255, 50, 150, 1) 0%, 
-                rgba(180, 0, 255, 0.3) 60%, 
-                transparent 100%
-            );
+            background: radial-gradient(circle at 90% 100%, rgba(255, 50, 150, 1) 0%, rgba(180, 0, 255, 0.2) 60%, transparent 100%);
             box-shadow: 
                 inset 3px 3px 6px rgba(255, 255, 255, 1),
-                inset -2px -4px 15px rgba(255, 50, 150, 1),
-                12px 18px 30px rgba(0, 0, 0, 0.9),
-                18px 25px 45px -5px rgba(255, 50, 150, 1);
+                inset -2px -5px 15px rgba(255, 50, 150, 1),
+                12px 20px 30px rgba(0, 0, 0, 0.9),
+                18px 28px 45px -5px rgba(255, 50, 150, 1);
             transform: translateY(-2px);
         }
 
-        /* LOADER - KHÔNG RÚT GỌN */
+        /* LOADER */
         .prog-container { 
             margin-top: 25px; 
             text-align: center; 
@@ -521,7 +511,6 @@
             letter-spacing: 2px; 
         }
 
-        /* HUD TỌA ĐỘ */
         .hud-bottom { 
             position: absolute; 
             bottom: 30px; 
@@ -586,7 +575,7 @@
         <div class="sidebar" id="sidebar">
             <div class="brand-header">
                 <h1>NAM ARCH</h1>
-                <span class="tagline">V127 • PERFECT GLASS EVOLVED</span>
+                <span class="tagline">V128 • DIRECTIONAL LIGHT FIX</span>
             </div>
 
             <div class="panel-card">
@@ -834,7 +823,7 @@
             nha: { color: '#ff0066', weight: 1.5, fillOpacity: 0.15 }, 
             duong: { color: '#ffffff', weight: 1.5, fillOpacity: 0.05 }, 
             viahe: { color: '#ff8800', weight: 1.5, fillOpacity: 0.15 }, 
-            nuoc: { color: '#00ffff', weight: 1.5, fillOpacity: 0.15 },
+            nuoc: { color: '#00f0ff', weight: 1.5, fillOpacity: 0.15 },
             cayxanh: { color: '#00ff88', weight: 1.5, fillOpacity: 0.12 },
             dattrong: { color: '#8b95a5', weight: 1.5, fillOpacity: 0.1 }  
         };
@@ -1099,7 +1088,7 @@
         const daeXML = `<?xml version="1.0" encoding="utf-8"?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"><asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset><library_geometries><geometry id="geom-0" name="CityMesh"><mesh><source id="geom-0-positions"><float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array><technique_common><accessor source="#geom-0-positions-array" count="${positions.length}" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source><vertices id="geom-0-vertices"><input semantic="POSITION" source="#geom-0-positions"/></vertices><triangles count="${indices.length / 3}"><input semantic="VERTEX" source="#geom-0-vertices" offset="0"/><p>${indices.join(' ')}</p></triangles></mesh></geometry></library_geometries><library_visual_scenes><visual_scene id="Scene" name="Scene"><node id="CityNode" name="CityNode"><instance_geometry url="#geom-0"/></node></visual_scene></library_visual_scenes><scene><instance_visual_scene url="#Scene"/></scene></COLLADA>`;
         const a = document.createElement('a'); 
         a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); 
-        a.download = "NAM_ARCH_3D_V127.dae"; a.click(); 
+        a.download = "NAM_ARCH_3D_V128.dae"; a.click(); 
         updateProgress(100, "XUẤT MÔ HÌNH 3D THÀNH CÔNG!", false);
     }
 
