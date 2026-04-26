@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v120 - Final Masterpiece Glass</title>
+    <title>NAM ARCH PRO v121 - True Optical Glass</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
@@ -329,7 +328,7 @@
             border-radius: 20px; 
             position: relative; 
             transition: 0.4s;
-            background: rgba(0,0,0,0.4); 
+            background: rgba(0,0,0,0.5); 
             border: 1px solid rgba(255,255,255,0.05);
             box-shadow: inset 0 2px 6px rgba(0,0,0,0.7);
         }
@@ -417,7 +416,7 @@
 
         .theme-toggle.dark-mode .theme-thumb { 
             left: 4px; 
-            border: 1px solid rgba(138,43,226,0.2); 
+            border: 1px solid rgba(138,43,226,0.3); 
             box-shadow: 0 0 15px #8a2be2; 
         }
 
@@ -454,11 +453,10 @@
         }
 
         /* ========================================================================= */
-        /* TUYỆT TÁC QUANG HỌC V120 (TỐI ƯU CẤU TRÚC V118 & LÓA SÁNG CỰC ĐẠI)        */
-        /* 1. Trả lại Blur(6px) để tạo khối kính đặc, nhưng tăng Saturate lên 150%.  */
-        /* 2. Cắt lóa chéo (Diagonal Specular) tăng lên rgba(255,255,255,0.9) chói.  */
-        /* 3. Tụ quang đáy thanh mảnh, tinh tế, không làm dày cộm.                   */
-        /* 4. Bóng Caustic hội tụ chuẩn góc xô ánh sáng 135 độ.                      */
+        /* TUYỆT TÁC QUANG HỌC V121 (TRUE OPTICAL GLASS - FIX TRIỆT ĐỂ ÁNH SÁNG)     */
+        /* 1. Lóa cường độ cực cao (Alpha 1.0) vát chéo mượt mà ở bề mặt.            */
+        /* 2. ĐIỂM TỤ QUANG (Focal Point): Bỏ vệt viền đáy, dùng Radial Gradient.    */
+        /* 3. Tách biệt bóng đen vật lý sâu và điểm sáng Caustics gắt.               */
         /* ========================================================================= */
         
         .btn-liquid {
@@ -482,27 +480,23 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             z-index: 1;
             
-            /* Giữ nguyên cấu trúc thể tích kính chuẩn của V118 */
-            backdrop-filter: blur(6px) saturate(150%); 
-            -webkit-backdrop-filter: blur(6px) saturate(150%);
+            /* Blur vừa đủ tạo khối, đẩy Saturate để dứt điểm sự đục màu */
+            backdrop-filter: blur(8px) saturate(180%); 
+            -webkit-backdrop-filter: blur(8px) saturate(180%);
             
-            /* Viền cấu trúc: Sáng gắt góc Top-Left, tối dần ở Bottom-Right */
-            border: 1px solid transparent;
-            border-top: 1.5px solid rgba(255, 255, 255, 0.95);
-            border-left: 1px solid rgba(255, 255, 255, 0.5);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.6);
-            border-right: 1px solid rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.02);
+            /* Xóa border giả, kính nghệ thuật sẽ được định hình bởi bóng sáng nội tại */
+            border: 1px solid rgba(255, 255, 255, 0.05); 
         }
 
-        /* 1. LÓA BỀ MẶT (SURFACE GLARE) - Chuẩn V118 nhưng đẩy cường độ trắng lên 90% */
+        /* 1. LÓA BỀ MẶT (SURFACE GLARE) ĐÃ ĐƯỢC LÀM MƯỢT VÀ TRẮNG TINH KHIẾT */
+        /* Điểm đón sáng mạnh nhất từ Top-Left lan tỏa xuống thân, không có viền cắt thô */
         .btn-liquid::before {
             content: ''; 
             position: absolute; 
             inset: 0;
-            background: linear-gradient(110deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.15) 20%, transparent 21%);
+            background: linear-gradient(115deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.15) 20%, transparent 35%);
             border-radius: inherit; 
-            z-index: -1; 
+            z-index: 1; /* Phủ lên trên lớp màu */
             pointer-events: none;
         }
 
@@ -512,38 +506,41 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT CYAN (MÔ PHỎNG NÚT "BIITTON" - SÁNG CHÓI, TINH TẾ)    */
+        /* NÚT CYAN (MÔ PHỎNG NÚT "BIITTON" - TỤ QUANG TẠI MỘT ĐIỂM) */
         /* --------------------------------------------------------- */
         .btn-cyan {
-            /* Kính pha màu Cyan trong trẻo */
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(0, 200, 255, 0.15) 40%, rgba(0, 80, 255, 0.3) 100%);
+            /* 2. ĐIỂM TỤ QUANG ĐÁY (FOCAL POINT REFRACTION) */
+            /* Dùng Radial Gradient đặt tâm phát sáng vào góc 85% 90% (Bottom-Right) */
+            background: 
+                radial-gradient(ellipse 90% 90% at 85% 90%, rgba(0, 240, 255, 0.9) 0%, rgba(0, 100, 255, 0.1) 60%, transparent 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(0, 30, 150, 0.2) 100%);
             
             box-shadow: 
-                /* Viền sáng cực gắt ở góc tiếp nhận ánh sáng */
-                inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.95),
-                inset 4px 4px 10px rgba(255, 255, 255, 0.3),
-                /* Vệt màu tụ quang tinh tế (mảnh & rực rỡ) ở Bottom-Right */
-                inset -3px -5px 10px rgba(0, 150, 255, 0.9),
-                inset -1px -2px 4px rgba(0, 255, 255, 0.8),
-                /* Lõi chặn sáng tạo chiều sâu */
-                inset -8px -8px 20px rgba(0, 0, 0, 0.2),
-                /* BÓNG ĐEN VẬT LÝ NẶNG CHỊCH */
-                8px 12px 18px rgba(0, 0, 0, 0.85),
-                /* TỤ QUANG MÀU (CAUSTICS) SÁNG GẮT đúng tâm điểm xô bóng */
-                14px 20px 30px -3px rgba(0, 180, 255, 0.9);
+                /* Lóa cạnh trên trái (Ăn nhập hoàn toàn với nguồn sáng chính) */
+                inset 1.5px 1.5px 2px rgba(255, 255, 255, 1),
+                inset 3px 3px 8px rgba(255, 255, 255, 0.3),
+                /* Bỏ vệt viền đáy vô tri, chỉ giữ bóng đen nội tại để tạo độ dày kính */
+                inset -1px -2px 3px rgba(0, 200, 255, 0.6),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.5),
+                /* 3. BÓNG VẬT LÝ xô lệch 135 độ (Tối sâu) */
+                10px 15px 20px rgba(0, 0, 0, 0.85),
+                /* 4. TÁN SẮC CAUSTICS: Vệt sáng xuyên kính in hằn gắt gao xuống mặt bàn */
+                15px 20px 30px -5px rgba(0, 200, 255, 0.9);
                 
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
         
         .btn-cyan:hover { 
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(0, 220, 255, 0.2) 40%, rgba(0, 100, 255, 0.4) 100%);
+            background: 
+                radial-gradient(ellipse 90% 90% at 85% 90%, rgba(0, 255, 255, 1) 0%, rgba(0, 120, 255, 0.3) 60%, transparent 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(0, 30, 150, 0.2) 100%);
             box-shadow: 
                 inset 2px 2px 4px rgba(255, 255, 255, 1),
                 inset 4px 4px 10px rgba(255, 255, 255, 0.4),
-                inset -3px -5px 10px rgba(0, 180, 255, 1),
-                inset -1px -2px 4px rgba(0, 255, 255, 1),
-                10px 14px 22px rgba(0, 0, 0, 0.9),
-                16px 24px 38px -2px rgba(0, 200, 255, 1);
+                inset -1px -2px 3px rgba(0, 255, 255, 0.8),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.5),
+                12px 18px 25px rgba(0, 0, 0, 0.9),
+                18px 24px 40px -5px rgba(0, 240, 255, 1);
             transform: translateY(-2px);
         }
 
@@ -554,43 +551,46 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT MAGENTA (MÔ PHỎNG NÚT "SECONDARY" TÍM/HỒNG TĂNG CƯỜNG SÁNG) */
+        /* NÚT MAGENTA (MÔ PHỎNG NÚT "SECONDARY" TÍM/HỒNG TĂNG CƯỜNG) */
         /* --------------------------------------------------------- */
         .btn-magenta {
             flex: 1; 
             font-size: 12px;
             
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(180, 0, 255, 0.2) 40%, rgba(255, 0, 100, 0.3) 100%);
+            /* Tụ quang tâm điểm Hồng rực ở góc dưới phải */
+            background: 
+                radial-gradient(ellipse 90% 90% at 85% 90%, rgba(255, 0, 100, 0.95) 0%, rgba(150, 0, 255, 0.2) 60%, transparent 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(50, 0, 100, 0.2) 100%);
             
             box-shadow: 
-                inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.95),
-                inset 4px 4px 10px rgba(255, 255, 255, 0.3),
-                /* Khúc xạ màu tinh tế, không dày cộm */
-                inset -3px -5px 10px rgba(255, 0, 100, 0.9),
-                inset -1px -2px 4px rgba(255, 100, 0, 0.8),
-                inset -8px -8px 20px rgba(0, 0, 0, 0.2),
-                /* Bóng đen vật lý xô mạnh */
-                8px 12px 18px rgba(0, 0, 0, 0.85),
-                /* Điểm sáng Caustics gắt, rõ ràng */
-                14px 20px 30px -3px rgba(220, 0, 255, 0.9);
+                inset 1.5px 1.5px 2px rgba(255, 255, 255, 1),
+                inset 3px 3px 8px rgba(255, 255, 255, 0.3),
+                inset -1px -2px 3px rgba(255, 50, 100, 0.6),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.5),
+                /* Bóng đen sâu thẳm */
+                10px 15px 20px rgba(0, 0, 0, 0.85),
+                /* Caustics đổ gắt, rõ nét không bị nhòe mờ */
+                15px 20px 30px -5px rgba(255, 0, 120, 0.9);
 
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
 
         .btn-magenta:hover { 
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(200, 0, 255, 0.3) 40%, rgba(255, 0, 120, 0.4) 100%);
+            background: 
+                radial-gradient(ellipse 90% 90% at 85% 90%, rgba(255, 50, 150, 1) 0%, rgba(180, 0, 255, 0.3) 60%, transparent 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(50, 0, 100, 0.2) 100%);
             box-shadow: 
                 inset 2px 2px 4px rgba(255, 255, 255, 1),
                 inset 4px 4px 10px rgba(255, 255, 255, 0.4),
-                inset -3px -5px 10px rgba(255, 0, 120, 1),
-                inset -1px -2px 4px rgba(255, 150, 0, 1),
-                10px 14px 22px rgba(0, 0, 0, 0.9),
-                16px 24px 38px -2px rgba(255, 0, 150, 1);
+                inset -1px -2px 3px rgba(255, 100, 150, 0.8),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.5),
+                12px 18px 25px rgba(0, 0, 0, 0.9),
+                18px 24px 40px -5px rgba(255, 50, 150, 1);
             transform: translateY(-2px);
         }
 
         /* ========================================================================= */
-        /* THANH TIẾN TRÌNH LOADER                                                   */
+        /* THANH TIẾN TRÌNH LOADER ĐA SẮC                                            */
         /* ========================================================================= */
         .prog-container { 
             margin-top: 25px; 
@@ -603,8 +603,8 @@
             border-radius: 10px; 
             padding: 2px; 
             position: relative; 
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.8); 
-            border: 1px solid rgba(255,255,255,0.05); 
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.9); 
+            border: 1px solid rgba(255,255,255,0.04); 
         }
 
         body.theme-light .prog-wrap { 
@@ -714,7 +714,7 @@
             
             <div class="brand-header">
                 <h1>NAM ARCH</h1>
-                <span class="tagline">V120 • FINAL MASTERPIECE</span>
+                <span class="tagline">V121 • TRUE OPTICAL GLASS</span>
             </div>
 
             <div class="panel-card">
@@ -735,7 +735,7 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#ff0066;"></span> Tòa Nhà</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#ff0066; box-shadow: 0 0 8px #ff0066;"></span> Tòa Nhà</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')">
@@ -745,17 +745,17 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#ff8800;"></span> Vỉa Hè</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#ff8800; box-shadow: 0 0 8px #ff8800;"></span> Vỉa Hè</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#00ffff;"></span> Sông Hồ</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#00ffff; box-shadow: 0 0 8px #00ffff;"></span> Sông Hồ</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#00ff88;"></span> Cây Xanh</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#00ff88; box-shadow: 0 0 8px #00ff88;"></span> Cây Xanh</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')">
@@ -1391,7 +1391,7 @@
 
         const a = document.createElement('a'); 
         a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); 
-        a.download = "NAM_ARCH_3D_FINAL_V120.dae"; 
+        a.download = "NAM_ARCH_3D_V121.dae"; 
         a.click(); 
         
         updateProgress(100, "XUẤT MÔ HÌNH 3D THÀNH CÔNG!", false);
