@@ -3,64 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH V118 • TRUE LIQUID GLASS</title>
+    <title>NAM ARCH V118 • TRUE LIQUID GLASS (CAD/SU EXPORT)</title>
     <style>
-        /* 1. KHUNG NỀN VẬN HÀNH */
+        /* ========================================= */
+        /* 1. GIAO DIỆN NỀN VÀ BỐ CỤC APP V118       */
+        /* ========================================= */
         body {
             margin: 0; padding: 0; min-height: 100vh;
-            background-color: #0d1117;
-            background-image: url('https://w0.peakpx.com/wallpaper/594/545/HD-wallpaper-dark-map-black-map-minimalism-map.jpg'); /* Giả lập nền bản đồ */
+            background-color: #0b0f1a;
+            /* Giả lập nền bản đồ kiến trúc tối */
+            background-image: url('https://w0.peakpx.com/wallpaper/594/545/HD-wallpaper-dark-map-black-map-minimalism-map.jpg');
             background-size: cover; background-position: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex; justify-content: center; align-items: center;
         }
 
-        .app-container {
+        .app-panel {
             width: 380px; height: 820px;
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(16, 22, 36, 0.92);
             border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
             display: flex; flex-direction: column; padding: 30px; box-sizing: border-box;
-            position: relative; overflow: hidden;
         }
 
-        /* 2. HEADER */
+        /* HEADER */
         .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: #fff; font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px; }
-        .header h2 { color: #00e5ff; font-size: 12px; font-weight: 800; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+        .header h1 { color: #fff; font-size: 26px; font-weight: 900; margin: 0; letter-spacing: 1.5px; }
+        .header h2 { color: #00e5ff; font-size: 11px; font-weight: 800; margin-top: 5px; letter-spacing: 2px; text-transform: uppercase; }
 
-        /* 3. MỨC ĐỘ THU PHÓNG (SLIDER) */
-        .section { background: rgba(0, 0, 0, 0.3); border-radius: 25px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .section-title span { color: #fff; font-size: 14px; font-weight: bold; }
-        .section-title .val { color: #00e5ff; font-family: monospace; font-size: 18px; }
-        
-        .slider-bar { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; position: relative; }
+        /* SECTION CHUNG */
+        .ui-section { background: rgba(0, 0, 0, 0.3); border-radius: 25px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #fff; font-size: 14px; font-weight: bold; }
+
+        /* THANH TRƯỢT THU PHÓNG */
+        .slider-container { position: relative; height: 30px; display: flex; align-items: center; }
+        .slider-track { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; position: relative; }
         .slider-fill { width: 40%; height: 100%; background: #00e5ff; border-radius: 3px; box-shadow: 0 0 15px #00e5ff; }
-        .slider-knob { position: absolute; left: 40%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #fff; border-radius: 50%; border: 4px solid #00e5ff; box-shadow: 0 0 10px #00e5ff; cursor: pointer; }
+        .slider-knob { position: absolute; left: 40%; width: 22px; height: 22px; background: #fff; border: 4px solid #00e5ff; border-radius: 50%; box-shadow: 0 0 15px #00e5ff; transform: translateX(-50%); }
 
-        /* 4. QUẢN LÝ LỚP (LIST) */
-        .layer-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        /* QUẢN LÝ LỚP */
+        .layer-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .layer-info { display: flex; align-items: center; gap: 12px; color: #cbd5e1; font-size: 14px; font-weight: 600; }
-        .color-dot { width: 12px; height: 12px; border-radius: 4px; box-shadow: 0 0 10px currentColor; }
-        
-        .switch { width: 46px; height: 24px; background: #00e5ff; border-radius: 12px; position: relative; cursor: pointer; box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
-        .switch::after { content: ''; position: absolute; right: 2px; top: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .dot { width: 12px; height: 12px; border-radius: 4px; }
+        .switch { width: 44px; height: 24px; background: #00e5ff; border-radius: 12px; position: relative; }
+        .switch::after { content: ''; position: absolute; right: 2px; top: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; }
 
-        /* 5. KHU VỰC NÚT 3D (THE CORE) */
-        .buttons-group { display: flex; flex-direction: column; gap: 15px; margin-top: auto; }
-        .canvas-btn { position: relative; width: 100%; height: 65px; cursor: pointer; border-radius: 30px; overflow: hidden; }
-        .canvas-btn.small { height: 60px; }
+        /* ========================================= */
+        /* 2. CẤU TRÚC 4 NÚT BẤM CHẠY THUẬT TOÁN 3D  */
+        /* ========================================= */
+        .glass-btn-3d {
+            position: relative; width: 100%; height: 65px;
+            cursor: pointer; margin-bottom: 15px;
+        }
         .btn-row { display: flex; gap: 15px; }
-        
-        .btn-label {
+        .glass-btn-3d.small { height: 60px; margin-bottom: 0; }
+
+        .btn-text {
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 14px; font-weight: 800; letter-spacing: 1.5px; z-index: 10;
-            pointer-events: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            color: #fff; font-size: 13px; font-weight: 800; letter-spacing: 1px;
+            pointer-events: none; z-index: 10; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            text-transform: uppercase;
         }
 
-        .footer { text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; font-weight: bold; letter-spacing: 4px; margin-top: 20px; }
+        .footer { text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; font-weight: bold; letter-spacing: 3px; margin-top: 20px; }
     </style>
 
     <script type="importmap">
@@ -69,44 +75,52 @@
 </head>
 <body>
 
-    <div class="app-container">
+    <div class="app-panel">
         <div class="header">
             <h1>NAM ARCH</h1>
             <h2>V118 • TRUE LIQUID GLASS</h2>
         </div>
 
-        <div class="section">
-            <div class="section-title"><span>Mức Độ Thu Phóng</span><span class="val">16.0</span></div>
-            <div class="slider-bar"><div class="slider-fill"></div><div class="slider-knob"></div></div>
+        <div class="ui-section">
+            <div class="section-title"><span>Mức Độ Thu Phóng</span><span style="color:#00e5ff">16.0</span></div>
+            <div class="slider-container"><div class="slider-track"><div class="slider-fill"></div><div class="slider-knob"></div></div></div>
         </div>
 
-        <div class="section">
+        <div class="ui-section">
             <div class="section-title"><span>Quản Lý Lớp</span><span style="color:#00e5ff; font-size:10px;">● V82 CORE</span></div>
             
             <div class="layer-item">
-                <div class="layer-info"><div class="color-dot" style="color:#ff0055; background:#ff0055;"></div> Tòa Nhà</div>
+                <div class="layer-info"><div class="dot" style="background:#ff0055; box-shadow: 0 0 10px #ff0055;"></div> Tòa Nhà</div>
                 <div class="switch"></div>
             </div>
             <div class="layer-item">
-                <div class="layer-info"><div class="color-dot" style="color:#64748b; background:#64748b;"></div> Lòng Đường</div>
+                <div class="layer-info"><div class="dot" style="background:#8892b0;"></div> Lòng Đường</div>
                 <div class="switch"></div>
             </div>
             <div class="layer-item">
-                <div class="layer-info"><div class="color-dot" style="color:#00e5ff; background:#00e5ff;"></div> Sông Hồ</div>
+                <div class="layer-info"><div class="dot" style="background:#00e5ff; box-shadow: 0 0 10px #00e5ff;"></div> Sông Hồ</div>
                 <div class="switch"></div>
             </div>
             <div class="layer-item">
-                <div class="layer-info"><div class="color-dot" style="color:#10b981; background:#10b981;"></div> Cây Xanh</div>
+                <div class="layer-info"><div class="dot" style="background:#00ff88; box-shadow: 0 0 10px #00ff88;"></div> Cây Xanh</div>
                 <div class="switch"></div>
             </div>
         </div>
 
-        <div class="buttons-group">
-            <div class="canvas-btn" id="btn1"><div class="btn-label">⛶ QUÉT ĐỊA HÌNH V82</div></div>
-            <div class="canvas-btn" id="btn2"><div class="btn-label">LÀM MỚI</div></div>
-            <div class="btn-row">
-                <div class="canvas-btn small" id="btn3"><div class="btn-label">2D CAD</div></div>
-                <div class="canvas-btn small" id="btn4"><div class="btn-label">3D DAE</div></div>
+        <div class="glass-btn-3d" id="btn-scan">
+            <div class="btn-text">⛶ QUÉT ĐỊA HÌNH V82</div>
+        </div>
+
+        <div class="glass-btn-3d" id="btn-refresh">
+            <div class="btn-text">LÀM MỚI</div>
+        </div>
+
+        <div class="btn-row">
+            <div class="glass-btn-3d small" id="btn-cad">
+                <div class="btn-text">2D CAD</div>
+            </div>
+            <div class="glass-btn-3d small" id="btn-dae">
+                <div class="btn-text">3D DAE</div>
             </div>
         </div>
 
@@ -117,9 +131,11 @@
         import * as THREE from 'three';
         import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-        function createButton3D(id, hexColor) {
-            const container = document.getElementById(id);
+        // THUẬT TOÁN ĐÚC NÚT KÍNH 3D (Dựa trên bản test thành công)
+        function init3DButton(containerId, glowColor) {
+            const container = document.getElementById(containerId);
             const w = container.clientWidth, h = container.clientHeight;
+
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(30, w/h, 0.1, 100);
             camera.position.z = 6;
@@ -129,47 +145,52 @@
             renderer.setPixelRatio(window.devicePixelRatio);
             container.appendChild(renderer.domElement);
 
+            // Ánh sáng tạo độ bóng gương
             const light = new THREE.DirectionalLight(0xffffff, 5);
-            light.position.set(2, 5, 5);
+            light.position.set(2, 4, 5);
             scene.add(light);
-            scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+            scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 
-            // Hiệu ứng Gradient lỏng bên trong nút
+            // Lõi màu Gradient nằm sau kính (Bí quyết tạo độ trong trẻo)
             const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 256;
+            canvas.width = 512; canvas.height = 128;
             const ctx = canvas.getContext('2d');
-            const grd = ctx.createLinearGradient(0, 0, 512, 0);
-            grd.addColorStop(0, hexColor);
-            grd.addColorStop(0.6, hexColor);
+            const grd = ctx.createLinearGradient(0,0,512,0);
+            grd.addColorStop(0, glowColor);
+            grd.addColorStop(0.5, glowColor);
             grd.addColorStop(1, '#ffffff');
-            ctx.fillStyle = grd; ctx.fillRect(0,0,512,256);
+            ctx.fillStyle = grd; ctx.fillRect(0,0,512,128);
             const tex = new THREE.CanvasTexture(canvas);
 
+            // Vật liệu Thủy tinh lỏng (Liquid Glass)
             const glassMat = new THREE.MeshPhysicalMaterial({
-                color: 0xffffff, transmission: 1.0, ior: 1.5, thickness: 2.0,
-                roughness: 0.02, metalness: 0, map: tex, clearcoat: 1, clearcoatRoughness: 0.05
+                color: 0xffffff, transmission: 1, ior: 1.5, 
+                thickness: 1.8, roughness: 0.02, metalness: 0,
+                clearcoat: 1, map: tex
             });
 
-            const geo = new RoundedBoxGeometry(5.2, 1.8, 0.8, 10, 0.8);
+            const geo = new RoundedBoxGeometry(5.2, 1.8, 0.6, 10, 0.8);
             const mesh = new THREE.Mesh(geo, glassMat);
             scene.add(mesh);
 
             function animate() {
                 requestAnimationFrame(animate);
-                mesh.rotation.y = Math.sin(Date.now() * 0.001) * 0.1;
+                // Hiệu ứng thở (xoay nhẹ) để thấy độ bóng
+                mesh.rotation.x = Math.sin(Date.now() * 0.001) * 0.05;
                 renderer.render(scene, camera);
             }
             animate();
 
-            container.addEventListener('mousedown', () => mesh.scale.set(0.94, 0.94, 0.94));
+            // Tương tác vật lý khi nhấn
+            container.addEventListener('mousedown', () => mesh.scale.set(0.95, 0.95, 0.95));
             container.addEventListener('mouseup', () => mesh.scale.set(1, 1, 1));
         }
 
-        // Khởi tạo 4 nút với đúng tông màu app
-        createButton3D('btn1', '#00b4ff');
-        createButton3D('btn2', '#e31b64');
-        createButton3D('btn3', '#7c3aed');
-        createButton3D('btn4', '#db2777');
+        // Kích hoạt 4 nút điều hành
+        init3DButton('btn-scan', '#00b4ff');    // Cyan
+        init3DButton('btn-refresh', '#e31b64'); // Magenta
+        init3DButton('btn-cad', '#e31b64');     // Magenta
+        init3DButton('btn-dae', '#e31b64');     // Magenta
     </script>
 </body>
 </html>
