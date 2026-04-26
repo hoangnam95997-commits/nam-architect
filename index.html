@@ -13,205 +13,206 @@
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
     
     <style>
-        /* BỘ MÀU DARK NEUMORPHISM & SUNSET GRADIENT (CẬP NHẬT MỚI) */
+        /* BỘ MÀU SUNSET GRADIENT VÀ NEUMORPHIC CLEAN (CẬP NHẬT MỚI) */
         :root { 
-            --bg-main: #2b2f38;           
-            --shadow-light: #3a3f4b;      
-            --shadow-dark: #1c1f25;       
-            /* Gradient mới theo hình ảnh cung cấp */
+            --bg-main: #2b2f38;           /* Xám tối chủ đạo - Giữ nguyên tone màu chính */
             --gradient-brand: linear-gradient(135deg, #FFB608 0%, #FF2553 50%, #00103C 100%);
             --text-primary: #ffffff;
             --text-secondary: #8b95a5;
             --success: #2ed573;
             --radius-lg: 20px;
             --radius-md: 12px;
-
-            /* HIỆU ỨNG ĐÈN ĐÊM CHO TEXT (Vàng Ấm) */
-            --night-text-color: #fcebb6; 
-            --night-text-glow: 0 0 8px rgba(252, 235, 182, 0.5);
+            --shadow-day: 0 4px 6px rgba(0,0,0,0.1); /* Bóng nhẹ, sạch sẽ cho ban ngày */
+            --night-grid: rgba(128,128,128,0.15); /* Lưới màu xám cho ban đêm */
+            --day-grid: rgba(0,0,0,0.15); /* Lưới màu tối cho ban ngày */
         }
 
-        /* Tắt đèn khi sang chế độ Sáng */
-        body.light-theme {
-            --night-text-color: var(--text-secondary);
-            --night-text-glow: none;
+        /* TÁC ĐỘNG TOÀN CỤC CỦA THEME SÁNG/TỐI (SỬ DỤNG LỰC ĐÀN HỒI) */
+        body { 
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            background: var(--bg-main); 
+            color: var(--text-primary); 
+        }
+        
+        body.light-theme { 
+            --bg-main: #f0f2f5;           /* Nền xám nhạt sạch sẽ cho ban ngày */
+            --text-primary: #1c1e21;      /* Văn bản màu tối cho ban ngày */
+            --text-secondary: #606770;    
         }
 
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); overflow: hidden; }
-        #map { height: 100vh; width: 100vw; background: #1e2026; }
+        body { margin: 0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; background: #1e2026; transition: all 0.5s; }
         
-        /* THANH TÌM KIẾM NEUMORPHISM */
-        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--bg-main); border-radius: var(--radius-md); overflow: hidden; box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light); transition: all 0.3s ease; }
-        .search-box input { background: transparent; border: none; padding: 14px 18px; width: 280px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
-        .search-box input::placeholder { color: var(--text-secondary); }
-        .search-box button { background: transparent; border: none; border-left: 2px solid rgba(0,0,0,0.1); padding: 0 20px; cursor: pointer; color: var(--text-primary); font-weight: 600; font-size: 14px; transition: 0.2s; box-shadow: inset 2px 0 5px rgba(0,0,0,0.1); }
-        .search-box button:hover { color: #FFB608; } /* Đổi màu hover theo tone vàng mới */
-        .search-box button:active { box-shadow: inset 4px 0 8px rgba(0,0,0,0.2); }
+        /* THANH TÌM KIẾM NEUMORPHISM SẠCH SẼ (BỎ BÓNG CŨ) */
+        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; border-radius: var(--radius-md); overflow: hidden; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .light-theme .search-box { background: #ffffff; box-shadow: var(--shadow-day); } /* Turn white, no old neumorphic shadows */
+        
+        .search-box input { background: transparent; border: none; padding: 14px 18px; width: 280px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: all 0.5s; color: var(--text-primary); }
+        .search-box input::placeholder { color: var(--text-secondary); transition: all 0.5s; }
+        
+        .search-box button { background: transparent; border: none; border-left: 2px solid rgba(0,0,0,0.05); padding: 0 20px; cursor: pointer; color: var(--text-primary); font-weight: 600; font-size: 14px; transition: all 0.3s; }
+        .search-box button:hover { color: #FFB608; } /* Day hover: Gold */
+        
+        /* CẬP NHẬT TRẠNG THÁI ACTIVE CHO NÚT TÌM KIẾM TRONG THEME SÁNG */
+        .light-theme .search-box button:active { background: #e8eaed; }
 
-        /* BẢNG ĐIỀU KHIỂN CHÍNH (NỔI KHỐI 3D) */
+        /* BẢNG ĐIỀU KHIỂN CHÍNH (NỔI KHỐI 3D SẠCH SẼ) */
         .sidebar-container { position: absolute; top: 24px; left: 24px; z-index: 1000; display: flex; gap: 16px; align-items: flex-start; }
-        .sidebar { width: 340px; background: var(--bg-main); border-radius: var(--radius-lg); padding: 24px; box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light); max-height: calc(100vh - 48px); overflow-y: auto; }
+        .sidebar { width: 340px; background: rgba(15,23,42,0.9); border-radius: var(--radius-lg); padding: 24px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: calc(100vh - 48px); overflow-y: auto; }
         .sidebar::-webkit-scrollbar { width: 0px; } 
         .sidebar.hidden { transform: translateX(-120%); opacity: 0; pointer-events: none; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; }
 
-        .toggle-btn { background: var(--bg-main); color: var(--night-text-color); text-shadow: var(--night-text-glow); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: 0.3s; border: none; margin-top: 8px; font-size: 14px;}
+        .light-theme .sidebar { background: #ffffff; color: var(--text-primary); box-shadow: var(--shadow-day); } /* Turn white */
+
+        .toggle-btn { background: var(--bg-main); color: var(--night-text-color); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: none; margin-top: 8px; font-size: 14px; text-shadow: var(--night-text-glow); }
+        .light-theme .toggle-btn { background: #ffffff; color: var(--text-primary); box-shadow: none; text-shadow: none; border: 1px solid rgba(0,0,0,0.05); } /* Day button styling */
+        
         .toggle-btn:hover { color: var(--text-primary); text-shadow: none; }
         .toggle-btn:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
+        .light-theme .toggle-btn:active { background: #e8eaed; box-shadow: none; } /* Day button active */
 
-        /* TYPOGRAPHY */
+        /* TYPOGRAPHY (CẬP NHẬT HIỆU ỨNG TEXT VÀ THEME MỚI) */
         .brand-header { margin-bottom: 24px; text-align: center; }
-        h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; color: #fff; }
-        h1 span { color: transparent; background: var(--gradient-brand); -webkit-background-clip: text; }
-        .tagline { font-size: 10px; font-weight: 600; color: var(--night-text-color); text-shadow: var(--night-text-glow); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-top: 6px; transition: 0.3s; }
+        h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; transition: all 0.3s; }
+        
+        /* Hiệu ứng Glow ban đêm */
+        .brand-header h1, .val-hl, .btn-main, .theme-btn.night-btn { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.4); } 
+        h1 span { color: transparent; background: var(--gradient-brand); -webkit-background-clip: text; text-shadow: none; }
+        
+        .light-theme .brand-header h1, .light-theme h1 span { text-shadow: none; }
 
-        /* KHỐI CHỨA CÀI ĐẶT (LÕM XUỐNG) */
-        .panel-card { background: var(--bg-main); border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px; box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); }
+        .tagline { font-size: 10px; font-weight: 600; color: var(--night-text-color); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-top: 6px; transition: all 0.3s; text-shadow: var(--night-text-glow); }
+        .light-theme .tagline { color: var(--text-secondary); text-shadow: none; }
+
+        /* KHỐI CHỨA CÀI ĐẶT (LÕM XUỐNG SẠCH SẼ) */
+        .panel-card { background: var(--bg-main); border-radius: var(--radius-md); padding: 16px; margin-bottom: 18px; box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .light-theme .panel-card { background: #f0f2f5; box-shadow: none; } /* Turn light gray, no old neumorphic shadows */
+
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .panel-title { font-size: 11px; font-weight: 700; color: var(--night-text-color); text-shadow: var(--night-text-glow); text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .panel-title { font-size: 11px; font-weight: 700; color: var(--night-text-color); text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; text-shadow: var(--night-text-glow); }
+        .light-theme .panel-title { color: var(--text-secondary); text-shadow: none; }
 
-        /* SLIDER NEUMORPHISM (Cập nhật Glow theo tone đỏ hồng) */
-        .val-hl { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: bold; }
-        .zoom-slider-container { background: var(--bg-main); border-radius: 20px; padding: 4px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); margin-top: 8px; display: flex; align-items: center; }
+        /* SLIDER NEUMORPHISM (Bỏ bóng nặng nề) */
+        .val-hl { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: bold; text-shadow: none; }
+        .zoom-slider-container { background: var(--bg-main); border-radius: 20px; padding: 4px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); margin-top: 8px; display: flex; align-items: center; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .light-theme .zoom-slider-container { background: #ffffff; box-shadow: none; } /* Day: light gray background */
+
         .zoom-slider { -webkit-appearance: none; width: 100%; height: 28px; background: transparent; outline: none; margin: 0; padding: 0;}
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light), 0 0 10px rgba(255, 37, 83, 0.4); transition: 0.2s; position: relative; z-index: 2; margin-top: 2px; }
-        .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 37, 83, 0.6); }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; transition: all 0.2s; position: relative; z-index: 2; margin-top: 2px; }
+        
+        .light-theme .zoom-slider::-webkit-slider-thumb { background: #74b9ff; } /* Day color */
+        
         .zoom-slider::-webkit-slider-runnable-track { width: 100%; height: 28px; background: transparent; border-radius: 20px; position: relative; }
-        .zoom-slider::-moz-range-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light), 0 0 10px rgba(255, 37, 83, 0.4); transition: 0.2s; z-index: 2;}
+        .zoom-slider::-moz-range-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--gradient-brand); cursor: pointer; transition: all 0.2s; z-index: 2;}
+        .light-theme .zoom-slider::-moz-range-thumb { background: #74b9ff; } /* Day color */
         .zoom-slider::-moz-range-track { width: 100%; height: 28px; background: transparent; border-radius: 20px; }
 
-        /* TOGGLE SWITCH CÁC LAYER (Cập nhật Glow theo tone vàng) */
+        /* TOGGLE SWITCH CỰC NGẦU CỦA DANH SÁCH PHÂN LỚP (Cập nhật màu ban ngày) */
         .layer-list { display: flex; flex-direction: column; gap: 6px; }
         .layer-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; background: transparent; border: none; cursor: pointer; }
-        .layer-left { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--text-primary);}
+        .layer-left { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; transition: all 0.3s; color: var(--text-primary);}
+        
+        /* Hiệu ứng Glow text ban đêm cho Layer labels */
+        .layer-item Label .layer-left { text-shadow: var(--night-text-glow); color: var(--night-text-color); }
+        .light-theme .layer-item Label .layer-left { text-shadow: none; color: var(--text-primary); }
+
         .color-dot { width: 10px; height: 10px; border-radius: 2px; }
         .layer-item input[type="checkbox"] { display: none; }
-        .toggle-switch { width: 44px; height: 24px; background: var(--bg-main); border-radius: 20px; position: relative; transition: 0.3s; box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
-        .toggle-switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; background: var(--text-secondary); border-radius: 50%; transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light); }
-        .layer-item input[type="checkbox"]:checked ~ .toggle-switch::after { transform: translateX(20px); background: var(--gradient-brand); box-shadow: 0 0 8px rgba(255, 182, 8, 0.6); }
-
-        /* CÔNG TẮC DAY/NIGHT */
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .dn-switch {
-            position: relative;
-            display: inline-block;
-            width: 72px;
-            height: 34px;
-        }
-        .dn-switch input { opacity: 0; width: 0; height: 0; }
         
-        .dn-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #1a1c23; 
-            transition: .5s ease;
-            border-radius: 34px;
-            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
-            overflow: hidden;
-        }
+        /* Rãnh gạt lõm SẠCH SẼ (BỎ BÓNG NẶNG NỀ) */
+        .toggle-switch { width: 44px; height: 24px; background: var(--bg-main); border-radius: 20px; position: relative; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .light-theme .toggle-switch { background: #e0e0e0; } /* Turn lighter gray */
         
-        .dn-slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: #eccc68; 
-            border-radius: 50%;
-            transition: .5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            box-shadow: inset -4px -2px 6px rgba(0,0,0,0.3), 0 0 10px rgba(236, 204, 104, 0.5);
-            z-index: 2;
-        }
-
-        .dn-slider:after {
-            content: '🌙';
-            position: absolute;
-            right: 10px;
-            top: 6px;
-            font-size: 14px;
-            transition: 0.5s;
-            opacity: 0.6;
-        }
+        /* Cục tròn nổi SẠCH SẼ (BỎ BÓNG NẶNG NỀ) */
+        .toggle-switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; background: var(--text-secondary); border-radius: 50%; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
         
-        .dn-switch input:checked + .dn-slider {
-            background-color: #74b9ff; 
-            box-shadow: inset 4px 4px 8px rgba(0,0,0,0.2), inset -4px -4px 8px rgba(255,255,255,0.2);
-        }
+        /* Khi bật */
+        .layer-item input[type="checkbox"]:checked ~ .toggle-switch { background: #f1f3f4; }
+        .layer-item input[type="checkbox"]:checked ~ .toggle-switch::after { transform: translateX(20px); background: #34A853; } /* Chuyển sang xanh cho sạch */
         
-        .dn-switch input:checked + .dn-slider:before {
-            transform: translateX(38px);
-            background-color: #ffffff; 
-            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.1), 0 0 15px #fff;
-        }
+        /* Ban ngày màu bật */
+        .light-theme .layer-item input[type="checkbox"]:checked ~ .toggle-switch { background: #d7f4e0; }
+        .light-theme .layer-item input[type="checkbox"]:checked ~ .toggle-switch::after { background: #34A853; }
 
-        .dn-switch input:checked + .dn-slider:after {
-            content: '☀️';
-            left: 10px;
-            right: auto;
-            opacity: 0.9;
-        }
-
-        .theme-label-text {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--night-text-color);
-            text-shadow: var(--night-text-glow);
-            transition: 0.3s;
-            min-width: 90px;
-        }
-        
-        body.light-theme .theme-label-text {
-            color: #74b9ff;
-            text-shadow: none;
-        }
-
-        /* NÚT BẤM NEUMORPHISM (Cập nhật Glow) */
-        .btn-main { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); background: var(--gradient-brand); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(255, 37, 83, 0.3); margin-bottom: 16px; }
+        /* NÚT BẤM NEUMORPHISM SẠCH SẼ (BỎ BÓNG NẶNG NỀ CŨ) */
+        .btn-main { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); background: var(--gradient-brand); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; }
         .btn-main:hover { filter: brightness(1.1); }
-        .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 5px rgba(255, 37, 83, 0.3); }
+        .btn-main:active { transform: translateY(3px); filter: brightness(1.0); }
         
-        .btn-outline { padding: 12px; background: var(--bg-main); color: var(--night-text-color); text-shadow: var(--night-text-glow); border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); }
+        /* Nút xuất day theme styling */
+        .light-theme .btn-main { background: #74b9ff; color: #ffffff; text-shadow: none; box-shadow: var(--shadow-day); }
+        .light-theme .btn-main:hover { filter: brightness(1.1); }
+        .light-theme .btn-main:active { background: #74b9ff; filter: brightness(1.0); }
+
+        .btn-outline { padding: 12px; background: var(--bg-main); color: var(--night-text-color); border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); text-shadow: var(--night-text-glow); }
+        .light-theme .btn-outline { background: #ffffff; color: var(--text-primary); box-shadow: none; text-shadow: none; border: 1px solid rgba(0,0,0,0.05); } /* Day outline buttons */
+        
         .btn-outline:hover { color: var(--text-primary); text-shadow: none; }
         .btn-outline:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
+        .light-theme .btn-outline:active { background: #e8eaed; box-shadow: none; } /* Day active */
         
         .btn-export-2d { flex: 1; }
-        
-        /* Cập nhật màu nút 3D PRO theo màu đỏ hồng mới */
-        .btn-export-3d { flex: 1; color: #FF2553 !important; text-shadow: 0 0 8px rgba(255, 37, 83, 0.4) !important; }
-        body.light-theme .btn-export-3d { text-shadow: none !important; }
+        .btn-export-3d { flex: 1; color: #FF2553 !important; } /* Cập nhật tone đỏ hồng mới */
 
-        /* TIẾN TRÌNH LÕM SÂU (Cập nhật Glow) */
+        /* TIẾN TRÌNH LÕM SÂU SẠCH SẼ (BỎ BÓNG NẶNG NỀ) */
         .prog-container { margin-top: 16px; }
-        .prog-wrap { height: 8px; background: var(--bg-main); border-radius: 4px; overflow: hidden; position: relative; box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light); }
-        #progress { width: 0%; height: 100%; background: var(--gradient-brand); transition: width 0.3s ease; box-shadow: 0 0 10px rgba(255, 37, 83, 0.5); }
-        #stt { font-size: 11px; text-align: center; color: var(--night-text-color); text-shadow: var(--night-text-glow); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 10px; line-height: 1.4; transition: 0.3s;}
+        .prog-wrap { height: 8px; background: var(--bg-main); border-radius: 4px; overflow: hidden; position: relative; box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .light-theme .prog-wrap { background: #e0e0e0; box-shadow: none; } /* Day lighter gray progress track */
 
-        /* HUD ĐÁY MÀN HÌNH NỔI KHỐI */
-        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--bg-main); border-radius: 30px; padding: 10px 24px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--night-text-color); text-shadow: var(--night-text-glow); box-shadow: 6px 6px 15px var(--shadow-dark), -6px -6px 15px var(--shadow-light); transition: 0.3s; }
+        #progress { width: 0%; height: 100%; background: var(--gradient-brand); transition: width 0.3s ease; }
+        .light-theme #progress { background: #74b9ff; } /* Day color progress bar */
+
+        #stt { font-size: 11px; text-align: center; color: var(--night-text-color); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 10px; line-height: 1.4; transition: all 0.3s; text-shadow: var(--night-text-glow);}
+        .light-theme #stt { color: var(--text-secondary); text-shadow: none; }
+
+        /* HUD ĐÁY MÀN HÌNH NỔI KHỐI SẠCH SẼ (BỎ BÓNG NẶNG NỀ) */
+        .hud-bottom { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 999; background: rgba(15,23,42,0.9); border-radius: 30px; padding: 10px 24px; display: flex; gap: 32px; font-family: 'JetBrains Mono', monospace; font-size: 12px; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: var(--night-text-color); text-shadow: var(--night-text-glow); }
+        .light-theme .hud-bottom { background: #ffffff; color: var(--text-primary); text-shadow: none; box-shadow: var(--shadow-day); } /* Turn white, day theme labels become dark */
+        
         .hud-item { display: flex; align-items: center; gap: 6px; }
-        .hud-val { color: #fff; font-weight: 600; text-shadow: none; }
+        
+        /* CẬP NHẬT MÀU HUD LABEL CHO BAN NGÀY */
+        .light-theme .hud-item { color: var(--text-primary); text-shadow: none; }
+        .hud-val { color: #fff; font-weight: 600; text-shadow: none; transition: all 0.5s; }
+        
+        /* CẬP NHẬT MÀU HUD VALUES CHO BAN NGÀY */
+        .light-theme .hud-val { color: #1c1e21; text-shadow: none; } 
         
         .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; z-index: 999; pointer-events: none; opacity: 0.6; }
-        .crosshair::before { content: ''; position: absolute; top: 11px; left: 0; width: 24px; height: 2px; background: #fff; border-radius: 2px;}
-        .crosshair::after { content: ''; position: absolute; top: 0; left: 11px; width: 2px; height: 24px; background: #fff; border-radius: 2px;}
+        .crosshair::before { content: ''; position: absolute; top: 11px; left: 0; width: 24px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.5s; }
+        .light-theme .crosshair::before { background: #000; } /* Turn black */
+        .crosshair::after { content: ''; position: absolute; top: 0; left: 11px; width: 2px; height: 24px; background: #fff; border-radius: 2px; transition: all 0.5s; }
+        .light-theme .crosshair::after { background: #000; } /* Turn black */
         .leaflet-interactive { pointer-events: none; }
         
-        .core-badge { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: var(--night-text-color); text-shadow: var(--night-text-glow); transition: 0.3s; }
+        .core-badge { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: var(--night-text-color); text-shadow: var(--night-text-glow); transition: all 0.3s; }
         .core-badge.online { color: var(--success); text-shadow: 0 0 8px rgba(46, 213, 115, 0.5); }
+        .light-theme .core-badge.online { color: #34A853; text-shadow: none; } /* Day color success */
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
         .core-badge.online .pulse-dot { box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+        .light-theme .core-badge.online .pulse-dot { background: #34A853; box-shadow: 0 0 8px #34A853; } /* Day success pulse color */
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(0.95); opacity: 1; } }
+
+        /* CẬP NHẬT GRID COLOR CHO LEAFLET */
+        .light-theme .leaflet-grid-tile canvas { transition: all 0.5s; stroke: var(--day-grid); }
+        .leaflet-grid-tile canvas { transition: all 0.5s; stroke: var(--night-grid); }
+        
+        /* THAY THẾ CÔNG TẮC BẰNG HAI NÚT THEME MỚI */
+        .theme-buttons-container { display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+        .light-theme .theme-buttons-container { border-color: rgba(0,0,0,0.05); }
+        
+        .theme-btn { flex: 1; padding: 12px; background: var(--bg-main); color: var(--text-secondary); border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .theme-btn:active { transform: translateY(3px); }
+        .theme-btn.day-btn { color: #fcc603; }
+        .theme-btn.night-btn { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.4); }
+        
+        /* Hiển thị theme hiện tại */
+        .light-theme .theme-btn.day-btn { background: #74b9ff; color: #ffffff; text-shadow: none; }
+        .theme-btn.night-btn.active { background: #00103C; color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,0.4); } /* Night theme active */
+        
+        /* Đảm bảo active Night button không bị text glow day theme đè */
+        .theme-btn.night-btn.active .layer-left { text-shadow: none !important; } 
     </style>
 </head>
 <body>
@@ -278,12 +279,9 @@
                 </label>
             </div>
             
-            <div class="theme-switch-wrapper">
-                <span class="theme-label-text" id="themeStatusText">Chế độ Tối</span>
-                <label class="dn-switch" title="Chuyển đổi giao diện Bản đồ">
-                    <input type="checkbox" id="mapThemeToggle" onchange="toggleMapThemeSwitch(this.checked)">
-                    <span class="dn-slider"></span>
-                </label>
+            <div class="theme-buttons-container">
+                <button id="dayThemeBtn" class="theme-btn day-btn" onclick="toggleGlobalTheme('day')">☀️ Day Theme</button>
+                <button id="nightThemeBtn" class="theme-btn night-btn active" onclick="toggleGlobalTheme('night')">🌙 Night Theme</button>
             </div>
             
         </div>
@@ -346,20 +344,33 @@
     L.GridLayer.Graticule = L.GridLayer.extend({
         createTile: function () {
             var tile = document.createElement('canvas'); tile.width = tile.height = 256;
-            var ctx = tile.getContext('2d'); ctx.strokeStyle = 'rgba(128,128,128,0.15)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            var ctx = tile.getContext('2d'); ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+            
+            // Thiết lập màu lưới ban đầu
+            ctx.strokeStyle = var('--night-grid');
+            
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(256, 0); ctx.moveTo(0, 0); ctx.lineTo(0, 256); ctx.stroke(); return tile;
         }
     });
     new L.GridLayer.Graticule({maxZoom: 100}).addTo(map);
 
-    let currentMapTheme = 'dark';
-    function toggleMapThemeSwitch(isLight) {
-        currentMapTheme = isLight ? 'light' : 'dark';
-        const statusText = document.getElementById('themeStatusText');
+    let isLightMap = false;
+    
+    /* CHỨC NĂNG CHUYỂN ĐỔI THEME TOÀN CỤC MỚI (TÍCH HỢP UI VÀ MAP TILE) */
+    function toggleGlobalTheme(theme) {
+        const body = document.body;
+        const dayBtn = document.getElementById('dayThemeBtn');
+        const nightBtn = document.getElementById('nightThemeBtn');
+        const mapTileControl = document.querySelector('.leaflet-grid-tile canvas');
         
-        if(isLight) {
-            document.body.classList.add('light-theme');
+        if (theme === 'day') {
+            body.classList.add('light-theme');
+            dayBtn.classList.add('active');
+            nightBtn.classList.remove('active');
+            
+            // Cập nhật map tiles và line styles
             map.removeLayer(darkT); lightT.addTo(map);
+            isLightMap = true;
             document.getElementById('dot-nha').style.background = '#dc2626';
             document.getElementById('dot-duong').style.background = '#1e293b';
             document.getElementById('dot-viahe').style.background = '#ea580c';
@@ -367,10 +378,17 @@
             document.getElementById('dot-cay').style.background = '#16a34a';
             document.getElementById('dot-dat').style.background = '#94a3b8';
             
-            statusText.innerText = 'Chế độ Sáng';
+            // Cập nhật Grid colors
+            if (mapTileControl) mapTileControl.style.stroke = var('--day-grid');
+            
         } else {
-            document.body.classList.remove('light-theme');
+            body.classList.remove('light-theme');
+            nightBtn.classList.add('active');
+            dayBtn.classList.remove('active');
+            
+            // Cập nhật map tiles và line styles
             map.removeLayer(lightT); darkT.addTo(map);
+            isLightMap = false;
             document.getElementById('dot-nha').style.background = '#f43f5e';
             document.getElementById('dot-duong').style.background = '#f8fafc';
             document.getElementById('dot-viahe').style.background = '#f59e0b';
@@ -378,7 +396,8 @@
             document.getElementById('dot-cay').style.background = '#10b981';
             document.getElementById('dot-dat').style.background = '#64748b';
             
-            statusText.innerText = 'Chế độ Tối';
+            // Cập nhật Grid colors
+            if (mapTileControl) mapTileControl.style.stroke = var('--night-grid');
         }
         updateLineStyles();
     }
@@ -419,7 +438,7 @@
     }
 
     function getLayerStyle(type) {
-        const config = currentMapTheme === 'light' ? {
+        const config = isLightMap ? {
             nha: { color: '#dc2626', weight: 2, fillOpacity: 0.15 },
             duong: { color: '#1e293b', weight: 2, fillOpacity: 0.1 },
             viahe: { color: '#ea580c', weight: 2, fillOpacity: 0.15 },
