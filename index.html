@@ -2,100 +2,90 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán Kính 3D Thực Tế - Sandbox V18</title>
+    <title>Thuật Toán Kính Trong Suốt (Clear Glass) - V19</title>
     <style>
-        /* Nền xám/xanh nhẹ để tôn lên ánh sáng và bóng đổ */
+        /* ĐỔI NỀN SANG MÀU XANH GIỐNG ẢNH MẪU ĐỂ TEST ĐỘ TRONG SUỐT */
         body {
-            background-color: #eaf0f6;
+            background-color: #8ab6d6; /* Màu xanh thiên thanh */
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: sans-serif;
             margin: 0;
-            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-            background-size: 20px 20px;
+            /* Thêm gradient nhẹ cho nền có chiều sâu */
+            background-image: radial-gradient(circle at 50% 0%, #b0d4ef 0%, #689dc3 100%);
         }
 
-        .real-glass {
-            width: 250px;
-            height: 250px;
-            border-radius: 64px; /* Bo góc cực cong */
+        /* KHỐI KÍNH TRONG SUỐT (CLEAR GLASS VOLUME) */
+        .clear-glass {
+            width: 240px;
+            height: 240px;
+            border-radius: 65px; /* Bo góc cực tròn trịa */
             position: relative;
             cursor: pointer;
             
-            /* MÀU GỐC CỦA KÍNH (Không bị loãng) */
-            background: linear-gradient(135deg, #440c88 0%, #e31b64 50%, #ff6b15 100%);
-            
-            /* KÍNH LÚP TẠO ĐỘ XUYÊN THẤU THẬT */
-            backdrop-filter: blur(12px) saturate(120%);
-            -webkit-backdrop-filter: blur(12px) saturate(120%);
+            /* 1. KHẮC PHỤC LỖI NHỰA ĐỤC: 
+               - Trả khối kính về trạng thái KHÔNG MÀU (Chỉ phủ một lớp trắng cực kỳ mờ 5%)
+               - Dùng Blur để bẻ cong nền xanh phía sau, tạo chất liệu kính */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.0) 100%);
+            backdrop-filter: blur(10px) saturate(110%);
+            -webkit-backdrop-filter: blur(10px) saturate(110%);
 
-            /* KIẾN TẠO THỂ TÍCH (Volume) VÀ ÁNH SÁNG BẰNG SHADOW */
+            /* 2. KHẮC PHỤC THIẾU ĐỘ DÀY & PHẢN QUANG YẾU (The 3D Geometry) */
             box-shadow: 
-                /* KHẮC PHỤC LỖI 3: NGUỒN SÁNG CHÍNH (TOP-LEFT) SÁNG RỰC LÊN */
-                /* Đẩy độ trắng lên mức tối đa để tạo độ "căng bóng" cho khối */
-                inset 6px 6px 15px rgba(255, 255, 255, 0.85),
-                inset 2px 2px 4px rgba(255, 255, 255, 1),
+                /* A. Dải sáng Top-Left (Nguồn sáng chính): Dày, rực rỡ và uốn cong */
+                inset 5px 5px 15px rgba(255, 255, 255, 0.6),  /* Vầng sáng rộng */
+                inset 2px 2px 5px rgba(255, 255, 255, 1),     /* Sống kính bén ngót */
                 
-                /* KHẮC PHỤC LỖI 1: PHẢN QUANG ĐÁY CHƯA ĐỦ SÁNG */
-                /* Thêm ánh sáng trắng chói kết hợp với màu Cam rực rỡ ở đáy */
-                inset -6px -8px 18px rgba(255, 200, 50, 0.95),
-                inset -1px -2px 3px rgba(255, 255, 255, 0.8),
+                /* B. Vách kính tối (Tạo độ dày và sâu cho lòng kính) */
+                inset -12px -12px 25px rgba(0, 0, 0, 0.15),
+                inset 8px 8px 20px rgba(0, 0, 0, 0.05),
                 
-                /* VÁCH KÍNH BÊN TRONG: Tạo chiều sâu rỗng cho thủy tinh */
-                inset -12px -12px 30px rgba(0, 0, 0, 0.45),
-                inset 10px 10px 25px rgba(0, 0, 0, 0.15),
+                /* C. Khúc xạ hắt sáng ở đáy (Bottom-Right Bounce Light) */
+                inset -4px -4px 10px rgba(255, 255, 255, 0.7), /* Ánh sáng dội ngược lên */
+                inset -1px -2px 3px rgba(255, 180, 50, 0.4),   /* Đốm màu cam nhiễu quang học ở mép (Giống ảnh gốc) */
+
+                /* D. Bóng đổ vật lý (Ambient Drop Shadow) */
+                12px 25px 40px rgba(0, 50, 100, 0.2), /* Bóng tiệp với màu nền xanh */
                 
-                /* BÓNG ĐỔ MÔI TRƯỜNG (Hắt màu xuyên thấu và bóng ghim vật lý) */
-                0px 25px 45px -5px rgba(233, 30, 99, 0.45),
-                10px 15px 25px rgba(0, 0, 0, 0.15);
-                
-            /* Ranh giới mép ngoài cùng (Edge Reflection) */
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-top-color: rgba(255, 255, 255, 0.6);
-            border-left-color: rgba(255, 255, 255, 0.4);
+                /* E. Quầng tụ quang hắt xuyên thấu xuống bàn (Caustics) */
+                5px 10px 20px rgba(255, 255, 255, 0.4);
+
+            /* Viền bao ngoài cùng để định hình khối */
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+            border-right-color: rgba(255, 255, 255, 0.1);
             
-            transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* KHẮC PHỤC LỖI 2: TÁN SÁC BỀ MẶT MƯỢT MÀ (Loại bỏ vệt cắt cứng) */
-        .real-glass::before {
+        /* 3. LÓA BỀ MẶT HỮU CƠ (Organic Surface Gloss) */
+        /* Không dùng đường vát chéo cứng đơ nữa, dùng vầng sáng tỏa nhẹ */
+        .clear-glass::before {
             content: '';
             position: absolute;
-            inset: 1px;
-            border-radius: 62px;
-            
-            /* Dùng Soft Gradient: Ánh sáng lan tỏa tự nhiên, hòa quyện vào khối kính thay vì bị cắt đứt gắt gao */
-            background: linear-gradient(
-                135deg, 
-                rgba(255, 255, 255, 0.6) 0%,   /* Rất chói ở góc đón sáng */
-                rgba(255, 255, 255, 0.15) 35%, /* Nhạt dần mượt mà */
-                transparent 65%,               /* Tan biến hoàn toàn vào lõi kính */
-                transparent 100%
-            );
-            pointer-events: none;
-        }
-        
-        /* QUẦNG SÁNG CHÍNH (Core Glare) ĐỂ TĂNG CƯỜNG ĐỘ BÓNG TỰ NHIÊN */
-        .real-glass::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            /* Một luồng sáng tròn (radial) hắt từ góc Trên-Trái xuống làm khối kính căng phồng lên */
-            background: radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.4) 0%, transparent 50%);
+            inset: 2px;
+            border-radius: 60px;
+            background: radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.4) 0%, transparent 60%);
             pointer-events: none;
         }
 
-        .real-glass:active {
-            transform: scale(0.96) translateY(3px);
+        /* Hiệu ứng vật lý khi nhấn */
+        .clear-glass:active {
+            transform: scale(0.96) translateY(4px);
+            box-shadow: 
+                inset 5px 5px 20px rgba(255, 255, 255, 0.8),
+                inset -12px -12px 30px rgba(0, 0, 0, 0.25),
+                inset -3px -3px 8px rgba(255, 255, 255, 0.9),
+                5px 10px 15px rgba(0, 50, 100, 0.2),
+                2px 5px 10px rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
 <body>
 
-    <div class="real-glass"></div>
+    <div class="clear-glass"></div>
 
 </body>
 </html>
