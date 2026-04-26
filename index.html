@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v117 - Ultimate Physical Glass</title>
+    <title>NAM ARCH PRO v118 - True Liquid Glass (V116 Evolved)</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -13,11 +13,12 @@
     
     <style>
         /* ========================================================================= */
-        /* MÔI TRƯỜNG NỀN VẬT LÝ (PHYSICAL ENVIRONMENT)                              */
+        /* MÔI TRƯỜNG NỀN: Khôi phục màu xanh xám thẫm của V116                      */
+        /* Giúp bóng đen vật lý hiển thị rõ ràng, không bị chìm vào nền              */
         /* ========================================================================= */
         :root { 
-            --bg-base: #0c1017; /* Đen xanh sâu, làm nền tảng cho bóng đen & ánh sáng neon */
-            --panel-bg: #141b26; 
+            --bg-base: #141a26; 
+            --panel-bg: #1a2233; 
             --panel-border: rgba(255, 255, 255, 0.05);
             
             --vibrant-cyan: #00f0ff;
@@ -72,7 +73,7 @@
         }
 
         /* ========================================================================= */
-        /* CẤU TRÚC BẢNG ĐIỀU KHIỂN & CÁC THÀNH PHẦN UI CƠ BẢN                       */
+        /* GIAO DIỆN KHUNG BẢNG ĐIỀU KHIỂN                                           */
         /* ========================================================================= */
         .search-box { 
             position: absolute; 
@@ -84,7 +85,7 @@
             border-top: 1px solid rgba(255,255,255,0.08); 
             border-radius: 16px; 
             overflow: hidden; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
             transition: 0.3s;
         }
 
@@ -95,7 +96,7 @@
 
         .search-box:focus-within { 
             border-color: var(--vibrant-cyan); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7), 0 0 20px rgba(0, 240, 255, 0.3); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 20px rgba(0, 240, 255, 0.2); 
         }
 
         .search-box input { 
@@ -139,7 +140,7 @@
             border-top: 1px solid rgba(255,255,255,0.1); 
             border-radius: 32px; 
             padding: 28px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
             max-height: calc(100vh - 48px); 
             overflow-y: auto; 
             transition: 0.4s; 
@@ -166,7 +167,7 @@
             align-items: center; 
             justify-content: center; 
             cursor: pointer; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4); 
             transition: 0.3s; 
             margin-top: 10px; 
         }
@@ -207,11 +208,11 @@
 
         .panel-card { 
             margin-bottom: 24px; 
-            background: rgba(0,0,0,0.25); 
+            background: rgba(0,0,0,0.2); 
             padding: 18px; 
             border-radius: 20px; 
-            border: 1px solid rgba(255,255,255,0.03); 
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); 
+            border: 1px solid rgba(255,255,255,0.02); 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); 
         }
 
         body.theme-light .panel-card { 
@@ -244,11 +245,11 @@
             -webkit-appearance: none; 
             width: 100%; 
             height: 6px; 
-            background: rgba(0,0,0,0.5); 
+            background: rgba(0,0,0,0.4); 
             border-radius: 4px; 
             outline: none; 
             margin-top: 6px; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
 
         body.theme-light .zoom-slider { 
@@ -263,7 +264,7 @@
             border-radius: 50%; 
             background: #fff; 
             cursor: pointer; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4); 
             border: 4px solid var(--vibrant-cyan); 
             transition: 0.3s; 
         }
@@ -285,13 +286,8 @@
             border-radius: 12px;
         }
 
-        .layer-item:hover { 
-            background: rgba(255,255,255,0.04); 
-        }
-
-        body.theme-light .layer-item:hover { 
-            background: rgba(0,0,0,0.03); 
-        }
+        .layer-item:hover { background: rgba(255,255,255,0.04); }
+        body.theme-light .layer-item:hover { background: rgba(0,0,0,0.03); }
 
         .layer-left { 
             display: flex; 
@@ -303,19 +299,9 @@
             transition: 0.3s; 
         }
 
-        .layer-item:hover .layer-left { 
-            color: var(--text-main); 
-        }
-
-        .color-dot { 
-            width: 12px; 
-            height: 12px; 
-            border-radius: 4px; 
-        }
-
-        .layer-item input[type="checkbox"] { 
-            display: none; 
-        }
+        .layer-item:hover .layer-left { color: var(--text-main); }
+        .color-dot { width: 12px; height: 12px; border-radius: 4px; }
+        .layer-item input[type="checkbox"] { display: none; }
         
         .toggle-switch { 
             width: 46px; 
@@ -325,14 +311,10 @@
             transition: 0.4s;
             background: rgba(0,0,0,0.5); 
             border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.7);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
         }
 
-        body.theme-light .toggle-switch { 
-            background: #e2e8f0; 
-            border-color: #cbd5e1; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
-        }
+        body.theme-light .toggle-switch { background: #e2e8f0; border-color: #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         
         .toggle-switch::after { 
             content: ''; 
@@ -344,18 +326,16 @@
             background: #64748b; 
             border-radius: 50%; 
             transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
         }
 
-        body.theme-light .toggle-switch::after { 
-            background: #fff; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15); 
-        }
+        body.theme-light .toggle-switch::after { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
         
+        /* Công tắc khi bật: Cũng áp dụng ánh sáng chéo */
         .layer-item input[type="checkbox"]:checked + .toggle-switch { 
             background: linear-gradient(135deg, #00f0ff, #0066ff); 
-            border-color: rgba(0, 240, 255, 0.7); 
-            box-shadow: 0 0 15px rgba(0,240,255,0.4), inset 0 2px 6px rgba(0,0,0,0.3); 
+            border-color: rgba(0, 240, 255, 0.6); 
+            box-shadow: 0 0 12px rgba(0,240,255,0.3), inset 2px 2px 4px rgba(255,255,255,0.5), inset -2px -2px 6px rgba(0,0,0,0.3); 
         }
 
         .layer-item input[type="checkbox"]:checked + .toggle-switch::after { 
@@ -364,80 +344,37 @@
             box-shadow: -2px 4px 8px rgba(0,0,0,0.5); 
         }
 
-        .layer-item input[type="checkbox"]:checked ~ .layer-left { 
-            color: var(--text-main); 
-        }
+        .layer-item input[type="checkbox"]:checked ~ .layer-left { color: var(--text-main); }
 
         .theme-toggle { 
-            position: relative; 
-            width: 100%; 
-            height: 48px; 
-            border-radius: 24px; 
-            cursor: pointer; 
-            margin-top: 24px; 
-            background: rgba(0,0,0,0.4); 
-            border: 1px solid var(--panel-border); 
-            border-top: 1px solid rgba(255,255,255,0.1); 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 15px; 
-            transition: 0.5s; 
-            overflow: hidden; 
+            position: relative; width: 100%; height: 48px; border-radius: 24px; cursor: pointer; 
+            margin-top: 24px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); 
+            border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 15px; transition: 0.5s; overflow: hidden; 
         }
 
-        body.theme-light .theme-toggle { 
-            background: #f8fafc; 
-            border-color: #e2e8f0; 
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
-        }
+        body.theme-light .theme-toggle { background: #f8fafc; border-color: #e2e8f0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);}
         
         .theme-thumb { 
-            position: absolute; 
-            top: 4px; 
-            width: 38px; 
-            height: 38px; 
-            border-radius: 50%; 
-            background: #fff; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 18px; 
-            transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
-            box-shadow: 0 5px 12px rgba(0,0,0,0.5); 
-            z-index: 5; 
+            position: absolute; top: 4px; width: 38px; height: 38px; border-radius: 50%; background: #fff; 
+            display: flex; align-items: center; justify-content: center; font-size: 18px; 
+            transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 5px 12px rgba(0,0,0,0.4); z-index: 5; 
         }
 
-        .theme-toggle.dark-mode .theme-thumb { 
-            left: 4px; 
-            border: 1px solid rgba(138,43,226,0.3); 
-        }
-
-        .theme-toggle.light-mode .theme-thumb { 
-            left: calc(100% - 42px); 
-            border: 1px solid rgba(255,157,0,0.3); 
-            transform: rotate(360deg); 
-        }
+        .theme-toggle.dark-mode .theme-thumb { left: 4px; border: 1px solid rgba(138,43,226,0.2); }
+        .theme-toggle.light-mode .theme-thumb { left: calc(100% - 42px); border: 1px solid rgba(255,157,0,0.3); transform: rotate(360deg); }
         
-        .theme-text { 
-            font-size: 11px; 
-            font-weight: 800; 
-            z-index: 2; 
-            transition: 0.3s; 
-            letter-spacing: 1.5px;
-        }
+        .theme-text { font-size: 11px; font-weight: 800; z-index: 2; transition: 0.3s; letter-spacing: 1.5px;}
+        .theme-toggle.dark-mode .t-dark { color: #fff; } .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
+        .theme-toggle.light-mode .t-dark { color: #94a3b8; } .theme-toggle.light-mode .t-light { color: #f59e0b; }
 
-        .theme-toggle.dark-mode .t-dark { color: #fff; } 
-        .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
-        .theme-toggle.light-mode .t-dark { color: #94a3b8; } 
-        .theme-toggle.light-mode .t-light { color: #f59e0b; }
 
         /* ========================================================================= */
-        /* TUYỆT TÁC QUANG HỌC V117 (ULTIMATE PHYSICAL GLASS)                        */
-        /* Sửa dứt điểm 3 lỗi vật lý ánh sáng:                                       */
-        /* 1. Nguồn sáng chính cực mạnh (Top-Left): Trắng tinh khiết, cắt gắt.       */
-        /* 2. Volume & Tint: Khối kính trong, chuyển từ Sáng -> Màu thuần -> Đậm.    */
-        /* 3. Tách biệt Bóng vật lý (Shadow) và Ánh sáng xuyên thấu (Caustic Bloom). */
+        /* 3. THUẬT TOÁN KÍNH LỎNG CHUẨN VẬT LÝ (TRUE LIQUID GLASS - V118)           */
+        /* Dựa hoàn toàn trên cấu trúc V116 nhưng cường hóa ánh sáng theo yêu cầu:   */
+        /* - Nguồn sáng chính (Top-Left) cực mạnh, cắt vát sắc bén.                  */
+        /* - Khúc xạ tụ quang (Bottom-Right) rực rỡ, rõ ràng.                        */
+        /* - Tách bạch bóng đổ: Bóng vật lý đen sẫm + Quầng tụ quang màu tỏa chéo.   */
         /* ========================================================================= */
         
         .btn-liquid {
@@ -461,15 +398,44 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             z-index: 1;
             
-            /* Tăng độ trong trẻo (Clarity), tăng bão hòa để kính không bị đục */
-            backdrop-filter: blur(8px) brightness(1.3) saturate(200%); 
-            -webkit-backdrop-filter: blur(8px) brightness(1.3) saturate(200%);
+            /* Tăng Saturation mạnh để xua tan độ đục, giữ nguyên blur để có khối */
+            backdrop-filter: blur(10px) saturate(180%); 
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             
-            /* Viền cấu trúc vật lý: Ánh sáng mạnh từ Top-Left, tối ở Bottom-Right */
-            border-top: 1.5px solid rgba(255, 255, 255, 1);     /* Sáng chói nhất */
-            border-left: 1.5px solid rgba(255, 255, 255, 0.7);   /* Sáng nhì */
-            border-bottom: 1.5px solid rgba(0, 0, 0, 0.8);       /* Bóng khuất */
-            border-right: 1.5px solid rgba(0, 0, 0, 0.5);        /* Bóng khuất */
+            /* Xóa border thường, ta dùng Pseudo-element để tạo viền ánh sáng định hướng */
+            border: none; 
+            background: rgba(255, 255, 255, 0.02); /* Lớp lót cực mỏng */
+        }
+
+        /* ĐIỂM CHÓI LÓA CHÍNH (TOP-LEFT MAIN HIGHLIGHT) */
+        /* Sử dụng Masking của V116 nhưng đẩy màu trắng lên mức 1 (Tinh khiết) */
+        .btn-liquid::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 2px; /* Độ dày của phần cạnh bắt sáng */
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 1) 0%,      /* Điểm đập sáng mạnh nhất */
+                rgba(255, 255, 255, 0.8) 15%,   /* Lan nhẹ */
+                rgba(255, 255, 255, 0) 40%,     /* Biến mất ở giữa */
+                rgba(0, 0, 0, 0.2) 60%,         /* Bắt đầu vùng khuất sáng */
+                rgba(0, 0, 0, 0.8) 100%         /* Cạnh dưới phải tối thẫm */
+            );
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* LÓA BỀ MẶT MỀM (SURFACE GLARE) */
+        .btn-liquid::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(120% 120% at 0% 0%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%);
+            border-radius: inherit;
+            pointer-events: none;
         }
 
         .btn-liquid:active { 
@@ -478,38 +444,38 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT CYAN (MÔ PHỎNG NÚT "BIITTON" CHUẨN XÁC)               */
+        /* NÚT CYAN (Tập trung tụ quang Xanh chói lóa ở đáy)         */
         /* --------------------------------------------------------- */
         .btn-cyan {
-            /* Tán sắc ánh sáng trong môi trường kính: Trắng chói -> Cyan rực -> Xanh lam sẫm */
+            /* Gradient thể tích: Gần nguồn sáng thì nhạt trong, xa nguồn sáng thì đậm màu */
             background: linear-gradient(135deg, 
-                rgba(200, 255, 255, 0.4) 0%,   /* Hứng sáng trắng Top-Left */
-                rgba(0, 220, 255, 0.2) 40%,    /* Thân kính trong suốt */
-                rgba(0, 50, 200, 0.1) 100%     /* Đáy tối Bottom-Right */
+                rgba(255, 255, 255, 0.1) 0%,   /* Gần sáng: Trong suốt */
+                rgba(0, 200, 255, 0.15) 40%,   /* Thân kính */
+                rgba(0, 80, 255, 0.4) 100%     /* Hội tụ màu dưới đáy */
             );
             
             box-shadow: 
-                /* 1. LÓA ĐỈNH (Specular Highlight): Đập thẳng mặt trắng tinh khiết */
-                inset 3px 3px 8px rgba(255, 255, 255, 0.9),
-                /* 2. KHÚC XẠ NỘI BỘ (Internal Refraction): Ánh sáng đọng lại gắt ở viền dưới */
-                inset -6px -8px 20px rgba(0, 100, 255, 0.95),
-                inset -2px -2px 6px rgba(0, 255, 255, 0.8),
-                /* 3. BÓNG ĐEN VẬT LÝ (Anchor Shadow): Bóng đổ đen kịt sát vật thể */
-                10px 15px 25px rgba(0, 0, 0, 0.9),
-                /* 4. TỤ QUANG MÀU (Caustic Bloom): Ánh sáng màu rọi qua kính lan ra nền */
-                15px 25px 45px -5px rgba(0, 150, 255, 0.8);
+                /* 1. Nhấn mạnh viền trên trái (Inner Glare) */
+                inset 2px 2px 5px rgba(255, 255, 255, 0.9),
+                /* 2. Vệt phản quang vùng tối: Đọng màu rực rỡ ở đáy phải (Internal Refraction) */
+                inset -4px -6px 16px rgba(0, 150, 255, 1),
+                inset -1px -2px 5px rgba(0, 255, 255, 0.9),
+                /* 3. Bóng đen vật lý sâu thẳm, xô theo góc 135 độ */
+                10px 15px 25px rgba(0, 0, 0, 0.7),
+                /* 4. Tụ quang ánh sáng xuyên qua kính (Caustics Bloom) hắt xuống nền */
+                15px 22px 40px -5px rgba(0, 180, 255, 0.7);
                 
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
         
         .btn-cyan:hover { 
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(0, 255, 255, 0.3) 40%, rgba(0, 80, 255, 0.15) 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(0, 220, 255, 0.25) 40%, rgba(0, 100, 255, 0.5) 100%);
             box-shadow: 
-                inset 4px 4px 10px rgba(255, 255, 255, 1),
-                inset -6px -8px 20px rgba(0, 120, 255, 1),
-                inset -2px -2px 6px rgba(0, 255, 255, 0.9),
-                12px 18px 28px rgba(0, 0, 0, 0.95),
-                15px 30px 50px -5px rgba(0, 200, 255, 0.9);
+                inset 3px 3px 6px rgba(255, 255, 255, 1),
+                inset -4px -6px 16px rgba(0, 180, 255, 1),
+                inset -1px -2px 5px rgba(0, 255, 255, 1),
+                12px 18px 28px rgba(0, 0, 0, 0.8),
+                18px 26px 50px -5px rgba(0, 200, 255, 0.9);
             transform: translateY(-2px);
         }
 
@@ -520,41 +486,40 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT MAGENTA (MÔ PHỎNG NÚT "SECONDARY" ĐA SẮC)             */
+        /* NÚT MAGENTA (Chuyển sắc cực gắt từ Tím nhạt -> Hồng dạ quang) */
         /* --------------------------------------------------------- */
         .btn-magenta {
             flex: 1; 
             font-size: 12px;
             
-            /* Tán sắc ánh sáng: Tím trắng -> Tím rực -> Hồng đậm */
             background: linear-gradient(135deg, 
-                rgba(240, 200, 255, 0.4) 0%,   /* Hứng sáng trắng Top-Left */
-                rgba(200, 0, 255, 0.2) 40%,    /* Thân kính trong suốt */
-                rgba(255, 0, 80, 0.1) 100%     /* Đáy tối Bottom-Right */
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(200, 0, 255, 0.15) 40%, 
+                rgba(255, 0, 100, 0.4) 100%
             );
             
             box-shadow: 
-                /* Lóa đỉnh sắc nét */
-                inset 3px 3px 8px rgba(255, 255, 255, 0.9),
-                /* Khúc xạ đọng màu Hồng/Đỏ rực ở viền dưới */
-                inset -6px -8px 20px rgba(255, 0, 100, 0.95),
-                inset -2px -2px 6px rgba(255, 150, 0, 0.8),
-                /* Bóng đen vật lý sâu */
-                10px 15px 25px rgba(0, 0, 0, 0.9),
-                /* Tụ quang màu Hồng/Tím lan ra nền */
-                15px 25px 45px -5px rgba(255, 0, 100, 0.8);
+                /* Lóa sáng viền trên */
+                inset 2px 2px 5px rgba(255, 255, 255, 0.9),
+                /* Vệt màu tụ quang rực rỡ ở khuất sáng (Bottom-Right) */
+                inset -4px -6px 16px rgba(255, 0, 100, 1),
+                inset -1px -2px 5px rgba(255, 120, 0, 0.9),
+                /* Bóng đen xô chéo */
+                10px 15px 25px rgba(0, 0, 0, 0.7),
+                /* Vệt sáng Caustics đổ xuống bàn */
+                15px 22px 40px -5px rgba(255, 0, 100, 0.7);
 
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
 
         .btn-magenta:hover { 
-            background: linear-gradient(135deg, rgba(255, 220, 255, 0.5) 0%, rgba(220, 0, 255, 0.3) 40%, rgba(255, 0, 100, 0.15) 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(220, 0, 255, 0.25) 40%, rgba(255, 0, 120, 0.5) 100%);
             box-shadow: 
-                inset 4px 4px 10px rgba(255, 255, 255, 1),
-                inset -6px -8px 20px rgba(255, 0, 120, 1),
-                inset -2px -2px 6px rgba(255, 180, 0, 0.9),
-                12px 18px 28px rgba(0, 0, 0, 0.95),
-                15px 30px 50px -5px rgba(255, 0, 120, 0.9);
+                inset 3px 3px 6px rgba(255, 255, 255, 1),
+                inset -4px -6px 16px rgba(255, 0, 120, 1),
+                inset -1px -2px 5px rgba(255, 150, 0, 1),
+                12px 18px 28px rgba(0, 0, 0, 0.8),
+                18px 26px 50px -5px rgba(255, 0, 120, 0.9);
             transform: translateY(-2px);
         }
 
@@ -566,12 +531,12 @@
 
         .prog-wrap { 
             height: 12px; 
-            background: rgba(0,0,0,0.6); 
+            background: rgba(0,0,0,0.5); 
             border-radius: 10px; 
             padding: 2px; 
             position: relative; 
-            box-shadow: inset 0 3px 8px rgba(0,0,0,0.9); 
-            border: 1px solid rgba(255,255,255,0.04); 
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.8); 
+            border: 1px solid rgba(255,255,255,0.03); 
         }
 
         body.theme-light .prog-wrap { 
@@ -587,7 +552,7 @@
             background: linear-gradient(90deg, #00f0ff, #0066ff, #8a2be2, #ff0066, #ffaa00); 
             background-size: 300% 100%; 
             animation: liquidFlow 2s linear infinite; 
-            box-shadow: 0 0 20px rgba(255, 0, 100, 0.8), inset 0 2px 3px rgba(255,255,255,0.9); 
+            box-shadow: 0 0 15px rgba(255, 0, 100, 0.6), inset 0 2px 3px rgba(255,255,255,0.8); 
             transition: width 0.4s ease;
         }
 
@@ -622,7 +587,7 @@
             font-family: 'JetBrains Mono', monospace; 
             font-size: 13px; 
             color: var(--text-muted); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.7); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); 
             z-index: 1000;
         }
 
@@ -647,7 +612,7 @@
             background: rgba(0, 240, 255, 0.1); 
             padding: 4px 10px; 
             border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
 
         .pulse-dot { 
@@ -655,7 +620,7 @@
             height: 6px; 
             background: var(--vibrant-cyan); 
             border-radius: 50%; 
-            box-shadow: 0 0 12px var(--vibrant-cyan); 
+            box-shadow: 0 0 10px var(--vibrant-cyan); 
             animation: pulse 2s infinite; 
         }
 
@@ -679,7 +644,7 @@
             
             <div class="brand-header">
                 <h1>NAM ARCH</h1>
-                <span class="tagline">V117 • ULTIMATE PHYSICAL GLASS</span>
+                <span class="tagline">V118 • TRUE LIQUID GLASS</span>
             </div>
 
             <div class="panel-card">
@@ -710,7 +675,7 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#ffaa00; box-shadow: 0 0 8px #ffaa00;"></span> Vỉa Hè</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#ff8800; box-shadow: 0 0 8px #ff8800;"></span> Vỉa Hè</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
@@ -909,14 +874,14 @@
         const config = isLightMap ? {
             nha: { color: '#ff0066', weight: 1.5, fillOpacity: 0.15 }, 
             duong: { color: '#1e293b', weight: 1.5, fillOpacity: 0.08 }, 
-            viahe: { color: '#ffaa00', weight: 1.5, fillOpacity: 0.15 }, 
+            viahe: { color: '#ff8800', weight: 1.5, fillOpacity: 0.15 }, 
             nuoc: { color: '#00f0ff', weight: 1.5, fillOpacity: 0.15 },
             cayxanh: { color: '#00ff88', weight: 1.5, fillOpacity: 0.12 },
             dattrong: { color: '#cbd5e1', weight: 1.5, fillOpacity: 0.1 }  
         } : {
             nha: { color: '#ff0066', weight: 1.5, fillOpacity: 0.15 }, 
             duong: { color: '#ffffff', weight: 1.5, fillOpacity: 0.05 }, 
-            viahe: { color: '#ffaa00', weight: 1.5, fillOpacity: 0.15 }, 
+            viahe: { color: '#ff8800', weight: 1.5, fillOpacity: 0.15 }, 
             nuoc: { color: '#00f0ff', weight: 1.5, fillOpacity: 0.15 },
             cayxanh: { color: '#00ff88', weight: 1.5, fillOpacity: 0.12 },
             dattrong: { color: '#8b95a5', weight: 1.5, fillOpacity: 0.1 }  
@@ -1279,7 +1244,7 @@
 
         const a = document.createElement('a'); 
         a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); 
-        a.download = "NAM_ARCH_3D_GLASS_V117.dae"; 
+        a.download = "NAM_ARCH_3D_V118.dae"; 
         a.click(); 
         
         updateProgress(100, "XUẤT MÔ HÌNH 3D THÀNH CÔNG!", false);
