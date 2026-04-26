@@ -2,100 +2,122 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán Liquid Glass - Sandbox</title>
+    <title>Thuật Toán Liquid Glass - Sandbox V2</title>
     <style>
-        /* Nền tối ngả xanh để tôn màu Neon */
+        /* Nền xanh đen sâu thẳm giống hệt ảnh gốc của bạn để dễ đối chiếu */
         body {
-            background-color: #0e131d;
+            background-color: #0b101e;
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 40px;
-            font-family: sans-serif;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
         }
 
         /* KHUNG CHUNG CHO KÍNH LỎNG */
         .glass-btn {
-            width: 300px;
-            padding: 20px;
+            width: 280px;
+            padding: 22px;
             border-radius: 40px;
             color: #fff;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 800;
             text-transform: uppercase;
             text-align: center;
-            border: none;
             cursor: pointer;
             position: relative;
+            outline: none;
             
-            /* Bước 1: Khối lượng kính (Độ mờ và độ tương phản nền) */
-            backdrop-filter: blur(12px) saturate(150%);
-            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            /* Độ mờ nền cực mạnh để tạo chất kính đặc */
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
             
-            /* Viền ngoài cùng cực mỏng, giả lập mặt cắt kính */
+            /* Viền vật lý ngoài cùng cực mỏng, sáng mép trên, tối mép dưới */
             border: 1px solid rgba(255, 255, 255, 0.05);
+            border-top-color: rgba(255, 255, 255, 0.3);
+            border-left-color: rgba(255, 255, 255, 0.2);
             
-            /* Base màu rất trong suốt (để lộ nền) */
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+            transition: all 0.3s ease;
+        }
+
+        /* LÓA BỀ MẶT TẠO ĐỘ LỒI (Surface Glare) */
+        .glass-btn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            /* Phủ lớp sáng trắng nhẹ từ góc 11h, tan dần ra giữa nút */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 50%);
+            pointer-events: none;
         }
 
         /* ---------------------------------------------------- */
         /* NÚT CYAN TÁI TẠO TỪ ẢNH GỐC                           */
         /* ---------------------------------------------------- */
         .btn-cyan {
+            /* MÀU LÕI: Loang màu Cyan nhẹ từ góc dưới phải lên */
+            background: radial-gradient(100% 100% at 100% 100%, rgba(0, 240, 255, 0.25) 0%, rgba(255, 255, 255, 0.02) 100%);
+            
             box-shadow: 
-                /* LỚP 1 (TRONG): Viền sáng sắc lẹm góc Top-Left */
-                inset 1px 2px 3px rgba(255, 255, 255, 0.9),
-                inset 2px 4px 6px rgba(255, 255, 255, 0.2),
+                /* LỚP 1: Viền highlight TRẮNG DÀY & MƯỢT ở góc Trên-Trái */
+                inset 2px 3px 6px rgba(255, 255, 255, 0.7),
+                inset 1px 1px 15px rgba(255, 255, 255, 0.2),
 
-                /* LỚP 2 (TRONG): Sự đọng màu (Refraction) ôm sát mép Bottom-Right */
-                inset -2px -4px 10px rgba(0, 240, 255, 0.9),
-                inset -1px -2px 4px rgba(0, 255, 255, 0.5),
+                /* LỚP 2: Khúc xạ viền MÀU GẮT ở góc Dưới-Phải */
+                inset -3px -5px 12px rgba(0, 240, 255, 0.6),
 
-                /* LỚP 3 (TRONG): Lõi tối nhẹ để kính có độ dày */
-                inset -6px -8px 20px rgba(0, 0, 0, 0.4),
+                /* LỚP 3: Bóng đen vật lý xô chéo xuống Dưới-Phải (Tạo khối 3D) */
+                8px 12px 20px rgba(0, 0, 0, 0.6),
 
-                /* LỚP 4 (NGOÀI): Bóng đen vật lý đổ xô lệch chéo xuống Bottom-Right */
-                8px 12px 16px rgba(0, 0, 0, 0.6),
+                /* LỚP 4: Ánh sáng xuyên thấu rực rỡ tỏa ra nền */
+                0px 10px 40px -5px rgba(0, 240, 255, 0.5);
+        }
 
-                /* LỚP 5 (NGOÀI): Bóng tụ quang màu xuyên thấu đổ xuống nền */
-                12px 18px 30px -4px rgba(0, 240, 255, 0.6);
+        .btn-cyan:hover {
+            transform: translateY(-2px);
+            background: radial-gradient(100% 100% at 100% 100%, rgba(0, 240, 255, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
+            box-shadow: 
+                inset 2px 3px 8px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 15px rgba(255, 255, 255, 0.3),
+                inset -3px -5px 15px rgba(0, 240, 255, 0.8),
+                10px 15px 25px rgba(0, 0, 0, 0.7),
+                0px 15px 50px -5px rgba(0, 240, 255, 0.7);
         }
 
         /* ---------------------------------------------------- */
         /* NÚT MAGENTA TÁI TẠO TỪ ẢNH GỐC                       */
         /* ---------------------------------------------------- */
         .btn-magenta {
+            /* MÀU LÕI: Loang màu Magenta nhẹ từ góc dưới phải lên */
+            background: radial-gradient(100% 100% at 100% 100%, rgba(255, 0, 150, 0.25) 0%, rgba(255, 255, 255, 0.02) 100%);
+            
             box-shadow: 
-                /* LỚP 1 (TRONG): Viền sáng sắc lẹm góc Top-Left */
-                inset 1px 2px 3px rgba(255, 255, 255, 0.9),
-                inset 2px 4px 6px rgba(255, 255, 255, 0.2),
+                /* LỚP 1: Viền highlight TRẮNG DÀY & MƯỢT ở góc Trên-Trái */
+                inset 2px 3px 6px rgba(255, 255, 255, 0.7),
+                inset 1px 1px 15px rgba(255, 255, 255, 0.2),
 
-                /* LỚP 2 (TRONG): Sự đọng màu (Refraction) ôm sát mép Bottom-Right */
-                inset -2px -4px 10px rgba(255, 0, 120, 0.9),
-                inset -1px -2px 4px rgba(255, 50, 150, 0.5),
+                /* LỚP 2: Khúc xạ viền MÀU GẮT ở góc Dưới-Phải */
+                inset -3px -5px 12px rgba(255, 0, 150, 0.6),
 
-                /* LỚP 3 (TRONG): Lõi tối nhẹ để kính có độ dày */
-                inset -6px -8px 20px rgba(0, 0, 0, 0.4),
+                /* LỚP 3: Bóng đen vật lý xô chéo xuống Dưới-Phải (Tạo khối 3D) */
+                8px 12px 20px rgba(0, 0, 0, 0.6),
 
-                /* LỚP 4 (NGOÀI): Bóng đen vật lý đổ xô lệch chéo xuống Bottom-Right */
-                8px 12px 16px rgba(0, 0, 0, 0.6),
-
-                /* LỚP 5 (NGOÀI): Bóng tụ quang màu xuyên thấu đổ xuống nền */
-                12px 18px 30px -4px rgba(255, 0, 120, 0.6);
+                /* LỚP 4: Ánh sáng xuyên thấu rực rỡ tỏa ra nền */
+                0px 10px 40px -5px rgba(255, 0, 150, 0.5);
         }
 
-        /* HIỆU ỨNG LÓA BỀ MẶT TRÊN CÙNG (Surface Glare) */
-        .glass-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            /* Phủ một lớp sáng cực nhẹ từ Top-Left chéo xuống nửa nút rồi biến mất */
-            background: linear-gradient(120deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 35%);
-            pointer-events: none;
+        .btn-magenta:hover {
+            transform: translateY(-2px);
+            background: radial-gradient(100% 100% at 100% 100%, rgba(255, 0, 150, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
+            box-shadow: 
+                inset 2px 3px 8px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 15px rgba(255, 255, 255, 0.3),
+                inset -3px -5px 15px rgba(255, 0, 150, 0.8),
+                10px 15px 25px rgba(0, 0, 0, 0.7),
+                0px 15px 50px -5px rgba(255, 0, 150, 0.7);
         }
 
     </style>
