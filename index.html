@@ -2,158 +2,101 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán Kính Pha Lê - Final Sandbox V11</title>
+    <title>Thuật Toán Kính Nguyên Khối - V12 (The Reset)</title>
     <style>
-        /* Nền sáng để tôn lên bóng đổ y hệt ảnh gốc */
+        /* Nền xám sáng để tôn khối 3D */
         body {
-            background-color: #f2f5f9;
+            background-color: #eef2f6;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: sans-serif;
             margin: 0;
-            box-sizing: border-box;
+            font-family: sans-serif;
         }
 
-        /* 1. KHUNG BAO BỌC (Container an toàn) */
-        .icon-wrapper {
+        /* KHỐI KÍNH NGUYÊN BẢN (1 THẺ DUY NHẤT) */
+        .glass-icon {
+            width: 250px;
+            height: 250px;
+            border-radius: 64px; /* Bo góc Squircle */
             position: relative;
-            width: 240px;
-            height: 240px;
             cursor: pointer;
+            
+            /* 1. MÀU NỀN CƠ BẢN (Gradient Tím -> Hồng -> Cam) */
+            /* Dùng màu đậm và đặc để không bị bợt trên nền trắng */
+            background: linear-gradient(135deg, #370b6d 0%, #d31862 50%, #ff6b15 100%);
+            
+            /* 2. KHỐI LƯỢNG VÀ CHIỀU SÂU (Volume & Depth) */
+            box-shadow: 
+                /* Viền sáng Trắng góc Trên-Trái (Bắt sáng mép ngoài) */
+                inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+                inset 1px 1px 1px rgba(255, 255, 255, 0.8),
+                
+                /* BÓNG ĐEN CHÌM: Đây là chìa khóa tạo độ sâu (Đánh lừa thị giác) */
+                inset -15px -15px 35px rgba(0, 0, 0, 0.5),
+                inset -5px -5px 15px rgba(0, 0, 0, 0.7),
+                
+                /* TỤ QUANG ĐÁY: Mép viền dưới rực sáng màu Cam/Vàng */
+                inset -2px -4px 10px rgba(255, 180, 0, 0.8),
+                
+                /* BÓNG VẬT LÝ NGOÀI CÙNG (Ghim xuống nền) */
+                15px 25px 35px rgba(0, 0, 0, 0.25),
+                
+                /* BÓNG CAUSTICS: Ánh sáng hồng hắt xuyên qua kính xuống nền */
+                5px 20px 40px rgba(230, 20, 100, 0.4);
+
+            /* Viền quang học cực mỏng bên ngoài */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top-color: rgba(255, 255, 255, 0.4);
+            border-left-color: rgba(255, 255, 255, 0.3);
+            
             transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        .icon-wrapper:active {
-            transform: scale(0.95);
+        .glass-icon:active {
+            transform: scale(0.96);
         }
 
-        /* 2. BÓNG MÔI TRƯỜNG ĐỘC LẬP (Caustics & Drop Shadow) */
-        /* Bóng màu rực rỡ hắt chéo xuống đáy phải */
-        .ambient-shadow {
+        /* 3. VỆT BÓNG GƯƠNG (The Gloss Overlay) */
+        /* Đã khắc phục lỗi sọc trắng. Phủ trọn nửa trên của nút */
+        .glass-icon::before {
+            content: '';
             position: absolute;
-            inset: 15px -10px -25px 15px; 
-            background: linear-gradient(135deg, rgba(166, 11, 87, 0) 0%, rgba(255, 82, 0, 0.6) 100%);
-            filter: blur(20px);
-            z-index: -2;
+            inset: 2px; /* Không đè lên viền */
             border-radius: 60px;
-        }
-        /* Bóng đen ghim khối xuống bàn */
-        .physical-shadow {
-            position: absolute;
-            inset: 10px;
-            border-radius: 60px;
-            box-shadow: 15px 20px 35px rgba(0, 0, 0, 0.35);
-            z-index: -1;
-        }
-
-        /* 3. VỎ NGOÀI CÙNG (The Outer Bezel) */
-        .outer-frame {
-            position: absolute;
-            inset: 0;
-            border-radius: 60px; /* Bo góc Squircle */
-            padding: 3px; /* Độ dày vỏ cực chuẩn */
             
-            /* Màu vỏ: Tím thẫm -> Đỏ đô -> Cam sáng */
-            background: linear-gradient(135deg, #2a0845 0%, #640d3a 40%, #ff5200 100%);
-            
-            /* Viền bắt sáng góc trên, đổ tối góc dưới */
-            box-shadow: 
-                inset 2px 2px 4px rgba(255, 255, 255, 0.5),
-                inset -2px -2px 6px rgba(0, 0, 0, 0.8);
-        }
-
-        /* 4. LÕI KÍNH 3D (The Inner Glass Core) */
-        .inner-core {
-            width: 100%;
-            height: 100%;
-            border-radius: 57px; /* Ôm khít bên trong lớp vỏ */
-            position: relative;
-            overflow: hidden;
-            
-            /* Màu nền kính: Trong trẻo, đậm màu (Tím -> Hồng -> Cam) */
-            background: linear-gradient(135deg, #6211a5 0%, #e92364 50%, #ff7b29 100%);
-            
-            /* KIẾN TRÚC CHIỀU SÂU (3D DEPTH) KHÔNG GÂY LỖI BLEND MODE */
-            box-shadow: 
-                /* Vách tối tạo độ lõm góc Trên-Trái */
-                inset 8px 8px 20px rgba(0, 0, 0, 0.4),
-                /* Vách tối phụ góc Dưới-Phải */
-                inset -6px -6px 15px rgba(0, 0, 0, 0.3),
-                /* Viền sáng trắng siêu gắt ở mép Trên-Trái */
-                inset 2px 2px 4px rgba(255, 255, 255, 0.8),
-                inset 1px 1px 1px rgba(255, 255, 255, 1),
-                /* Viền tụ quang rực rỡ ở đáy Dưới-Phải (Caustic Refraction) */
-                inset -3px -5px 12px rgba(255, 200, 0, 0.9),
-                inset -1px -2px 3px rgba(255, 255, 255, 0.6);
-        }
-
-        /* 5. VẾT CẮT BÓNG GƯƠNG (The Sharp Diagonal Gloss) */
-        .gloss-cut {
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            /* Gradient cực sắc: Trắng chói -> Mờ -> Đứt đoạn sắc lẹm */
+            /* Chuyển từ Trắng nhẹ -> Mờ dần -> Dừng Đột Ngột ở 45% */
             background: linear-gradient(
                 135deg, 
-                rgba(255, 255, 255, 0.5) 0%, 
-                rgba(255, 255, 255, 0.05) 48%, 
-                rgba(255, 255, 255, 0.6) 48.5%, 
-                transparent 49%, 
+                rgba(255, 255, 255, 0.4) 0%, 
+                rgba(255, 255, 255, 0.05) 45%, 
+                transparent 45.2%, /* Vết cắt hoàn hảo, không để lại sọc */
                 transparent 100%
             );
-        }
-
-        /* 6. QUẦNG SÁNG LÓA ĐÁY (The Bottom Flare) */
-        /* Đã chuyển ra ngoài .outer-frame để không bị cắt xén */
-        .bottom-flare {
-            position: absolute;
-            bottom: -5px; 
-            left: 20%;
-            right: 20%;
-            height: 10px;
-            /* Điểm trắng chói lòa ở lõi, tỏa ra cam/vàng */
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, rgba(255, 200, 50, 0.8) 40%, transparent 70%);
-            filter: blur(2px);
-            z-index: 10;
             pointer-events: none;
         }
 
-        /* 7. BỤI SÁNG PHẢN QUANG (Sparkles) */
-        .sparkles { position: absolute; inset: 0; pointer-events: none; }
-        .sparkle {
+        /* 4. CHẤM SÁNG PHẢN QUANG ĐÁY TẠO ĐIỂM NHẤN */
+        .glass-icon::after {
+            content: '';
             position: absolute;
-            background: white;
+            bottom: -2px;
+            left: 20%;
+            right: 20%;
+            height: 6px;
             border-radius: 50%;
-            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.7);
+            /* Quầng sáng trắng/cam nằm đúng ở mép đáy */
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.8) 0%, rgba(255, 180, 0, 0.5) 40%, transparent 70%);
+            filter: blur(2px);
+            pointer-events: none;
         }
-        /* Định vị 3 chấm sáng chuẩn y hệt ảnh mẫu */
-        .s1 { width: 3px; height: 3px; top: 32%; left: 16%; }
-        .s2 { width: 1.5px; height: 1.5px; top: 43%; left: 23%; }
-        .s3 { width: 1.5px; height: 1.5px; bottom: 22%; right: 26%; }
 
     </style>
 </head>
 <body>
 
-    <div class="icon-wrapper">
-        <div class="ambient-shadow"></div>
-        <div class="physical-shadow"></div>
-        
-        <div class="outer-frame">
-            <div class="inner-core">
-                <div class="gloss-cut"></div>
-                <div class="sparkles">
-                    <div class="sparkle s1"></div>
-                    <div class="sparkle s2"></div>
-                    <div class="sparkle s3"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bottom-flare"></div>
-    </div>
+    <div class="glass-icon"></div>
 
 </body>
 </html>
