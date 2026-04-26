@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v113 - Perfected Art Glass</title>
+    <title>NAM ARCH PRO v114 - Polished Art Glass Perfected</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -17,13 +17,11 @@
         /* MÔI TRƯỜNG NỀN TỐI SÂU ĐỂ TÔN LÊN ĐỘ CHÓI CỦA PHA LÊ      */
         /* ========================================================= */
         :root { 
-            --bg-base: #060911; 
-            --panel-bg: #111721; 
+            --bg-base: #080b12; /* Đen xanh cực thẳm */
+            --panel-bg: #121824; /* Khối panel đặc, xám đen */
             --panel-border: rgba(255, 255, 255, 0.05);
             
-            --vibrant-cyan: #00ffff;
-            --vibrant-pink: #ff0055;
-            
+            --light-cyan: #00ffff;
             --text-main: #ffffff;
             --text-muted: #8b95a5;
         }
@@ -42,10 +40,10 @@
         /* GIAO DIỆN PANEL CHÍNH */
         .search-box { position: absolute; top: 24px; right: 24px; display: flex; background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.6); transition: 0.3s;}
         body.theme-light .search-box { box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 1px solid rgba(255,255,255,0.8); }
-        .search-box:focus-within { border-color: var(--vibrant-cyan); box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 30px rgba(0, 255, 255, 0.25); }
+        .search-box:focus-within { border-color: var(--light-cyan); box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 30px rgba(0, 255, 255, 0.25); }
         .search-box input { background: transparent; border: none; padding: 14px 20px; width: 280px; color: var(--text-main); font-size: 14px; outline: none; }
-        .search-box button { background: transparent; border: none; border-left: 1px solid var(--panel-border); padding: 0 20px; color: var(--vibrant-cyan); font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .search-box button:hover { background: rgba(0, 255, 255, 0.1); text-shadow: 0 0 10px var(--vibrant-cyan); }
+        .search-box button { background: transparent; border: none; border-left: 1px solid var(--panel-border); padding: 0 20px; color: var(--light-cyan); font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .search-box button:hover { background: rgba(0, 255, 255, 0.1); text-shadow: 0 0 10px var(--light-cyan); }
 
         .sidebar-container { position: absolute; top: 24px; left: 24px; display: flex; gap: 16px; align-items: flex-start; }
         .sidebar { width: 360px; background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.08); border-radius: 32px; padding: 28px; box-shadow: 0 30px 60px rgba(0,0,0,0.7); max-height: calc(100vh - 48px); overflow-y: auto; transition: 0.4s; }
@@ -54,21 +52,21 @@
 
         .toggle-btn { background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.1); color: var(--text-main); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 15px 30px rgba(0,0,0,0.5); transition: 0.3s; margin-top: 10px; }
         body.theme-light .toggle-btn { box-shadow: 0 8px 16px rgba(0,0,0,0.05); border-top: 1px solid rgba(255,255,255,0.8);}
-        .toggle-btn:hover { border-color: var(--vibrant-cyan); color: var(--vibrant-cyan); box-shadow: 0 0 25px rgba(0,255,255,0.3); transform: translateY(-2px); }
+        .toggle-btn:hover { border-color: var(--light-cyan); color: var(--light-cyan); box-shadow: 0 0 25px rgba(0,255,255,0.3); transform: translateY(-2px); }
 
         .brand-header { margin-bottom: 24px; text-align: center; position: relative;}
         h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main); }
-        .tagline { font-size: 11px; font-weight: 800; color: var(--vibrant-cyan); margin-top: 6px; display: block; letter-spacing: 2px; text-shadow: 0 0 12px rgba(0,255,255,0.5); }
+        .tagline { font-size: 11px; font-weight: 800; color: var(--light-cyan); margin-top: 6px; display: block; letter-spacing: 2px; text-shadow: 0 0 12px rgba(0,255,255,0.5); }
 
         .panel-card { margin-bottom: 24px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.02); box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); }
         body.theme-light .panel-card { background: #f8fafc; border: 1px solid #f1f5f9; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .panel-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
-        .val-hl { color: var(--vibrant-cyan); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; text-shadow: 0 0 10px rgba(0,255,255,0.4);}
+        .val-hl { color: var(--light-cyan); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; text-shadow: 0 0 10px rgba(0,255,255,0.4);}
 
         .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 4px; outline: none; margin-top: 6px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);}
         body.theme-light .zoom-slider { background: #e2e8f0; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 4px solid var(--vibrant-cyan); transition: 0.3s; }
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 5px solid var(--light-cyan); transition: 0.3s; }
 
         /* CÔNG TẮC LAYER CHUẨN UI KIT */
         .layer-list { display: flex; flex-direction: column; gap: 14px; }
@@ -127,14 +125,15 @@
         body.theme-light .hud-bottom { box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-top: 1px solid #fff;}
         .hud-val { color: var(--text-main); font-weight: 800; transition: 0.5s;}
 
-        .core-badge { font-size: 10px; font-weight: 800; color: var(--vibrant-cyan); display: flex; align-items: center; gap: 6px; background: rgba(0, 255, 255, 0.1); padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.4);}
-        .pulse-dot { width: 6px; height: 6px; background: var(--vibrant-cyan); border-radius: 50%; box-shadow: 0 0 12px var(--vibrant-cyan); animation: pulse 2s infinite; }
+        .core-badge { font-size: 10px; font-weight: 800; color: var(--light-cyan); display: flex; align-items: center; gap: 6px; background: rgba(0, 255, 255, 0.1); padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.4);}
+        .pulse-dot { width: 6px; height: 6px; background: var(--light-cyan); border-radius: 50%; box-shadow: 0 0 12px var(--light-cyan); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.4; } 100% { transform: scale(0.8); opacity: 1; } }
+
         /* ========================================================================= */
-        /* THUẬT TOÁN KÍNH PHA LÊ PHÁT SÁNG (PERFECTED ART GLASS - V113)             */
-        /* 1. Crystal Clarity: Blur 3px, kính trong vắt, cứng cáp.                   */
-        /* 2. Sharp Specular: ::before trắng tinh khiết, cắt sắc bén ở 15%.          */
-        /* 3. Self-Illuminated: Màu nền Gradient rực rỡ, đáy hội tụ màu mạnh.        */
+        /* THUẬT TOÁN KÍNH NGHỆ THUẬT V114 (KHÔI PHỤC CẤU TRÚC V112 + GLOW V113)     */
+        /* 1. Trả lại Blur(6px) và cấu trúc kính dày, có độ sâu.                     */
+        /* 2. Cắt lóa chéo (Diagonal Specular) cực sắc bén tạo độ cứng pha lê.       */
+        /* 3. Tụ quang đáy (Bottom Refraction) rực màu neon.                         */
         /* ========================================================================= */
         
         .btn-liquid {
@@ -145,95 +144,94 @@
             display: flex; align-items: center; justify-content: center; gap: 8px;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
             
-            /* 1. CRYSTAL CLARITY: Độ trong suốt hoàn hảo của pha lê */
-            backdrop-filter: blur(3px) brightness(1.15); -webkit-backdrop-filter: blur(3px) brightness(1.15);
+            /* Trả lại Blur vừa đủ (6px) để tạo độ đặc của kính khối */
+            backdrop-filter: blur(6px) brightness(1.1); -webkit-backdrop-filter: blur(6px) brightness(1.1);
             
-            /* Viền bao bọc: Dày chói ở Top-Left */
+            /* Viền bắt sáng gắt ở góc Top-Left như đánh bóng kim cương */
             border: 1px solid transparent;
-            border-top: 1.5px solid rgba(255, 255, 255, 0.9);
-            border-left: 1px solid rgba(255, 255, 255, 0.5);
+            border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+            border-left: 1px solid rgba(255, 255, 255, 0.4);
             border-bottom: 1px solid rgba(0, 0, 0, 0.6);
-            border-right: 1px solid rgba(0, 0, 0, 0.2);
+            border-right: 1px solid rgba(0, 0, 0, 0.3);
         }
 
-        /* 2. SHARP SPECULAR: Vết lóa sáng cắt sắc bén, không mờ nhòe */
+        /* VỆT LÓA ĐỈNH (SPECULAR HIGHLIGHT): KHÔI PHỤC TỪ V112 */
+        /* Cắt chéo 110 độ siêu sắc nét tạo cảm giác kính cứng bo tròn */
         .btn-liquid::before {
             content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.1) 15%, transparent 16%);
+            background: linear-gradient(110deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0) 26%);
             border-radius: inherit; z-index: -1; pointer-events: none;
         }
 
         .btn-liquid:active { transform: translateY(3px); box-shadow: none !important; }
 
-        /* NÚT CYAN (MÔ PHỎNG NÚT START PROJECT TRONG VẮT) */
+        /* NÚT CYAN (MÔ PHỎNG NÚT "BIITTON") */
         .btn-cyan {
-            /* 3. TINT MÀU LỎNG: Rực rỡ từ trên xuống dưới */
-            background: linear-gradient(135deg, rgba(0, 255, 255, 0.4) 0%, rgba(0, 102, 255, 0.3) 100%);
+            /* Gradient có độ tương phản: Sáng chói -> Tối dần tạo khối lõm */
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.35) 0%, rgba(0, 100, 255, 0.1) 100%);
             box-shadow: 
-                /* Lóa mép trên (Top Inner Lip) */
-                inset 0 2px 2px rgba(255, 255, 255, 0.9),
-                /* Khúc xạ đọng sáng Neon ở đáy kính (Refracted Core) */
-                inset 0 -8px 20px rgba(0, 150, 255, 0.8),
-                inset 0 -2px 4px rgba(0, 255, 255, 0.9),
-                /* BÓNG ĐEN VẬT LÝ sâu để nhấc khối kính lên */
-                0 15px 25px rgba(0, 0, 0, 0.8),
-                /* BÓNG CAUSTIC MÀU tỏa rộng, tách biệt khỏi bóng đen */
-                0 15px 45px rgba(0, 150, 255, 0.6);
+                /* Lóa mép trên cùng màu trắng sắc nét */
+                inset 0 1px 2px rgba(255, 255, 255, 0.9),
+                inset 0 6px 12px rgba(255, 255, 255, 0.2), /* Độ dày mặt trên */
+                /* Khúc xạ đáy rực sáng Neon (Bottom Glow) */
+                inset 0 -5px 12px rgba(0, 150, 255, 0.9),
+                /* BÓNG ĐEN VẬT LÝ tạo độ nổi khối 3D */
+                0 10px 20px rgba(0, 0, 0, 0.7),
+                /* HÀO QUANG MÀU (Caustics) lan nhẹ phía dưới */
+                0 15px 35px -5px rgba(0, 240, 255, 0.6);
+                
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
         
         .btn-cyan:hover { 
-            background: linear-gradient(135deg, rgba(0, 255, 255, 0.5) 0%, rgba(0, 120, 255, 0.4) 100%);
+            background: linear-gradient(180deg, rgba(0, 255, 255, 0.45) 0%, rgba(0, 120, 255, 0.2) 100%);
             box-shadow: 
-                inset 0 2px 3px rgba(255, 255, 255, 1),
-                inset 0 -8px 20px rgba(0, 150, 255, 1),
-                inset 0 -2px 4px rgba(0, 255, 255, 1),
-                0 15px 25px rgba(0, 0, 0, 0.9),
-                0 20px 60px rgba(0, 150, 255, 0.8);
+                inset 0 1px 2px rgba(255, 255, 255, 1),
+                inset 0 6px 12px rgba(255, 255, 255, 0.3),
+                inset 0 -5px 12px rgba(0, 180, 255, 1),
+                0 12px 25px rgba(0, 0, 0, 0.8),
+                0 20px 40px -2px rgba(0, 255, 255, 0.7);
             transform: translateY(-2px);
         }
 
         .btn-group { display: flex; gap: 14px; margin-top: 18px; }
 
-        /* NÚT MAGENTA (MÔ PHỎNG NÚT SECONDARY ĐA SẮC) */
+        /* NÚT MAGENTA (MÔ PHỎNG NÚT "SECONDARY" TÍM/HỒNG) */
         .btn-magenta {
             flex: 1; font-size: 12px;
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.4) 0%, rgba(255, 0, 85, 0.3) 100%);
+            background: linear-gradient(180deg, rgba(200, 0, 255, 0.35) 0%, rgba(255, 0, 100, 0.1) 100%);
             box-shadow: 
-                inset 0 2px 2px rgba(255, 255, 255, 0.9),
-                inset 0 -8px 20px rgba(255, 0, 85, 0.8),
-                inset 0 -2px 4px rgba(255, 100, 150, 0.9),
-                0 15px 25px rgba(0, 0, 0, 0.8),
-                0 15px 45px rgba(255, 0, 85, 0.6);
+                inset 0 1px 2px rgba(255, 255, 255, 0.9),
+                inset 0 6px 12px rgba(255, 255, 255, 0.2),
+                inset 0 -5px 12px rgba(255, 0, 100, 0.9),
+                0 10px 20px rgba(0, 0, 0, 0.7),
+                0 15px 35px -5px rgba(200, 0, 255, 0.6);
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
 
         .btn-magenta:hover { 
-            background: linear-gradient(135deg, rgba(150, 50, 255, 0.5) 0%, rgba(255, 20, 100, 0.4) 100%);
+            background: linear-gradient(180deg, rgba(220, 50, 255, 0.45) 0%, rgba(255, 50, 120, 0.2) 100%);
             box-shadow: 
-                inset 0 2px 3px rgba(255, 255, 255, 1),
-                inset 0 -8px 20px rgba(255, 0, 85, 1),
-                inset 0 -2px 4px rgba(255, 100, 150, 1),
-                0 15px 25px rgba(0, 0, 0, 0.9),
-                0 20px 60px rgba(255, 0, 85, 0.8);
+                inset 0 1px 2px rgba(255, 255, 255, 1),
+                inset 0 6px 12px rgba(255, 255, 255, 0.3),
+                inset 0 -5px 12px rgba(255, 50, 120, 1),
+                0 12px 25px rgba(0, 0, 0, 0.8),
+                0 20px 40px -2px rgba(220, 50, 255, 0.7);
             transform: translateY(-2px);
         }
 
         /* THANH TIẾN TRÌNH LOADER ĐA SẮC QUANG PHỔ */
         .prog-container { margin-top: 25px; text-align: center;}
-        .prog-wrap { height: 12px; background: rgba(0,0,0,0.6); border-radius: 10px; padding: 2px; position: relative; box-shadow: inset 0 3px 8px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05); }
+        .prog-wrap { height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; padding: 2px; position: relative; box-shadow: inset 0 2px 6px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.05); }
         body.theme-light .prog-wrap { background: #e2e8f0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); border: none; }
         
         #progress { 
             width: 0%; height: 100%; border-radius: 6px; 
             background: linear-gradient(90deg, #00ffff, #0066ff, #8a2be2, #ff0055, #ffaa00); 
             background-size: 300% 100%; animation: liquidFlow 2s linear infinite; 
-            box-shadow: 0 0 25px rgba(255, 0, 85, 0.9), inset 0 2px 4px rgba(255,255,255,0.9); 
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.8), inset 0 2px 3px rgba(255,255,255,0.8); 
             transition: width 0.4s ease;
         }
-        @keyframes liquidFlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-        #stt { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight: 800; margin-top: 12px; text-transform: uppercase; letter-spacing: 2px; }
-
     </style>
 </head>
 <body>
@@ -249,7 +247,7 @@
             
             <div class="brand-header">
                 <h1>NAM ARCH</h1>
-                <span class="tagline">V113 • PERFECTED ART GLASS</span>
+                <span class="tagline">V114 • PERFECTED ART GLASS</span>
             </div>
 
             <div class="panel-card">
@@ -270,7 +268,7 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:var(--vibrant-pink); box-shadow: 0 0 8px var(--vibrant-pink);"></span> Tòa Nhà</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#ff0055; box-shadow: 0 0 8px #ff0055;"></span> Tòa Nhà</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')">
@@ -285,7 +283,7 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:var(--vibrant-cyan); box-shadow: 0 0 8px var(--vibrant-cyan);"></span> Sông Hồ</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#00ffff; box-shadow: 0 0 8px #00ffff;"></span> Sông Hồ</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')">
@@ -336,6 +334,7 @@
 </div>
 
 <div id="map"></div>
+
 <script>
     let sidebarOpen = true;
     function toggleSidebar() {
@@ -449,7 +448,7 @@
     function updateProgress(percent, text, isActive = true) {
         const pBar = document.getElementById('progress'); const stt = document.getElementById('stt');
         pBar.style.width = percent + '%'; stt.innerText = text;
-        stt.style.color = (percent >= 100) ? "var(--vibrant-cyan)" : "var(--vibrant-pink)";
+        stt.style.color = (percent >= 100) ? "var(--light-cyan)" : "var(--light-pink)";
     }
 
     function resetScan() {
@@ -607,7 +606,7 @@
         updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true); await yieldCPU();
 
         const daeXML = `<?xml version="1.0" encoding="utf-8"?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"><asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset><library_geometries><geometry id="geom-0" name="CityMesh"><mesh><source id="geom-0-positions"><float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array><technique_common><accessor source="#geom-0-positions-array" count="${positions.length}" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source><vertices id="geom-0-vertices"><input semantic="POSITION" source="#geom-0-positions"/></vertices><triangles count="${indices.length / 3}"><input semantic="VERTEX" source="#geom-0-vertices" offset="0"/><p>${indices.join(' ')}</p></triangles></mesh></geometry></library_geometries><library_visual_scenes><visual_scene id="Scene" name="Scene"><node id="CityNode" name="CityNode"><instance_geometry url="#geom-0"/></node></visual_scene></library_visual_scenes><scene><instance_visual_scene url="#Scene"/></scene></COLLADA>`;
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); a.download = "NAM_ARCH_3D_PERFECTGLASS.dae"; a.click(); 
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); a.download = "NAM_ARCH_3D_PERFECTED.dae"; a.click(); 
         updateProgress(100, "XUẤT MÔ HÌNH 3D THÀNH CÔNG!", false);
     }
 
