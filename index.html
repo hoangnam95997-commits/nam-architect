@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v114 - Polished Art Glass Perfected</title>
+    <title>NAM ARCH PRO v115 - Directional Art Glass</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
     <script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
@@ -17,221 +16,689 @@
         /* MÔI TRƯỜNG NỀN TỐI SÂU ĐỂ TÔN LÊN ĐỘ CHÓI CỦA PHA LÊ      */
         /* ========================================================= */
         :root { 
-            --bg-base: #080b12; /* Đen xanh cực thẳm */
-            --panel-bg: #121824; /* Khối panel đặc, xám đen */
-            --panel-border: rgba(255, 255, 255, 0.05);
+            --bg-base: #06080d; /* Đen xanh thẳm, triệt tiêu ánh sáng thừa */
+            --panel-bg: #10141e; /* Khối panel đặc, xám đen sâu */
+            --panel-border: rgba(255, 255, 255, 0.04);
             
-            --light-cyan: #00ffff;
+            --vibrant-cyan: #00ffff;
+            --vibrant-pink: #ff0055;
+            
             --text-main: #ffffff;
             --text-muted: #8b95a5;
         }
 
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; transition: 0.5s ease; }
-        #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; z-index: 1;}
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; pointer-events: none; }
-        .ui-layer > * { pointer-events: auto; }
-
-        body.theme-light { 
-            --bg-base: #e6ecf0; --panel-bg: #ffffff; --panel-border: rgba(0, 0, 0, 0.05); 
-            --text-main: #1e293b; --text-muted: #64748b; 
+        * { 
+            box-sizing: border-box; 
         }
 
-        /* GIAO DIỆN PANEL CHÍNH */
-        .search-box { position: absolute; top: 24px; right: 24px; display: flex; background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.6); transition: 0.3s;}
-        body.theme-light .search-box { box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 1px solid rgba(255,255,255,0.8); }
-        .search-box:focus-within { border-color: var(--light-cyan); box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 30px rgba(0, 255, 255, 0.25); }
-        .search-box input { background: transparent; border: none; padding: 14px 20px; width: 280px; color: var(--text-main); font-size: 14px; outline: none; }
-        .search-box button { background: transparent; border: none; border-left: 1px solid var(--panel-border); padding: 0 20px; color: var(--light-cyan); font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .search-box button:hover { background: rgba(0, 255, 255, 0.1); text-shadow: 0 0 10px var(--light-cyan); }
+        body { 
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-base); 
+            color: var(--text-main); 
+            overflow: hidden; 
+            transition: 0.5s ease; 
+        }
 
-        .sidebar-container { position: absolute; top: 24px; left: 24px; display: flex; gap: 16px; align-items: flex-start; }
-        .sidebar { width: 360px; background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.08); border-radius: 32px; padding: 28px; box-shadow: 0 30px 60px rgba(0,0,0,0.7); max-height: calc(100vh - 48px); overflow-y: auto; transition: 0.4s; }
-        body.theme-light .sidebar { box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-top: 1px solid rgba(255,255,255,0.8);}
-        .sidebar::-webkit-scrollbar { width: 0; }
+        #map { 
+            height: 100vh; 
+            width: 100vw; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            z-index: 1;
+        }
 
-        .toggle-btn { background: var(--panel-bg); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.1); color: var(--text-main); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 15px 30px rgba(0,0,0,0.5); transition: 0.3s; margin-top: 10px; }
-        body.theme-light .toggle-btn { box-shadow: 0 8px 16px rgba(0,0,0,0.05); border-top: 1px solid rgba(255,255,255,0.8);}
-        .toggle-btn:hover { border-color: var(--light-cyan); color: var(--light-cyan); box-shadow: 0 0 25px rgba(0,255,255,0.3); transform: translateY(-2px); }
+        .ui-layer { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            z-index: 1000; 
+            pointer-events: none; 
+        }
 
-        .brand-header { margin-bottom: 24px; text-align: center; position: relative;}
-        h1 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: var(--text-main); }
-        .tagline { font-size: 11px; font-weight: 800; color: var(--light-cyan); margin-top: 6px; display: block; letter-spacing: 2px; text-shadow: 0 0 12px rgba(0,255,255,0.5); }
+        .ui-layer > * { 
+            pointer-events: auto; 
+        }
 
-        .panel-card { margin-bottom: 24px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.02); box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); }
-        body.theme-light .panel-card { background: #f8fafc; border: 1px solid #f1f5f9; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .panel-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
-        .val-hl { color: var(--light-cyan); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; text-shadow: 0 0 10px rgba(0,255,255,0.4);}
+        /* GIAO DIỆN SÁNG (THEME LIGHT) ĐỂ ĐỐI CHIẾU */
+        body.theme-light { 
+            --bg-base: #e6ecf0; 
+            --panel-bg: #ffffff; 
+            --panel-border: rgba(0, 0, 0, 0.06); 
+            --text-main: #1e293b; 
+            --text-muted: #64748b; 
+        }
 
-        .zoom-slider { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 4px; outline: none; margin-top: 6px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);}
-        body.theme-light .zoom-slider { background: #e2e8f0; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
-        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 5px solid var(--light-cyan); transition: 0.3s; }
+        /* ========================================================= */
+        /* GIAO DIỆN PANEL CHÍNH (THIẾT KẾ PHẲNG, SẠCH, ĐẶC KHỐI)    */
+        /* ========================================================= */
+        .search-box { 
+            position: absolute; 
+            top: 24px; 
+            right: 24px; 
+            display: flex; 
+            background: var(--panel-bg); 
+            border: 1px solid var(--panel-border); 
+            border-top: 1px solid rgba(255,255,255,0.06); 
+            border-radius: 16px; 
+            overflow: hidden; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
+            transition: 0.3s;
+        }
 
-        /* CÔNG TẮC LAYER CHUẨN UI KIT */
-        .layer-list { display: flex; flex-direction: column; gap: 14px; }
-        .layer-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 6px 8px; transition: 0.3s; border-radius: 12px;}
-        .layer-item:hover { background: rgba(255,255,255,0.03); }
-        body.theme-light .layer-item:hover { background: rgba(0,0,0,0.02); }
-        .layer-left { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 500; color: var(--text-muted); transition: 0.3s; }
-        .layer-item:hover .layer-left { color: var(--text-main); }
-        .color-dot { width: 12px; height: 12px; border-radius: 4px; box-shadow: 0 0 8px currentColor; }
+        body.theme-light .search-box { 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            border-top: 1px solid rgba(255,255,255,0.8); 
+        }
 
-        .layer-item input[type="checkbox"] { display: none; }
+        .search-box:focus-within { 
+            border-color: var(--vibrant-cyan); 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 30px rgba(0, 255, 255, 0.25); 
+        }
+
+        .search-box input { 
+            background: transparent; 
+            border: none; 
+            padding: 14px 20px; 
+            width: 280px; 
+            color: var(--text-main); 
+            font-size: 14px; 
+            outline: none; 
+        }
+
+        .search-box button { 
+            background: transparent; 
+            border: none; 
+            border-left: 1px solid var(--panel-border); 
+            padding: 0 20px; 
+            color: var(--vibrant-cyan); 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+
+        .search-box button:hover { 
+            background: rgba(0, 255, 255, 0.1); 
+            text-shadow: 0 0 10px var(--vibrant-cyan); 
+        }
+
+        /* ========================================================= */
+        /* CẤU TRÚC BẢNG ĐIỀU KHIỂN (SIDEBAR)                        */
+        /* ========================================================= */
+        .sidebar-container { 
+            position: absolute; 
+            top: 24px; 
+            left: 24px; 
+            display: flex; 
+            gap: 16px; 
+            align-items: flex-start; 
+        }
+
+        .sidebar { 
+            width: 360px; 
+            background: var(--panel-bg); 
+            border: 1px solid var(--panel-border); 
+            border-top: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 32px; 
+            padding: 28px; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.7); 
+            max-height: calc(100vh - 48px); 
+            overflow-y: auto; 
+            transition: 0.4s; 
+        }
+
+        body.theme-light .sidebar { 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08); 
+            border-top: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .sidebar::-webkit-scrollbar { 
+            width: 0; 
+        }
+
+        .toggle-btn { 
+            background: var(--panel-bg); 
+            border: 1px solid var(--panel-border); 
+            border-top: 1px solid rgba(255,255,255,0.1); 
+            color: var(--text-main); 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5); 
+            transition: 0.3s; 
+            margin-top: 10px; 
+        }
+
+        body.theme-light .toggle-btn { 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05); 
+            border-top: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .toggle-btn:hover { 
+            color: var(--vibrant-cyan); 
+            border-color: var(--vibrant-cyan);
+            box-shadow: 0 0 25px rgba(0,255,255,0.3); 
+            transform: translateY(-2px); 
+        }
+
+        /* HEADER THƯƠNG HIỆU */
+        .brand-header { 
+            margin-bottom: 24px; 
+            text-align: center; 
+            position: relative;
+        }
+
+        h1 { 
+            margin: 0; 
+            font-size: 26px; 
+            font-weight: 900; 
+            letter-spacing: -0.5px; 
+            color: var(--text-main); 
+        }
+
+        .tagline { 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: var(--vibrant-cyan); 
+            margin-top: 6px; 
+            display: block; 
+            letter-spacing: 2px; 
+            text-shadow: 0 0 12px rgba(0,255,255,0.5); 
+        }
+
+        /* KHỐI PANEL THÀNH PHẦN */
+        .panel-card { 
+            margin-bottom: 24px; 
+            background: rgba(0,0,0,0.3); 
+            padding: 18px; 
+            border-radius: 20px; 
+            border: 1px solid rgba(255,255,255,0.02); 
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.5); 
+        }
+
+        body.theme-light .panel-card { 
+            background: #f8fafc; 
+            border: 1px solid #f1f5f9; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .panel-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px; 
+        }
+
+        .panel-title { 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: var(--text-main); 
+        }
+
+        .val-hl { 
+            color: var(--vibrant-cyan); 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 14px; 
+            font-weight: 800; 
+            text-shadow: 0 0 10px rgba(0,255,255,0.4);
+        }
+
+        /* THANH TRƯỢT ZOOM */
+        .zoom-slider { 
+            -webkit-appearance: none; 
+            width: 100%; 
+            height: 6px; 
+            background: rgba(0,0,0,0.6); 
+            border-radius: 4px; 
+            outline: none; 
+            margin-top: 6px; 
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+        }
+
+        body.theme-light .zoom-slider { 
+            background: #e2e8f0; 
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); 
+        }
+
+        .zoom-slider::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%; 
+            background: #fff; 
+            cursor: pointer; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+            border: 4px solid var(--vibrant-cyan); 
+            transition: 0.3s; 
+        }
+
+        /* ========================================================= */
+        /* CÔNG TẮC LAYER VÀ CÁC NÚT ĐIỀU KHIỂN                      */
+        /* ========================================================= */
+        .layer-list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 14px; 
+        }
+
+        .layer-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            cursor: pointer; 
+            padding: 6px 8px; 
+            transition: 0.3s; 
+            border-radius: 12px;
+        }
+
+        .layer-item:hover { 
+            background: rgba(255,255,255,0.03); 
+        }
+
+        body.theme-light .layer-item:hover { 
+            background: rgba(0,0,0,0.02); 
+        }
+
+        .layer-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            font-size: 13px; 
+            font-weight: 500; 
+            color: var(--text-muted); 
+            transition: 0.3s; 
+        }
+
+        .layer-item:hover .layer-left { 
+            color: var(--text-main); 
+        }
+
+        .color-dot { 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 4px; 
+            box-shadow: 0 0 8px currentColor; 
+        }
+
+        .layer-item input[type="checkbox"] { 
+            display: none; 
+        }
         
         .toggle-switch { 
-            width: 46px; height: 26px; border-radius: 20px; position: relative; transition: 0.4s;
-            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+            width: 46px; 
+            height: 26px; 
+            border-radius: 20px; 
+            position: relative; 
+            transition: 0.4s;
+            background: rgba(0,0,0,0.5); 
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.8);
         }
-        body.theme-light .toggle-switch { background: #e2e8f0; border-color: #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+
+        body.theme-light .toggle-switch { 
+            background: #e2e8f0; 
+            border-color: #cbd5e1; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
+        }
         
         .toggle-switch::after { 
-            content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; 
-            background: #64748b; border-radius: 50%; transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            content: ''; 
+            position: absolute; 
+            top: 2px; 
+            left: 2px; 
+            width: 20px; 
+            height: 20px; 
+            background: #64748b; 
+            border-radius: 50%; 
+            transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
             box-shadow: 0 2px 5px rgba(0,0,0,0.4);
         }
-        body.theme-light .toggle-switch::after { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+
+        body.theme-light .toggle-switch::after { 
+            background: #fff; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15); 
+        }
         
         .layer-item input[type="checkbox"]:checked + .toggle-switch { 
             background: linear-gradient(135deg, #00ffff, #0066ff); 
             border-color: rgba(0, 255, 255, 0.6); 
-            box-shadow: 0 0 15px rgba(0,255,255,0.5), inset 0 2px 6px rgba(0,0,0,0.3); 
+            box-shadow: 0 0 15px rgba(0,255,255,0.4), inset 0 2px 6px rgba(0,0,0,0.3); 
         }
+
         .layer-item input[type="checkbox"]:checked + .toggle-switch::after { 
-            transform: translateX(20px); background: #ffffff; box-shadow: -2px 4px 8px rgba(0,0,0,0.4); 
+            transform: translateX(20px); 
+            background: #ffffff; 
+            box-shadow: -2px 4px 8px rgba(0,0,0,0.4); 
         }
-        .layer-item input[type="checkbox"]:checked ~ .layer-left { color: var(--text-main); text-shadow: 0 0 8px rgba(255,255,255,0.3); }
 
-        .theme-toggle { position: relative; width: 100%; height: 48px; border-radius: 24px; cursor: pointer; margin-top: 24px; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; transition: 0.5s; overflow: hidden; }
-        body.theme-light .theme-toggle { background: #f8fafc; border-color: #e2e8f0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);}
+        .layer-item input[type="checkbox"]:checked ~ .layer-left { 
+            color: var(--text-main); 
+            text-shadow: 0 0 8px rgba(255,255,255,0.3); 
+        }
+
+        /* NÚT CHUYỂN ĐỔI SÁNG/TỐI (THEME) */
+        .theme-toggle { 
+            position: relative; 
+            width: 100%; 
+            height: 48px; 
+            border-radius: 24px; 
+            cursor: pointer; 
+            margin-top: 24px; 
+            background: rgba(0,0,0,0.3); 
+            border: 1px solid var(--panel-border); 
+            border-top: 1px solid rgba(255,255,255,0.08); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 15px; 
+            transition: 0.5s; 
+            overflow: hidden; 
+        }
+
+        body.theme-light .theme-toggle { 
+            background: #f8fafc; 
+            border-color: #e2e8f0; 
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+        }
         
-        .theme-thumb { position: absolute; top: 4px; width: 38px; height: 38px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 5px 12px rgba(0,0,0,0.5); z-index: 5; }
-        .theme-toggle.dark-mode .theme-thumb { left: 4px; border: 1px solid rgba(138,43,226,0.2); box-shadow: 0 0 15px #8a2be2; }
-        .theme-toggle.light-mode .theme-thumb { left: calc(100% - 42px); border: 1px solid rgba(255,157,0,0.3); transform: rotate(360deg); }
-        .theme-text { font-size: 11px; font-weight: 800; z-index: 2; transition: 0.3s; letter-spacing: 1.5px;}
-        .theme-toggle.dark-mode .t-dark { color: #fff; text-shadow: 0 0 10px #8a2be2; } .theme-toggle.dark-mode .t-light { color: rgba(255,255,255,0.2); }
-        .theme-toggle.light-mode .t-dark { color: #94a3b8; } .theme-toggle.light-mode .t-light { color: #f59e0b; text-shadow: 0 0 8px #f59e0b;}
-
-        /* LA BÀN HUD */
-        .hud-bottom { 
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); 
-            background: var(--panel-bg); 
-            border: 1px solid var(--panel-border); border-top: 1px solid rgba(255,255,255,0.1);
-            border-radius: 50px; padding: 14px 40px; display: flex; gap: 40px; 
-            font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); z-index: 1000;
+        .theme-thumb { 
+            position: absolute; 
+            top: 4px; 
+            width: 38px; 
+            height: 38px; 
+            border-radius: 50%; 
+            background: #fff; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 18px; 
+            transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            box-shadow: 0 5px 12px rgba(0,0,0,0.5); 
+            z-index: 5; 
         }
-        body.theme-light .hud-bottom { box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-top: 1px solid #fff;}
-        .hud-val { color: var(--text-main); font-weight: 800; transition: 0.5s;}
 
-        .core-badge { font-size: 10px; font-weight: 800; color: var(--light-cyan); display: flex; align-items: center; gap: 6px; background: rgba(0, 255, 255, 0.1); padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.4);}
-        .pulse-dot { width: 6px; height: 6px; background: var(--light-cyan); border-radius: 50%; box-shadow: 0 0 12px var(--light-cyan); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.4; } 100% { transform: scale(0.8); opacity: 1; } }
+        .theme-toggle.dark-mode .theme-thumb { 
+            left: 4px; 
+            border: 1px solid rgba(138,43,226,0.2); 
+            box-shadow: 0 0 15px #8a2be2; 
+        }
+
+        .theme-toggle.light-mode .theme-thumb { 
+            left: calc(100% - 42px); 
+            border: 1px solid rgba(255,157,0,0.3); 
+            transform: rotate(360deg); 
+        }
+
+        .theme-text { 
+            font-size: 11px; 
+            font-weight: 800; 
+            z-index: 2; 
+            transition: 0.3s; 
+            letter-spacing: 1.5px;
+        }
+
+        .theme-toggle.dark-mode .t-dark { 
+            color: #fff; text-shadow: 0 0 10px #8a2be2; 
+        } 
+
+        .theme-toggle.dark-mode .t-light { 
+            color: rgba(255,255,255,0.2); 
+        }
+
+        .theme-toggle.light-mode .t-dark { 
+            color: #94a3b8; 
+        } 
+
+        .theme-toggle.light-mode .t-light { 
+            color: #f59e0b; 
+            text-shadow: 0 0 8px #f59e0b;
+        }
+
 
         /* ========================================================================= */
-        /* THUẬT TOÁN KÍNH NGHỆ THUẬT V114 (KHÔI PHỤC CẤU TRÚC V112 + GLOW V113)     */
-        /* 1. Trả lại Blur(6px) và cấu trúc kính dày, có độ sâu.                     */
-        /* 2. Cắt lóa chéo (Diagonal Specular) cực sắc bén tạo độ cứng pha lê.       */
-        /* 3. Tụ quang đáy (Bottom Refraction) rực màu neon.                         */
+        /* THUẬT TOÁN ÁNH SÁNG CHÍNH (DIRECTIONAL ART GLASS) - V115                  */
+        /* Đây là cốt lõi để tạo ra chất liệu pha lê vật lý chân thực nhất:          */
+        /* 1. Nguồn sáng chính (Top-Left): Ánh sáng cường độ cao rọi chéo góc 135độ. */
+        /* 2. Phần mờ và tối (Core Volume): Phần giữa kính phải tối lại để tạo khối. */
+        /* 3. Tán xạ ánh sáng (Translucency/Caustics): Tụ quang mạnh ở Bottom-Right. */
         /* ========================================================================= */
         
         .btn-liquid {
-            width: 100%; padding: 18px 12px; 
+            width: 100%; 
+            padding: 18px 12px; 
             border-radius: 50px; 
-            outline: none; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13.5px; letter-spacing: 0.5px; text-transform: uppercase;
-            color: #fff; cursor: pointer; position: relative; overflow: hidden;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
+            outline: none; 
+            font-family: 'Inter', sans-serif; 
+            font-weight: 800; 
+            font-size: 13.5px; 
+            letter-spacing: 0.5px; 
+            text-transform: uppercase;
+            color: #fff; 
+            cursor: pointer; 
+            position: relative; 
+            overflow: hidden;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            z-index: 1;
             
-            /* Trả lại Blur vừa đủ (6px) để tạo độ đặc của kính khối */
-            backdrop-filter: blur(6px) brightness(1.1); -webkit-backdrop-filter: blur(6px) brightness(1.1);
+            /* ĐỘ TRONG SUỐT PHA LÊ: Không mờ quá (kính nhà tắm), không trong quá (vô hình) */
+            backdrop-filter: blur(4px) brightness(1.2); 
+            -webkit-backdrop-filter: blur(4px) brightness(1.2);
             
-            /* Viền bắt sáng gắt ở góc Top-Left như đánh bóng kim cương */
-            border: 1px solid transparent;
-            border-top: 1.5px solid rgba(255, 255, 255, 0.85);
-            border-left: 1px solid rgba(255, 255, 255, 0.4);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.6);
-            border-right: 1px solid rgba(0, 0, 0, 0.3);
+            /* HỆ THỐNG VIỀN DIRECTIONAL (Ánh sáng từ Top-Left) */
+            border: 1px solid transparent; /* Cơ sở */
+            border-top: 1.5px solid rgba(255, 255, 255, 0.95); /* Bắt sáng chói lóa nhất */
+            border-left: 1.5px solid rgba(255, 255, 255, 0.6); /* Bắt sáng thứ cấp */
+            border-right: 1px solid rgba(0, 0, 0, 0.2); /* Khuất sáng */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.6); /* Đáy tối thẫm */
         }
 
-        /* VỆT LÓA ĐỈNH (SPECULAR HIGHLIGHT): KHÔI PHỤC TỪ V112 */
-        /* Cắt chéo 110 độ siêu sắc nét tạo cảm giác kính cứng bo tròn */
+        /* LÓA SÁNG GÓC TOP-LEFT (SPECULAR HIGHLIGHT) */
+        /* Chỉ cho lóa ở góc trên cùng bên trái, cắt vát cực bén */
         .btn-liquid::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(110deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0) 26%);
-            border-radius: inherit; z-index: -1; pointer-events: none;
+            content: ''; 
+            position: absolute; 
+            inset: 0;
+            background: radial-gradient(150% 150% at 0% 0%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.1) 20%, transparent 25%);
+            border-radius: inherit; 
+            z-index: -1; 
+            pointer-events: none;
         }
 
-        .btn-liquid:active { transform: translateY(3px); box-shadow: none !important; }
+        .btn-liquid:active { 
+            transform: translateY(3px); 
+            box-shadow: none !important; 
+        }
 
-        /* NÚT CYAN (MÔ PHỎNG NÚT "BIITTON") */
+        /* --------------------------------------------------------- */
+        /* NÚT CYAN (MÔ PHỎNG NÚT "BIITTON" - XANH DƯƠNG CHÓI LÓA)   */
+        /* --------------------------------------------------------- */
         .btn-cyan {
-            /* Gradient có độ tương phản: Sáng chói -> Tối dần tạo khối lõm */
-            background: linear-gradient(180deg, rgba(0, 240, 255, 0.35) 0%, rgba(0, 100, 255, 0.1) 100%);
+            /* TẠO KHỐI THỂ TÍCH (VOLUME): Chuyển từ siêu sáng (Top-Left) sang bóng tối sâu (Bottom-Right) */
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.6) 0%, rgba(0, 50, 150, 0.1) 100%);
             box-shadow: 
-                /* Lóa mép trên cùng màu trắng sắc nét */
-                inset 0 1px 2px rgba(255, 255, 255, 0.9),
-                inset 0 6px 12px rgba(255, 255, 255, 0.2), /* Độ dày mặt trên */
-                /* Khúc xạ đáy rực sáng Neon (Bottom Glow) */
-                inset 0 -5px 12px rgba(0, 150, 255, 0.9),
-                /* BÓNG ĐEN VẬT LÝ tạo độ nổi khối 3D */
-                0 10px 20px rgba(0, 0, 0, 0.7),
-                /* HÀO QUANG MÀU (Caustics) lan nhẹ phía dưới */
-                0 15px 35px -5px rgba(0, 240, 255, 0.6);
+                /* 1. Gờ sáng kép ở Top-Left (Tạo độ dày viền pha lê) */
+                inset 2px 3px 5px rgba(255, 255, 255, 0.8),
+                /* 2. Vùng lõi tối (Core Shadow) chặn sáng ở giữa */
+                inset -5px -5px 15px rgba(0, 0, 0, 0.4),
+                /* 3. Tán xạ màu ở mép đáy Bottom-Right (Khúc xạ ánh sáng) */
+                inset -2px -6px 15px rgba(0, 100, 255, 0.9),
+                /* 4. Bóng đen vật lý sâu lệch về Bottom-Right (Ghim xuống nền) */
+                8px 12px 20px rgba(0, 0, 0, 0.8),
+                /* 5. Tụ quang màu (Caustics) lan từ Bottom-Right */
+                15px 20px 40px -5px rgba(0, 150, 255, 0.6);
                 
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
         
         .btn-cyan:hover { 
-            background: linear-gradient(180deg, rgba(0, 255, 255, 0.45) 0%, rgba(0, 120, 255, 0.2) 100%);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.8) 0%, rgba(0, 50, 150, 0.2) 100%);
             box-shadow: 
-                inset 0 1px 2px rgba(255, 255, 255, 1),
-                inset 0 6px 12px rgba(255, 255, 255, 0.3),
-                inset 0 -5px 12px rgba(0, 180, 255, 1),
-                0 12px 25px rgba(0, 0, 0, 0.8),
-                0 20px 40px -2px rgba(0, 255, 255, 0.7);
+                inset 2px 4px 6px rgba(255, 255, 255, 1),
+                inset -5px -5px 15px rgba(0, 0, 0, 0.3),
+                inset -2px -6px 15px rgba(0, 150, 255, 1),
+                8px 15px 25px rgba(0, 0, 0, 0.9),
+                15px 25px 50px -5px rgba(0, 200, 255, 0.8);
             transform: translateY(-2px);
         }
 
-        .btn-group { display: flex; gap: 14px; margin-top: 18px; }
+        .btn-group { 
+            display: flex; 
+            gap: 14px; 
+            margin-top: 18px; 
+        }
 
-        /* NÚT MAGENTA (MÔ PHỎNG NÚT "SECONDARY" TÍM/HỒNG) */
+        /* --------------------------------------------------------- */
+        /* NÚT MAGENTA (MÔ PHỎNG NÚT "SECONDARY" - ĐA SẮC TÍM/HỒNG)  */
+        /* --------------------------------------------------------- */
         .btn-magenta {
-            flex: 1; font-size: 12px;
-            background: linear-gradient(180deg, rgba(200, 0, 255, 0.35) 0%, rgba(255, 0, 100, 0.1) 100%);
+            flex: 1; 
+            font-size: 12px;
+            /* Gradient góc 135 độ chuẩn vật lý: Tím sáng -> Mờ đen */
+            background: linear-gradient(135deg, rgba(200, 0, 255, 0.6) 0%, rgba(100, 0, 50, 0.1) 100%);
             box-shadow: 
-                inset 0 1px 2px rgba(255, 255, 255, 0.9),
-                inset 0 6px 12px rgba(255, 255, 255, 0.2),
-                inset 0 -5px 12px rgba(255, 0, 100, 0.9),
-                0 10px 20px rgba(0, 0, 0, 0.7),
-                0 15px 35px -5px rgba(200, 0, 255, 0.6);
+                /* Lóa mép Top-Left */
+                inset 2px 3px 5px rgba(255, 255, 255, 0.8),
+                /* Cắt lõi tối */
+                inset -5px -5px 15px rgba(0, 0, 0, 0.4),
+                /* Khúc xạ đa sắc Hồng/Cam ở Bottom-Right */
+                inset -2px -6px 15px rgba(255, 0, 100, 0.9),
+                /* Bóng ghim vật lý */
+                8px 12px 20px rgba(0, 0, 0, 0.8),
+                /* Caustics đổ chéo xuống dưới */
+                15px 20px 40px -5px rgba(200, 0, 255, 0.6);
+
             text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
 
         .btn-magenta:hover { 
-            background: linear-gradient(180deg, rgba(220, 50, 255, 0.45) 0%, rgba(255, 50, 120, 0.2) 100%);
+            background: linear-gradient(135deg, rgba(220, 50, 255, 0.8) 0%, rgba(150, 0, 50, 0.2) 100%);
             box-shadow: 
-                inset 0 1px 2px rgba(255, 255, 255, 1),
-                inset 0 6px 12px rgba(255, 255, 255, 0.3),
-                inset 0 -5px 12px rgba(255, 50, 120, 1),
-                0 12px 25px rgba(0, 0, 0, 0.8),
-                0 20px 40px -2px rgba(220, 50, 255, 0.7);
+                inset 2px 4px 6px rgba(255, 255, 255, 1),
+                inset -5px -5px 15px rgba(0, 0, 0, 0.3),
+                inset -2px -6px 15px rgba(255, 50, 120, 1),
+                8px 15px 25px rgba(0, 0, 0, 0.9),
+                15px 25px 50px -5px rgba(220, 50, 255, 0.8);
             transform: translateY(-2px);
         }
 
-        /* THANH TIẾN TRÌNH LOADER ĐA SẮC QUANG PHỔ */
-        .prog-container { margin-top: 25px; text-align: center;}
-        .prog-wrap { height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; padding: 2px; position: relative; box-shadow: inset 0 2px 6px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.05); }
-        body.theme-light .prog-wrap { background: #e2e8f0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); border: none; }
+        /* THANH TIẾN TRÌNH LOADER */
+        .prog-container { 
+            margin-top: 25px; 
+            text-align: center;
+        }
+
+        .prog-wrap { 
+            height: 12px; 
+            background: rgba(0,0,0,0.5); 
+            border-radius: 10px; 
+            padding: 2px; 
+            position: relative; 
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.8); 
+            border: 1px solid rgba(255,255,255,0.05); 
+        }
+
+        body.theme-light .prog-wrap { 
+            background: #e2e8f0; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
+            border: none; 
+        }
         
         #progress { 
-            width: 0%; height: 100%; border-radius: 6px; 
+            width: 0%; 
+            height: 100%; 
+            border-radius: 6px; 
             background: linear-gradient(90deg, #00ffff, #0066ff, #8a2be2, #ff0055, #ffaa00); 
-            background-size: 300% 100%; animation: liquidFlow 2s linear infinite; 
-            box-shadow: 0 0 20px rgba(255, 0, 85, 0.8), inset 0 2px 3px rgba(255,255,255,0.8); 
+            background-size: 300% 100%; 
+            animation: liquidFlow 2s linear infinite; 
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.8), inset 0 2px 3px rgba(255,255,255,0.9); 
             transition: width 0.4s ease;
         }
+
+        @keyframes liquidFlow { 
+            0% { background-position: 0% 50%; } 
+            100% { background-position: 100% 50%; } 
+        }
+
+        #stt { 
+            font-size: 10px; 
+            color: var(--text-muted); 
+            font-family: 'JetBrains Mono', monospace; 
+            font-weight: 800; 
+            margin-top: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+        }
+
+        /* HUD TỌA ĐỘ BẢN ĐỒ */
+        .hud-bottom { 
+            position: absolute; 
+            bottom: 30px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: var(--panel-bg); 
+            border: 1px solid var(--panel-border); 
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px; 
+            padding: 14px 40px; 
+            display: flex; 
+            gap: 40px; 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); 
+            z-index: 1000;
+        }
+
+        body.theme-light .hud-bottom { 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+            border-top: 1px solid #fff;
+        }
+
+        .hud-val { 
+            color: var(--text-main); 
+            font-weight: 800; 
+            transition: 0.5s;
+        }
+
+        .core-badge { 
+            font-size: 10px; 
+            font-weight: 800; 
+            color: var(--vibrant-cyan); 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            background: rgba(0, 255, 255, 0.1); 
+            padding: 4px 10px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        }
+
+        .pulse-dot { 
+            width: 6px; 
+            height: 6px; 
+            background: var(--vibrant-cyan); 
+            border-radius: 50%; 
+            box-shadow: 0 0 12px var(--vibrant-cyan); 
+            animation: pulse 2s infinite; 
+        }
+
+        @keyframes pulse { 
+            0% { transform: scale(0.8); opacity: 1; } 
+            50% { transform: scale(1.4); opacity: 0.4; } 
+            100% { transform: scale(0.8); opacity: 1; } 
+        }
+
     </style>
 </head>
 <body>
@@ -247,7 +714,7 @@
             
             <div class="brand-header">
                 <h1>NAM ARCH</h1>
-                <span class="tagline">V114 • PERFECTED ART GLASS</span>
+                <span class="tagline">V115 • DIRECTIONAL ART GLASS</span>
             </div>
 
             <div class="panel-card">
@@ -337,6 +804,7 @@
 
 <script>
     let sidebarOpen = true;
+    
     function toggleSidebar() {
         const sb = document.getElementById('sidebar');
         sidebarOpen = !sidebarOpen;
@@ -346,15 +814,30 @@
 
     document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT') return;
-        if (e.code === 'Space') { e.preventDefault(); startMegaScan(); }
+        if (e.code === 'Space') { 
+            e.preventDefault(); 
+            startMegaScan(); 
+        }
     });
 
-    var map = L.map('map', { zoomControl: false, maxZoom: 100, zoomSnap: 0.1 }).setView([10.7933, 106.6800], 16);
+    var map = L.map('map', { 
+        zoomControl: false, 
+        maxZoom: 100, 
+        zoomSnap: 0.1 
+    }).setView([10.7933, 106.6800], 16);
     
-    var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 100, maxNativeZoom: 19 }).addTo(map);
-    var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 100, maxNativeZoom: 19 });
+    var darkT = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { 
+        maxZoom: 100, 
+        maxNativeZoom: 19 
+    }).addTo(map);
+    
+    var lightT = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
+        maxZoom: 100, 
+        maxNativeZoom: 19 
+    });
     
     let graticuleLayer = L.layerGroup().addTo(map);
+    
     function drawGraticule() {
         graticuleLayer.clearLayers();
         let bounds = map.getBounds();
@@ -368,12 +851,22 @@
         let startLng = Math.floor(bounds.getWest() / step) * step;
         let endLng = Math.ceil(bounds.getEast() / step) * step;
 
-        for(let lat = startLat; lat <= endLat; lat += step) { L.polyline([[lat, bounds.getWest()], [lat, bounds.getEast()]], { color: gridColor, weight: 1, dashArray: '4, 4', interactive: false }).addTo(graticuleLayer); }
-        for(let lng = startLng; lng <= endLng; lng += step) { L.polyline([[bounds.getSouth(), lng], [bounds.getNorth(), lng]], { color: gridColor, weight: 1, dashArray: '4, 4', interactive: false }).addTo(graticuleLayer); }
+        for(let lat = startLat; lat <= endLat; lat += step) { 
+            L.polyline([[lat, bounds.getWest()], [lat, bounds.getEast()]], { 
+                color: gridColor, weight: 1, dashArray: '4, 4', interactive: false 
+            }).addTo(graticuleLayer); 
+        }
+        for(let lng = startLng; lng <= endLng; lng += step) { 
+            L.polyline([[bounds.getSouth(), lng], [bounds.getNorth(), lng]], { 
+                color: gridColor, weight: 1, dashArray: '4, 4', interactive: false 
+            }).addTo(graticuleLayer); 
+        }
     }
+    
     map.on('move zoomend', drawGraticule); 
 
     let isLightMap = false;
+    
     function toggleMapTheme() {
         isLightMap = !isLightMap;
         document.body.classList.toggle('theme-light', isLightMap);
@@ -381,17 +874,20 @@
         const thumbIcon = document.getElementById('themeThumbIcon');
         
         if(isLightMap) {
-            map.removeLayer(darkT); lightT.addTo(map);
+            map.removeLayer(darkT); 
+            lightT.addTo(map);
             toggleBtn.classList.replace('dark-mode', 'light-mode');
             thumbIcon.innerText = '☀️';
         } else {
-            map.removeLayer(lightT); darkT.addTo(map);
+            map.removeLayer(lightT); 
+            darkT.addTo(map);
             toggleBtn.classList.replace('light-mode', 'dark-mode');
             thumbIcon.innerText = '🌙';
         }
         updateLineStyles();
         drawGraticule();
     }
+    
     drawGraticule();
 
     async function searchLocation() {
@@ -401,27 +897,46 @@
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data = await res.json();
-            if(data && data.length > 0) map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
-        } catch(e) {}
+            if(data && data.length > 0) {
+                map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
+            }
+        } catch(e) {
+            console.error("Lỗi tìm kiếm: ", e);
+        }
     }
 
     function updateHUD() {
-        let z = map.getZoom(); let center = map.getCenter();
+        let z = map.getZoom(); 
+        let center = map.getCenter();
         document.getElementById('zoomSlider').value = z; 
         document.getElementById('z-val').innerText = z.toFixed(1);
         document.getElementById('hud-coord').innerText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+        
         let alt = Math.round(40000000 / Math.pow(2, z));
         document.getElementById('hud-alt').innerText = alt >= 1000 ? (alt/1000).toFixed(1) + 'km' : alt + 'm';
     }
+    
     document.getElementById('zoomSlider').addEventListener('input', e => map.setZoom(e.target.value));
-    map.on('move zoomend', updateHUD); updateHUD();
+    map.on('move zoomend', updateHUD); 
+    updateHUD();
 
     var geoData = { nha: [], duong: [], viahe: [], nuoc: [], cayxanh: [], dattrong: [], o_pho: [] };
-    var layers = { cayxanh: L.layerGroup().addTo(map), dattrong: L.layerGroup().addTo(map), nuoc: L.layerGroup().addTo(map), viahe: L.layerGroup().addTo(map), duong: L.layerGroup().addTo(map), nha: L.layerGroup().addTo(map) };
+    
+    var layers = { 
+        cayxanh: L.layerGroup().addTo(map), 
+        dattrong: L.layerGroup().addTo(map), 
+        nuoc: L.layerGroup().addTo(map), 
+        viahe: L.layerGroup().addTo(map), 
+        duong: L.layerGroup().addTo(map), 
+        nha: L.layerGroup().addTo(map) 
+    };
 
     function toggleLayer(type) {
-        if(document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked) map.addLayer(layers[type]);
-        else map.removeLayer(layers[type]);
+        if(document.getElementById('show' + type.charAt(0).toUpperCase() + type.slice(1)).checked) {
+            map.addLayer(layers[type]);
+        } else {
+            map.removeLayer(layers[type]);
+        }
     }
 
     function getLayerStyle(type) {
@@ -443,12 +958,16 @@
         return config[type];
     }
 
-    function updateLineStyles() { Object.keys(layers).forEach(type => layers[type].eachLayer(l => l.setStyle(getLayerStyle(type)))); }
+    function updateLineStyles() { 
+        Object.keys(layers).forEach(type => layers[type].eachLayer(l => l.setStyle(getLayerStyle(type)))); 
+    }
 
     function updateProgress(percent, text, isActive = true) {
-        const pBar = document.getElementById('progress'); const stt = document.getElementById('stt');
-        pBar.style.width = percent + '%'; stt.innerText = text;
-        stt.style.color = (percent >= 100) ? "var(--light-cyan)" : "var(--light-pink)";
+        const pBar = document.getElementById('progress'); 
+        const stt = document.getElementById('stt');
+        pBar.style.width = percent + '%'; 
+        stt.innerText = text;
+        stt.style.color = (percent >= 100) ? "var(--vibrant-cyan)" : "var(--vibrant-pink)";
     }
 
     function resetScan() {
@@ -462,119 +981,249 @@
     async function chunkedUnion(polygons, type) {
         if (!polygons || polygons.length === 0) return null;
         if (polygons.length === 1) return polygons[0];
-        let current = polygons.map(p => { try { return turf.cleanCoords(p); } catch(e) { return p; } });
+        
+        let current = polygons.map(p => { 
+            try { return turf.cleanCoords(p); } 
+            catch(e) { return p; } 
+        });
+        
         let step = 0;
+        
         while (current.length > 1) {
             let next = [];
             for (let i = 0; i < current.length; i += 2) {
                 if (i % 2 === 0) await yieldCPU(); 
-                if (i + 1 < current.length) { try { next.push(turf.union(current[i], current[i+1])); } catch(e) { next.push(current[i]); } } else next.push(current[i]);
+                if (i + 1 < current.length) { 
+                    try { 
+                        next.push(turf.union(current[i], current[i+1])); 
+                    } catch(e) { 
+                        next.push(current[i]); 
+                    } 
+                } else {
+                    next.push(current[i]);
+                }
             }
-            current = next; step++;
+            current = next; 
+            step++;
             document.getElementById('stt').innerText = `GỘP MẶT PHẲNG ${type}: BƯỚC ${step}`;
         }
         return current[0];
     }
 
     function calculateBuildingHeight(tags) {
-        if(tags['building:levels']) return parseFloat(tags['building:levels']) * 3.5;
+        if(tags['building:levels']) {
+            return parseFloat(tags['building:levels']) * 3.5;
+        }
         return 9 + Math.random() * 15;
     }
 
     async function startMegaScan() {
-        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("Hệ thống Core đang khởi động, vui lòng đợi vài giây!");
-        resetScan(); updateProgress(10, "KẾT NỐI VỆ TINH OVERPASS...", true);
+        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') {
+            return alert("Hệ thống Core đang khởi động, vui lòng đợi vài giây!");
+        }
         
-        const b = map.getBounds(); const sw = b.getSouthWest(); const ne = b.getNorthEast(); const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
+        resetScan(); 
+        updateProgress(10, "KẾT NỐI VỆ TINH OVERPASS...", true);
+        
+        const b = map.getBounds(); 
+        const sw = b.getSouthWest(); 
+        const ne = b.getNorthEast(); 
+        const screenBox = [sw.lng, sw.lat, ne.lng, ne.lat];
+        
         const q = `[out:json][timeout:50][bbox:${sw.lat},${sw.lng},${ne.lat},${ne.lng}];(nwr["building"];nwr["highway"];nwr["natural"~"water|coastline|wood|scrub|wetland"];nwr["waterway"~"riverbank|canal|dock"];nwr["leisure"~"park|garden|pitch|recreation_ground"];nwr["landuse"];nwr["amenity"];);out body;>;out skel qt;`;
         
         try {
             const res = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
             const data = await res.json();
-            updateProgress(30, "ĐANG BIÊN DỊCH SIÊU ĐỐI TƯỢNG (RELATIONS)...", true); await yieldCPU();
-            const geojson = osmtogeojson(data); const features = geojson.features;
             
-            if(features.length === 0) return updateProgress(0, "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!", false);
-            if(features.length > 8000) { if(!confirm(`Khu vực này có hơn ${features.length} đối tượng. Bạn có muốn tiếp tục?`)) return updateProgress(0, "ĐÃ HỦY QUÉT.", false); }
+            updateProgress(30, "ĐANG BIÊN DỊCH SIÊU ĐỐI TƯỢNG (RELATIONS)...", true); 
+            await yieldCPU();
+            
+            const geojson = osmtogeojson(data); 
+            const features = geojson.features;
+            
+            if(features.length === 0) {
+                return updateProgress(0, "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!", false);
+            }
+            
+            if(features.length > 8000) { 
+                if(!confirm(`Khu vực này có hơn ${features.length} đối tượng. Bạn có muốn tiếp tục?`)) {
+                    return updateProgress(0, "ĐÃ HỦY QUÉT.", false); 
+                }
+            }
             
             let rBufs = [], sBufs = [], rawNuoc = [];
             
             for (let i = 0; i < features.length; i++) {
-                if (i % 50 === 0) { updateProgress(40 + (i / features.length) * 40, `PHÂN LỚP QUY HOẠCH: ${i}/${features.length}`, true); await yieldCPU(); }
-                const f = features[i]; const geom = f.geometry; const tags = f.properties; if (!geom) continue;
+                if (i % 50 === 0) { 
+                    updateProgress(40 + (i / features.length) * 40, `PHÂN LỚP QUY HOẠCH: ${i}/${features.length}`, true); 
+                    await yieldCPU(); 
+                }
+                
+                const f = features[i]; 
+                const geom = f.geometry; 
+                const tags = f.properties; 
+                
+                if (!geom) continue;
                 
                 if (geom.type === 'LineString' || geom.type === 'MultiLineString') {
                     if (tags.highway) {
                         const lines = geom.type === 'LineString' ? [geom.coordinates] : geom.coordinates;
                         lines.forEach(coords => {
-                            const line = turf.lineString(coords); const wDuong = (tags.highway === 'primary' || tags.highway === 'secondary') ? 12 : 6; const wViahe = wDuong + 6;
-                            try { rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters'}), screenBox)); sBufs.push(turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters'}), screenBox)); } catch(e){}
+                            const line = turf.lineString(coords); 
+                            const wDuong = (tags.highway === 'primary' || tags.highway === 'secondary') ? 12 : 6; 
+                            const wViahe = wDuong + 6;
+                            try { 
+                                rBufs.push(turf.bboxClip(turf.buffer(line, wDuong/2, {units:'meters'}), screenBox)); 
+                                sBufs.push(turf.bboxClip(turf.buffer(line, wViahe/2, {units:'meters'}), screenBox)); 
+                            } catch(e){}
                         });
                     }
                 } else if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
-                    let poly = null; try { poly = turf.bboxClip(f, screenBox); } catch(e){} if (!poly || poly.geometry.coordinates.length === 0) continue;
+                    let poly = null; 
+                    try { 
+                        poly = turf.bboxClip(f, screenBox); 
+                    } catch(e){} 
                     
-                    if (tags.building) { poly.height = calculateBuildingHeight(tags); geoData.nha.push(poly); L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha); }
-                    else if (tags.natural === 'water' || tags.waterway) { rawNuoc.push(poly); }
-                    else if (tags.leisure || tags.natural === 'wood' || tags.natural === 'scrub' || tags.landuse === 'grass' || tags.landuse === 'forest') { geoData.cayxanh.push(poly); L.geoJSON(poly, { style: getLayerStyle('cayxanh') }).addTo(layers.cayxanh); }
-                    else if (tags.landuse || tags.amenity) { geoData.dattrong.push(poly); L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong); }
+                    if (!poly || poly.geometry.coordinates.length === 0) continue;
+                    
+                    if (tags.building) { 
+                        poly.height = calculateBuildingHeight(tags); 
+                        geoData.nha.push(poly); 
+                        L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha); 
+                    }
+                    else if (tags.natural === 'water' || tags.waterway) { 
+                        rawNuoc.push(poly); 
+                    }
+                    else if (tags.leisure || tags.natural === 'wood' || tags.natural === 'scrub' || tags.landuse === 'grass' || tags.landuse === 'forest') { 
+                        geoData.cayxanh.push(poly); 
+                        L.geoJSON(poly, { style: getLayerStyle('cayxanh') }).addTo(layers.cayxanh); 
+                    }
+                    else if (tags.landuse || tags.amenity) { 
+                        geoData.dattrong.push(poly); 
+                        L.geoJSON(poly, { style: getLayerStyle('dattrong') }).addTo(layers.dattrong); 
+                    }
                 }
             }
             
             let mR = null;
             if (rBufs.length > 0) {
-                updateProgress(80, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true); mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG"); 
-                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
+                updateProgress(80, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true); 
+                mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG"); 
+                if (mR) { 
+                    geoData.duong.push(mR); 
+                    L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); 
+                }
             }
             
             updateProgress(85, "ĐANG KHOANH VÙNG Ô PHỐ TỪ KHOẢNG TRỐNG...", true);
-            let baseCanvas = turf.bboxPolygon(screenBox); let mOpho = null;
-            if (mR) try { mOpho = turf.difference(baseCanvas, turf.cleanCoords(mR)); } catch(e){}
+            let baseCanvas = turf.bboxPolygon(screenBox); 
+            let mOpho = null;
+            if (mR) {
+                try { mOpho = turf.difference(baseCanvas, turf.cleanCoords(mR)); } catch(e){}
+            }
             if (!mOpho) mOpho = baseCanvas;
 
             updateProgress(88, "ĐANG ĐỤC LỖ MẶT NƯỚC...", true);
             let mNuoc = await chunkedUnion(rawNuoc, "MẶT NƯỚC"); 
             if (mNuoc) { 
-                geoData.nuoc.push(mNuoc); L.geoJSON(mNuoc, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc); 
-                try { let diff = turf.difference(mOpho, turf.cleanCoords(mNuoc)); if(diff) mOpho = diff; } catch(e) {}
+                geoData.nuoc.push(mNuoc); 
+                L.geoJSON(mNuoc, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc); 
+                try { 
+                    let diff = turf.difference(mOpho, turf.cleanCoords(mNuoc)); 
+                    if(diff) mOpho = diff; 
+                } catch(e) {}
             } else {
-                for(let i=0; i<rawNuoc.length; i++) { if (i % 10 === 0) await yieldCPU(); try { let diff = turf.difference(mOpho, turf.cleanCoords(rawNuoc[i])); if(diff) mOpho = diff; } catch(e) {} }
-                geoData.nuoc = rawNuoc; rawNuoc.forEach(n => L.geoJSON(n, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc));
+                for(let i=0; i<rawNuoc.length; i++) { 
+                    if (i % 10 === 0) await yieldCPU(); 
+                    try { 
+                        let diff = turf.difference(mOpho, turf.cleanCoords(rawNuoc[i])); 
+                        if(diff) mOpho = diff; 
+                    } catch(e) {} 
+                }
+                geoData.nuoc = rawNuoc; 
+                rawNuoc.forEach(n => L.geoJSON(n, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc));
             }
             
-            if (mOpho) { turf.flatten(mOpho).features.forEach(f => { geoData.o_pho.push(f); L.geoJSON(f, { color: '#8b95a5', weight: 1, fillOpacity: 0.15 }).addTo(layers.dattrong); }); }
+            if (mOpho) { 
+                turf.flatten(mOpho).features.forEach(f => { 
+                    geoData.o_pho.push(f); 
+                    L.geoJSON(f, { color: '#8b95a5', weight: 1, fillOpacity: 0.15 }).addTo(layers.dattrong); 
+                }); 
+            }
             
             if (sBufs.length > 0 && mR) {
-                updateProgress(92, "ĐANG TỐI ƯU CẮT MẶT VỈA HÈ...", true); let mS = await chunkedUnion(sBufs, "VỈA HÈ");
-                try { let viahe = turf.difference(mS, mR); if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); } } 
-                catch(e) { if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); } }
+                updateProgress(92, "ĐANG TỐI ƯU CẮT MẶT VỈA HÈ...", true); 
+                let mS = await chunkedUnion(sBufs, "VỈA HÈ");
+                try { 
+                    let viahe = turf.difference(mS, mR); 
+                    if(viahe) { 
+                        geoData.viahe.push(viahe); 
+                        L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); 
+                    } 
+                } 
+                catch(e) { 
+                    if (mS) { 
+                        geoData.viahe.push(mS); 
+                        L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); 
+                    } 
+                }
             }
             updateProgress(100, "QUÉT XONG! SẴN SÀNG XUẤT FILE.", false);
-        } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
+        } catch (err) { 
+            updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); 
+        }
     }
 
     async function export3DDAE() {
         updateProgress(10, "ĐANG BIÊN DỊCH SA BÀN 3D...", true);
-        const center = map.getCenter(); const sy = 111319.9; const sx = sy * Math.cos(center.lat * Math.PI / 180);
-        const tx = (pt) => ((pt[0] - center.lng) * sx); const ty = (pt) => ((pt[1] - center.lat) * sy);
+        const center = map.getCenter(); 
+        const sy = 111319.9; 
+        const sx = sy * Math.cos(center.lat * Math.PI / 180);
         
-        let positions = []; let indices = []; let vIdx = 0; let hasData = false;
-        const addVertex = (x, y, z) => { positions.push(`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`); indices.push(vIdx++); };
-        function getCCWTriangle(p1, p2, p3) { let cross = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0]); if (cross < 0) return [p1, p3, p2]; return [p1, p2, p3]; }
+        const tx = (pt) => ((pt[0] - center.lng) * sx); 
+        const ty = (pt) => ((pt[1] - center.lat) * sy);
+        
+        let positions = []; 
+        let indices = []; 
+        let vIdx = 0; 
+        let hasData = false;
+        
+        const addVertex = (x, y, z) => { 
+            positions.push(`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`); 
+            indices.push(vIdx++); 
+        };
+        
+        function getCCWTriangle(p1, p2, p3) { 
+            let cross = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0]); 
+            if (cross < 0) return [p1, p3, p2]; 
+            return [p1, p2, p3]; 
+        }
 
         const writeTriangles = (coords, zVal, reverseNormal = false) => {
             try {
-                let poly = turf.rewind(turf.polygon(coords), {reverse: false}); let clean = turf.cleanCoords(poly); let tess = turf.tesselate(clean);
+                let poly = turf.rewind(turf.polygon(coords), {reverse: false}); 
+                let clean = turf.cleanCoords(poly); 
+                let tess = turf.tesselate(clean);
+                
                 tess.features.forEach(tri => {
-                    let pts = tri.geometry.coordinates[0]; if (pts.length < 3) return;
-                    let [p1, p2, p3] = getCCWTriangle(pts[0], pts[1], pts[2]); if (reverseNormal) [p1, p2, p3] = [p1, p3, p2];
-                    addVertex(tx(p1), ty(p1), zVal); addVertex(tx(p2), ty(p2), zVal); addVertex(tx(p3), ty(p3), zVal);
+                    let pts = tri.geometry.coordinates[0]; 
+                    if (pts.length < 3) return;
+                    let [p1, p2, p3] = getCCWTriangle(pts[0], pts[1], pts[2]); 
+                    if (reverseNormal) [p1, p2, p3] = [p1, p3, p2];
+                    
+                    addVertex(tx(p1), ty(p1), zVal); 
+                    addVertex(tx(p2), ty(p2), zVal); 
+                    addVertex(tx(p3), ty(p3), zVal);
                 });
             } catch(e){}
         };
 
         const writeWalls = (ring, zBottom, zTop) => {
-            let pts = ring; if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts = [...pts, pts[0]];
+            let pts = ring; 
+            if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) {
+                pts = [...pts, pts[0]];
+            }
             for(let i=0; i<pts.length-1; i++) {
                 let p1 = pts[i]; let p2 = pts[i+1];
                 addVertex(tx(p1), ty(p1), zBottom); addVertex(tx(p2), ty(p2), zBottom); addVertex(tx(p2), ty(p2), zTop);
@@ -583,61 +1232,141 @@
         };
         
         const processLayer = async (dataArray, layerName, baseZ, isBuilding, curbBottomZ = null) => {
-            if(dataArray.length === 0) return; hasData = true;
+            if(dataArray.length === 0) return; 
+            hasData = true;
             for (let i = 0; i < dataArray.length; i++) {
-                if (i % 20 === 0) { updateProgress(10 + (i / dataArray.length) * 80, `DỰNG KHỐI [${layerName}]: ${i}/${dataArray.length}`, true); await yieldCPU(); }
-                const item = dataArray[i]; const geom = item.geometry || item; const h = item.height || 0; let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+                if (i % 20 === 0) { 
+                    updateProgress(10 + (i / dataArray.length) * 80, `DỰNG KHỐI [${layerName}]: ${i}/${dataArray.length}`, true); 
+                    await yieldCPU(); 
+                }
+                const item = dataArray[i]; 
+                const geom = item.geometry || item; 
+                const h = item.height || 0; 
+                let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+                
                 polys.forEach(coords => {
-                    let topZ = isBuilding && h > 0 ? baseZ + h : baseZ; writeTriangles(coords, topZ, false);
-                    if (isBuilding && h > 0) { writeTriangles(coords, baseZ, true); let poly = turf.rewind(turf.polygon(coords), {reverse: false}); poly.geometry.coordinates.forEach(ring => writeWalls(ring, baseZ, topZ)); } 
-                    else if (curbBottomZ !== null) { let poly = turf.rewind(turf.polygon(coords), {reverse: false}); poly.geometry.coordinates.forEach(ring => writeWalls(ring, Math.min(baseZ, curbBottomZ), Math.max(baseZ, curbBottomZ))); }
+                    let topZ = isBuilding && h > 0 ? baseZ + h : baseZ; 
+                    writeTriangles(coords, topZ, false);
+                    if (isBuilding && h > 0) { 
+                        writeTriangles(coords, baseZ, true); 
+                        let poly = turf.rewind(turf.polygon(coords), {reverse: false}); 
+                        poly.geometry.coordinates.forEach(ring => writeWalls(ring, baseZ, topZ)); 
+                    } 
+                    else if (curbBottomZ !== null) { 
+                        let poly = turf.rewind(turf.polygon(coords), {reverse: false}); 
+                        poly.geometry.coordinates.forEach(ring => writeWalls(ring, Math.min(baseZ, curbBottomZ), Math.max(baseZ, curbBottomZ))); 
+                    }
                 });
             }
         };
         
         if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "NUOC", -0.5, false, 0.0);
-        if(document.getElementById('showDat').checked) { await processLayer(geoData.o_pho, "O_PHO", 0.0, false, null); await processLayer(geoData.dattrong, "DATTRONG_OSM", 0.05, false, 0.0); }
+        if(document.getElementById('showDat').checked) { 
+            await processLayer(geoData.o_pho, "O_PHO", 0.0, false, null); 
+            await processLayer(geoData.dattrong, "DATTRONG_OSM", 0.05, false, 0.0); 
+        }
         if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.0, false, null); 
         if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, "CAYXANH", 0.1, false, 0.0); 
         if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "VIAHE", 0.15, false, 0.0); 
         if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.15, true, null); 
         
         if(!hasData) return updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
-        updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true); await yieldCPU();
+        
+        updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true); 
+        await yieldCPU();
 
-        const daeXML = `<?xml version="1.0" encoding="utf-8"?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"><asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset><library_geometries><geometry id="geom-0" name="CityMesh"><mesh><source id="geom-0-positions"><float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array><technique_common><accessor source="#geom-0-positions-array" count="${positions.length}" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source><vertices id="geom-0-vertices"><input semantic="POSITION" source="#geom-0-positions"/></vertices><triangles count="${indices.length / 3}"><input semantic="VERTEX" source="#geom-0-vertices" offset="0"/><p>${indices.join(' ')}</p></triangles></mesh></geometry></library_geometries><library_visual_scenes><visual_scene id="Scene" name="Scene"><node id="CityNode" name="CityNode"><instance_geometry url="#geom-0"/></node></visual_scene></library_visual_scenes><scene><instance_visual_scene url="#Scene"/></scene></COLLADA>`;
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); a.download = "NAM_ARCH_3D_PERFECTED.dae"; a.click(); 
+        const daeXML = `<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>
+  <library_geometries>
+    <geometry id="geom-0" name="CityMesh">
+      <mesh>
+        <source id="geom-0-positions">
+          <float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array>
+          <technique_common>
+            <accessor source="#geom-0-positions-array" count="${positions.length}" stride="3">
+              <param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-0-vertices">
+          <input semantic="POSITION" source="#geom-0-positions"/>
+        </vertices>
+        <triangles count="${indices.length / 3}">
+          <input semantic="VERTEX" source="#geom-0-vertices" offset="0"/>
+          <p>${indices.join(' ')}</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="CityNode" name="CityNode">
+        <instance_geometry url="#geom-0"/>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>`;
+
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); 
+        a.download = "NAM_ARCH_3D_DIRECTIONAL.dae"; 
+        a.click(); 
+        
         updateProgress(100, "XUẤT MÔ HÌNH 3D THÀNH CÔNG!", false);
     }
 
     async function export2DDXF() {
-        let hasData = false; updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
-        const center = map.getCenter(); const sy = 111319.9; const sx = sy * Math.cos(center.lat * Math.PI / 180);
+        let hasData = false; 
+        updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
+        
+        const center = map.getCenter(); 
+        const sy = 111319.9; 
+        const sx = sy * Math.cos(center.lat * Math.PI / 180);
+        
         let dxf = "0\nSECTION\n2\nENTITIES\n";
         
         const writeLines = async (dataArray, layerName) => {
-            if(dataArray.length === 0) return; hasData = true;
+            if(dataArray.length === 0) return; 
+            hasData = true;
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 50 === 0) await yieldCPU();
-                const geom = dataArray[i].geometry || dataArray[i]; let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-                polys.forEach(coords => { coords.forEach(ring => {
-                    dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
-                    ring.forEach(pt => { dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n30\n0\n`; });
-                    dxf += "0\nSEQEND\n";
-                });});
+                const geom = dataArray[i].geometry || dataArray[i]; 
+                let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+                
+                polys.forEach(coords => { 
+                    coords.forEach(ring => {
+                        dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
+                        ring.forEach(pt => { 
+                            dxf += `0\nVERTEX\n8\n${layerName}\n10\n${((pt[0]-center.lng)*sx).toFixed(3)}\n20\n${((pt[1]-center.lat)*sy).toFixed(3)}\n30\n0\n`; 
+                        });
+                        dxf += "0\nSEQEND\n";
+                    });
+                });
             }
         };
         
         if(document.getElementById('showNuoc').checked) await writeLines(geoData.nuoc, "V21_NUOC");
-        if(document.getElementById('showDat').checked) { await writeLines(geoData.o_pho, "V21_O_PHO"); await writeLines(geoData.dattrong, "V21_DATTRONG_OSM"); }
+        if(document.getElementById('showDat').checked) { 
+            await writeLines(geoData.o_pho, "V21_O_PHO"); 
+            await writeLines(geoData.dattrong, "V21_DATTRONG_OSM"); 
+        }
         if(document.getElementById('showCay').checked) await writeLines(geoData.cayxanh, "V21_CAYXANH");
         if(document.getElementById('showDuong').checked) await writeLines(geoData.duong, "V21_DUONG");
         if(document.getElementById('showViahe').checked) await writeLines(geoData.viahe, "V21_VIAHE");
         if(document.getElementById('showNha').checked) await writeLines(geoData.nha, "V21_NHA");
 
         if(!hasData) return updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
+        
         dxf += "0\nENDSEC\n0\nEOF";
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'})); a.download = "NAM_ARCH_2D_PLAN.dxf"; a.click(); 
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'})); 
+        a.download = "NAM_ARCH_2D_PLAN.dxf"; 
+        a.click(); 
+        
         updateProgress(100, "XUẤT BẢN VẼ 2D THÀNH CÔNG!", false);
     }
 </script>
