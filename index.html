@@ -2,159 +2,174 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Giao Diện 3D Kính Thực Tế (Three.js)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAM ARCH V118 • TRUE LIQUID GLASS</title>
     <style>
-        /* Nền tối chuẩn theo giao diện gốc của app bạn */
+        /* 1. KHUNG NỀN VẬN HÀNH */
         body {
-            background-color: #0b101e;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 40px; /* Khoảng cách giữa 2 nút */
-            font-family: sans-serif;
-            margin: 0;
-            overflow: hidden;
+            margin: 0; padding: 0; min-height: 100vh;
+            background-color: #0d1117;
+            background-image: url('https://w0.peakpx.com/wallpaper/594/545/HD-wallpaper-dark-map-black-map-minimalism-map.jpg'); /* Giả lập nền bản đồ */
+            background-size: cover; background-position: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* Khung chứa nút */
-        .btn-container {
-            position: relative;
-            width: 320px;
-            height: 90px;
-            cursor: pointer;
-            border-radius: 45px;
+        .app-container {
+            width: 380px; height: 820px;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+            display: flex; flex-direction: column; padding: 30px; box-sizing: border-box;
+            position: relative; overflow: hidden;
         }
 
-        /* Canvas 3D sẽ nằm chìm phía dưới */
-        .canvas-3d {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Để chuột bấm xuyên qua trúng cái khung */
-        }
+        /* 2. HEADER */
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #fff; font-size: 28px; font-weight: 900; margin: 0; letter-spacing: 2px; }
+        .header h2 { color: #00e5ff; font-size: 12px; font-weight: 800; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
 
-        /* Chữ nằm nổi lên trên cùng */
-        .btn-text {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: bold;
-            letter-spacing: 1.5px;
-            pointer-events: none;
-            z-index: 10;
-            text-shadow: 0px 2px 5px rgba(0,0,0,0.5); /* Đổ bóng chữ cho dễ đọc */
-        }
+        /* 3. MỨC ĐỘ THU PHÓNG (SLIDER) */
+        .section { background: rgba(0, 0, 0, 0.3); border-radius: 25px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .section-title span { color: #fff; font-size: 14px; font-weight: bold; }
+        .section-title .val { color: #00e5ff; font-family: monospace; font-size: 18px; }
         
-        /* Hiệu ứng khi nhấn chuột (Làm cho mượt) */
-        .btn-container:active {
-            transform: scale(0.96);
-            transition: transform 0.1s;
+        .slider-bar { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; position: relative; }
+        .slider-fill { width: 40%; height: 100%; background: #00e5ff; border-radius: 3px; box-shadow: 0 0 15px #00e5ff; }
+        .slider-knob { position: absolute; left: 40%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; background: #fff; border-radius: 50%; border: 4px solid #00e5ff; box-shadow: 0 0 10px #00e5ff; cursor: pointer; }
+
+        /* 4. QUẢN LÝ LỚP (LIST) */
+        .layer-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .layer-info { display: flex; align-items: center; gap: 12px; color: #cbd5e1; font-size: 14px; font-weight: 600; }
+        .color-dot { width: 12px; height: 12px; border-radius: 4px; box-shadow: 0 0 10px currentColor; }
+        
+        .switch { width: 46px; height: 24px; background: #00e5ff; border-radius: 12px; position: relative; cursor: pointer; box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
+        .switch::after { content: ''; position: absolute; right: 2px; top: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.3s; }
+
+        /* 5. KHU VỰC NÚT 3D (THE CORE) */
+        .buttons-group { display: flex; flex-direction: column; gap: 15px; margin-top: auto; }
+        .canvas-btn { position: relative; width: 100%; height: 65px; cursor: pointer; border-radius: 30px; overflow: hidden; }
+        .canvas-btn.small { height: 60px; }
+        .btn-row { display: flex; gap: 15px; }
+        
+        .btn-label {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 14px; font-weight: 800; letter-spacing: 1.5px; z-index: 10;
+            pointer-events: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
+
+        .footer { text-align: center; color: rgba(255,255,255,0.2); font-size: 10px; font-weight: bold; letter-spacing: 4px; margin-top: 20px; }
     </style>
-    
+
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
     </script>
 </head>
 <body>
 
-    <div class="btn-container" id="btn-cyan">
-        <div class="canvas-3d" id="canvas-cyan"></div>
-        <div class="btn-text">THUẬT TOÁN CYAN</div>
-    </div>
+    <div class="app-container">
+        <div class="header">
+            <h1>NAM ARCH</h1>
+            <h2>V118 • TRUE LIQUID GLASS</h2>
+        </div>
 
-    <div class="btn-container" id="btn-magenta">
-        <div class="canvas-3d" id="canvas-magenta"></div>
-        <div class="btn-text">THUẬT TOÁN MAGENTA</div>
+        <div class="section">
+            <div class="section-title"><span>Mức Độ Thu Phóng</span><span class="val">16.0</span></div>
+            <div class="slider-bar"><div class="slider-fill"></div><div class="slider-knob"></div></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><span>Quản Lý Lớp</span><span style="color:#00e5ff; font-size:10px;">● V82 CORE</span></div>
+            
+            <div class="layer-item">
+                <div class="layer-info"><div class="color-dot" style="color:#ff0055; background:#ff0055;"></div> Tòa Nhà</div>
+                <div class="switch"></div>
+            </div>
+            <div class="layer-item">
+                <div class="layer-info"><div class="color-dot" style="color:#64748b; background:#64748b;"></div> Lòng Đường</div>
+                <div class="switch"></div>
+            </div>
+            <div class="layer-item">
+                <div class="layer-info"><div class="color-dot" style="color:#00e5ff; background:#00e5ff;"></div> Sông Hồ</div>
+                <div class="switch"></div>
+            </div>
+            <div class="layer-item">
+                <div class="layer-info"><div class="color-dot" style="color:#10b981; background:#10b981;"></div> Cây Xanh</div>
+                <div class="switch"></div>
+            </div>
+        </div>
+
+        <div class="buttons-group">
+            <div class="canvas-btn" id="btn1"><div class="btn-label">⛶ QUÉT ĐỊA HÌNH V82</div></div>
+            <div class="canvas-btn" id="btn2"><div class="btn-label">LÀM MỚI</div></div>
+            <div class="btn-row">
+                <div class="canvas-btn small" id="btn3"><div class="btn-label">2D CAD</div></div>
+                <div class="canvas-btn small" id="btn4"><div class="btn-label">3D DAE</div></div>
+            </div>
+        </div>
+
+        <div class="footer">READY FOR ACTION...</div>
     </div>
 
     <script type="module">
         import * as THREE from 'three';
         import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-        // THUẬT TOÁN TẠO NÚT 3D ĐỘC LẬP
-        function create3DGlassButton(containerId, glowColorHex) {
-            const container = document.getElementById(containerId);
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-
-            // 1. Cài đặt môi trường
+        function createButton3D(id, hexColor) {
+            const container = document.getElementById(id);
+            const w = container.clientWidth, h = container.clientHeight;
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 100);
-            camera.position.z = 10;
+            const camera = new THREE.PerspectiveCamera(30, w/h, 0.1, 100);
+            camera.position.z = 6;
 
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(width, height);
+            renderer.setSize(w, h);
             renderer.setPixelRatio(window.devicePixelRatio);
             container.appendChild(renderer.domElement);
 
-            // 2. Cài đặt Ánh sáng (Để tạo vệt phản quang lóa trên kính)
-            const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-            scene.add(ambientLight);
+            const light = new THREE.DirectionalLight(0xffffff, 5);
+            light.position.set(2, 5, 5);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 5); // Độ chói
-            directionalLight.position.set(5, 5, 5);
-            scene.add(directionalLight);
+            // Hiệu ứng Gradient lỏng bên trong nút
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            const grd = ctx.createLinearGradient(0, 0, 512, 0);
+            grd.addColorStop(0, hexColor);
+            grd.addColorStop(0.6, hexColor);
+            grd.addColorStop(1, '#ffffff');
+            ctx.fillStyle = grd; ctx.fillRect(0,0,512,256);
+            const tex = new THREE.CanvasTexture(canvas);
 
-            // 3. TẠO KHỐI MÀU PHÁT SÁNG PHÍA SAU (Bí quyết để kính không bị trắng bóc)
-            // Khối này nằm bên trong 3D, khi kính đè lên sẽ tạo ra sự trong trẻo
-            const glowGeo = new THREE.PlaneGeometry(8, 3);
-            const glowMat = new THREE.MeshBasicMaterial({ color: glowColorHex });
-            const glowMesh = new THREE.Mesh(glowGeo, glowMat);
-            glowMesh.position.z = -1; // Đẩy lùi ra sau
-            scene.add(glowMesh);
-
-            // 4. CHẤT LIỆU KÍNH VẬT LÝ (THUẬT TOÁN LÕI)
             const glassMat = new THREE.MeshPhysicalMaterial({
-                color: 0xffffff,
-                metalness: 0.1,
-                roughness: 0.05,       // Cực nhẵn bóng
-                transmission: 1.0,     // Xuyên sáng 100%
-                ior: 1.5,              // Khúc xạ thủy tinh
-                thickness: 2.5,        // Độ dày làm bẻ cong màu nền phía sau
-                clearcoat: 1.0,        // Phủ bóng
-                clearcoatRoughness: 0.1
+                color: 0xffffff, transmission: 1.0, ior: 1.5, thickness: 2.0,
+                roughness: 0.02, metalness: 0, map: tex, clearcoat: 1, clearcoatRoughness: 0.05
             });
 
-            // 5. NẶN HÌNH NÚT (Dạng viên thuốc - Pill shape)
-            const glassGeo = new RoundedBoxGeometry(5.8, 1.6, 0.6, 6, 0.8);
-            const glassMesh = new THREE.Mesh(glassGeo, glassMat);
-            scene.add(glassMesh);
+            const geo = new RoundedBoxGeometry(5.2, 1.8, 0.8, 10, 0.8);
+            const mesh = new THREE.Mesh(geo, glassMat);
+            scene.add(mesh);
 
-            // 6. Xoay nhẹ để thấy rõ độ bóng 3D
             function animate() {
                 requestAnimationFrame(animate);
-                
-                // Hiệu ứng "lơ lửng" nhẹ nhàng để khoe độ trong suốt
-                const time = Date.now() * 0.001;
-                glassMesh.rotation.x = Math.sin(time) * 0.05;
-                glassMesh.rotation.y = Math.cos(time) * 0.05;
-
+                mesh.rotation.y = Math.sin(Date.now() * 0.001) * 0.1;
                 renderer.render(scene, camera);
             }
             animate();
+
+            container.addEventListener('mousedown', () => mesh.scale.set(0.94, 0.94, 0.94));
+            container.addEventListener('mouseup', () => mesh.scale.set(1, 1, 1));
         }
 
-        // CHẠY THUẬT TOÁN ĐỂ TẠO 2 NÚT VỚI MÀU GỐC CỦA BẠN
-        create3DGlassButton('canvas-cyan', '#00b4ff');    // Màu Cyan rực
-        create3DGlassButton('canvas-magenta', '#ff0096'); // Màu Magenta rực
+        // Khởi tạo 4 nút với đúng tông màu app
+        createButton3D('btn1', '#00b4ff');
+        createButton3D('btn2', '#e31b64');
+        createButton3D('btn3', '#7c3aed');
+        createButton3D('btn4', '#db2777');
     </script>
-
 </body>
 </html>
