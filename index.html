@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Giao Diện Nút Thủy Tinh NAM ARCH</title>
+    <title>Giao Diện 3D Kính Thực Tế (Three.js)</title>
     <style>
         /* Nền tối chuẩn theo giao diện gốc của app bạn */
         body {
@@ -13,118 +13,148 @@
             align-items: center;
             justify-content: center;
             gap: 40px; /* Khoảng cách giữa 2 nút */
-            font-family: 'Inter', sans-serif;
+            font-family: sans-serif;
             margin: 0;
+            overflow: hidden;
         }
 
-        /* ================================================= */
-        /* CẤU TRÚC CHUNG CỦA NÚT THỦY TINH (THE GLASS PILL) */
-        /* ================================================= */
-        .glass-btn {
+        /* Khung chứa nút */
+        .btn-container {
             position: relative;
-            width: 280px;
-            padding: 18px 0;
-            border-radius: 50px; /* Nút hình viên thuốc (Pill) */
-            font-size: 15px;
-            font-weight: 800;
-            color: #ffffff;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            width: 320px;
+            height: 90px;
             cursor: pointer;
-            
-            /* BÍ QUYẾT XUYÊN SÁNG (Bẻ cong nền tối phía sau) */
-            backdrop-filter: blur(12px) saturate(120%);
-            -webkit-backdrop-filter: blur(12px) saturate(120%);
-            
-            /* Viền quang học mỏng bọc ngoài */
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-top-color: rgba(255, 255, 255, 0.5);
-            border-left-color: rgba(255, 255, 255, 0.3);
-            
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 45px;
         }
 
-        /* VỆT CẮT BÓNG GƯƠNG (The Polished Gloss Cut) */
-        /* Đây là lớp phủ tạo cảm giác mặt kính được mài nhẵn */
-        .glass-btn::before {
-            content: '';
+        /* Canvas 3D sẽ nằm chìm phía dưới */
+        .canvas-3d {
             position: absolute;
-            inset: 1px;
-            border-radius: 50px;
-            background: linear-gradient(
-                135deg, 
-                rgba(255, 255, 255, 0.35) 0%,   /* Sáng chói ở góc trên */
-                rgba(255, 255, 255, 0.05) 45%,  /* Mờ dần */
-                transparent 45.2%,              /* CẮT ĐỨT ĐOẠN TẠO MẶT PHẲNG */
-                transparent 100%
-            );
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Để chuột bấm xuyên qua trúng cái khung */
+        }
+
+        /* Chữ nằm nổi lên trên cùng */
+        .btn-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
             pointer-events: none;
+            z-index: 10;
+            text-shadow: 0px 2px 5px rgba(0,0,0,0.5); /* Đổ bóng chữ cho dễ đọc */
         }
-
-        /* ================================================= */
-        /* 1. NÚT THUẬT TOÁN CYAN                            */
-        /* ================================================= */
-        .btn-cyan {
-            /* Lõi kính trong suốt nhẹ */
-            background: linear-gradient(135deg, rgba(0, 180, 255, 0.2) 0%, rgba(0, 255, 255, 0.05) 100%);
-            
-            /* TỔNG HỢP VẬT LÝ QUANG HỌC */
-            box-shadow: 
-                /* Highlight viền sáng mặt trên */
-                inset 2px 2px 5px rgba(255, 255, 255, 0.6),
-                
-                /* VÁCH KÍNH: Đổ bóng đen chìm để tạo cảm giác "nút dày" và sâu */
-                inset 10px 10px 20px rgba(0, 0, 0, 0.6),
-                inset -10px -10px 20px rgba(0, 0, 0, 0.4),
-                
-                /* TỤ QUANG ĐÁY: Mép dưới phản xạ toàn phần màu Cyan rực rỡ */
-                inset -3px -5px 15px rgba(0, 255, 255, 0.8),
-                
-                /* BÓNG HẮT (Outer Glow): Ánh sáng tản ra nền tối */
-                0 15px 35px rgba(0, 255, 255, 0.25),
-                0 5px 15px rgba(0, 0, 0, 0.5); /* Bóng vật lý */
-        }
-
-        /* ================================================= */
-        /* 2. NÚT THUẬT TOÁN MAGENTA                         */
-        /* ================================================= */
-        .btn-magenta {
-            /* Lõi kính trong suốt nhẹ */
-            background: linear-gradient(135deg, rgba(200, 0, 255, 0.2) 0%, rgba(255, 0, 150, 0.05) 100%);
-            
-            /* TỔNG HỢP VẬT LÝ QUANG HỌC */
-            box-shadow: 
-                inset 2px 2px 5px rgba(255, 255, 255, 0.6),
-                
-                /* VÁCH KÍNH */
-                inset 10px 10px 20px rgba(0, 0, 0, 0.6),
-                inset -10px -10px 20px rgba(0, 0, 0, 0.4),
-                
-                /* TỤ QUANG ĐÁY Magenta rực rỡ */
-                inset -3px -5px 15px rgba(255, 0, 150, 0.8),
-                
-                /* BÓNG HẮT */
-                0 15px 35px rgba(255, 0, 150, 0.25),
-                0 5px 15px rgba(0, 0, 0, 0.5);
-        }
-
-        /* HIỆU ỨNG KHI BẤM VÀO */
-        .glass-btn:active {
-            transform: scale(0.96) translateY(2px);
-            /* Sáng rực viền dưới khi bị ép xuống */
-            box-shadow: 
-                inset 2px 2px 5px rgba(255, 255, 255, 0.6),
-                inset 10px 10px 20px rgba(0, 0, 0, 0.6),
-                inset -3px -5px 25px rgba(255, 255, 255, 0.6),
-                0 5px 15px rgba(0, 0, 0, 0.3);
+        
+        /* Hiệu ứng khi nhấn chuột (Làm cho mượt) */
+        .btn-container:active {
+            transform: scale(0.96);
+            transition: transform 0.1s;
         }
     </style>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 </head>
 <body>
 
-    <div class="glass-btn btn-cyan">Thuật toán Cyan</div>
-    <div class="glass-btn btn-magenta">Thuật toán Magenta</div>
+    <div class="btn-container" id="btn-cyan">
+        <div class="canvas-3d" id="canvas-cyan"></div>
+        <div class="btn-text">THUẬT TOÁN CYAN</div>
+    </div>
+
+    <div class="btn-container" id="btn-magenta">
+        <div class="canvas-3d" id="canvas-magenta"></div>
+        <div class="btn-text">THUẬT TOÁN MAGENTA</div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+        // THUẬT TOÁN TẠO NÚT 3D ĐỘC LẬP
+        function create3DGlassButton(containerId, glowColorHex) {
+            const container = document.getElementById(containerId);
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // 1. Cài đặt môi trường
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 100);
+            camera.position.z = 10;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // 2. Cài đặt Ánh sáng (Để tạo vệt phản quang lóa trên kính)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 5); // Độ chói
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            // 3. TẠO KHỐI MÀU PHÁT SÁNG PHÍA SAU (Bí quyết để kính không bị trắng bóc)
+            // Khối này nằm bên trong 3D, khi kính đè lên sẽ tạo ra sự trong trẻo
+            const glowGeo = new THREE.PlaneGeometry(8, 3);
+            const glowMat = new THREE.MeshBasicMaterial({ color: glowColorHex });
+            const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+            glowMesh.position.z = -1; // Đẩy lùi ra sau
+            scene.add(glowMesh);
+
+            // 4. CHẤT LIỆU KÍNH VẬT LÝ (THUẬT TOÁN LÕI)
+            const glassMat = new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+                metalness: 0.1,
+                roughness: 0.05,       // Cực nhẵn bóng
+                transmission: 1.0,     // Xuyên sáng 100%
+                ior: 1.5,              // Khúc xạ thủy tinh
+                thickness: 2.5,        // Độ dày làm bẻ cong màu nền phía sau
+                clearcoat: 1.0,        // Phủ bóng
+                clearcoatRoughness: 0.1
+            });
+
+            // 5. NẶN HÌNH NÚT (Dạng viên thuốc - Pill shape)
+            const glassGeo = new RoundedBoxGeometry(5.8, 1.6, 0.6, 6, 0.8);
+            const glassMesh = new THREE.Mesh(glassGeo, glassMat);
+            scene.add(glassMesh);
+
+            // 6. Xoay nhẹ để thấy rõ độ bóng 3D
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Hiệu ứng "lơ lửng" nhẹ nhàng để khoe độ trong suốt
+                const time = Date.now() * 0.001;
+                glassMesh.rotation.x = Math.sin(time) * 0.05;
+                glassMesh.rotation.y = Math.cos(time) * 0.05;
+
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // CHẠY THUẬT TOÁN ĐỂ TẠO 2 NÚT VỚI MÀU GỐC CỦA BẠN
+        create3DGlassButton('canvas-cyan', '#00b4ff');    // Màu Cyan rực
+        create3DGlassButton('canvas-magenta', '#ff0096'); // Màu Magenta rực
+    </script>
 
 </body>
 </html>
