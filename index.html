@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v132 - The Perfect Masterpiece</title>
+    <title>NAM ARCH PRO v133 - The Ultimate Codebase</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -185,7 +185,7 @@
         .brand-header { 
             margin-bottom: 24px; 
             text-align: center; 
-            position: relative; 
+            position: relative;
         }
 
         h1 { 
@@ -211,7 +211,7 @@
             padding: 18px; 
             border-radius: 20px; 
             border: 1px solid rgba(255,255,255,0.02); 
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); 
         }
 
         body.theme-light .panel-card { 
@@ -248,7 +248,7 @@
             border-radius: 4px; 
             outline: none; 
             margin-top: 6px; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
 
         body.theme-light .zoom-slider { 
@@ -368,7 +368,6 @@
             color: var(--text-main); 
         }
 
-        /* NIGHT/DAY TOGGLE */
         .theme-toggle { 
             position: relative; 
             width: 100%; 
@@ -412,6 +411,7 @@
         .theme-toggle.dark-mode .theme-thumb { 
             left: 4px; 
             border: 1px solid rgba(138,43,226,0.3); 
+            box-shadow: 0 0 15px #8a2be2; 
         }
 
         .theme-toggle.light-mode .theme-thumb { 
@@ -434,10 +434,10 @@
         .theme-toggle.light-mode .t-light { color: #f59e0b; }
 
         /* ========================================================================= */
-        /* TUYỆT TÁC QUANG HỌC V132: PERFECT MASTERPIECE (FIX LỖI CỤC TRẮNG)         */
-        /* 1. HIGHLIGHT TRÊN: Sắc bén, Trắng 1.0, Mờ dần (Fade out), KHÔNG BỊ ĐỤC.   */
-        /* 2. ĐIỂM TỤ QUANG (GLINT): Thêm đốm lấp lánh (Pinpoint) góc dưới phải.     */
-        /* 3. CAUSTIC DƯỚI: Làm mỏng lại viền màu, tăng rực độ bóng đổ xuống nền.    */
+        /* TUYỆT TÁC QUANG HỌC V133: HOÀN THIỆN TỪ V132 (THE ULTIMATE CODEBASE)      */
+        /* 1. HIGHLIGHT: Mask-composite cắt vát siêu bén, mờ dần mượt mà.            */
+        /* 2. PINPOINT GLINT: Điểm lóa sáng cứng cựa ở tọa độ 92% 88%.               */
+        /* 3. CAUSTICS: Vệt màu tụ quang thanh mảnh, rực rỡ hắt xuống đáy.           */
         /* ========================================================================= */
         
         .btn-liquid {
@@ -461,31 +461,27 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             z-index: 1;
             
-            /* Tăng độ trong suốt, đẩy sáng nhẹ lòng kính để kính bắt sáng tự nhiên */
+            /* Giữ nguyên cấu trúc Volume kính từ V132 */
             backdrop-filter: blur(6px) saturate(200%) brightness(1.15); 
             -webkit-backdrop-filter: blur(6px) saturate(200%) brightness(1.15);
             
-            /* Lớp viền base tàng hình */
             border: 1px solid transparent;
             background: rgba(255, 255, 255, 0.02);
         }
 
-        /* 1. VIỀN SÁNG TRÊN (TOP HIGHLIGHT): SẮC BÉN VÀ MỜ DẦN */
-        /* Đã xóa lỗi "cục sương mù". Cắt dứt khoát mỏng manh ở mép (1.5px) */
+        /* VIỀN SÁNG TOP-LEFT SẮC BÉN CỦA V132 (Đỉnh cao của Masking) */
         .btn-liquid::before {
             content: "";
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            padding: 1.5px; /* Viền mỏng thanh thoát */
-            /* Linear Gradient: Bắt đầu trắng chói 1.0 -> Mờ dần 0.5 -> Biến mất */
+            padding: 1.5px; 
             background: linear-gradient(
                 110deg, 
                 rgba(255, 255, 255, 1) 0%, 
                 rgba(255, 255, 255, 0.5) 20%, 
                 transparent 50%
             );
-            /* Kỹ thuật Masking độc quyền giữ nét cắt sắc lẹm */
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: destination-out;
             mask-composite: exclude;
@@ -493,53 +489,51 @@
             z-index: 5;
         }
 
-        /* Đã XÓA hoàn toàn lớp ::after lỗi gây cục trắng đục trong V131 */
-
         .btn-liquid:active { 
             transform: translateY(3px); 
             box-shadow: none !important; 
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT BÁO CÁO (CYAN) - TỤ QUANG VÀ GLINT LẤP LÁNH           */
+        /* NÚT CYAN (V132 OPTIMIZED)                                 */
         /* --------------------------------------------------------- */
         .btn-cyan {
             background: 
-                /* 4. ĐIỂM TỤ QUANG LẤP LÁNH (PINPOINT GLINT) Ở GÓC DƯỚI PHẢI */
-                radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 1) 0%, rgba(0, 255, 255, 0.8) 4%, transparent 12%),
-                /* Lõi màu Neon tụ sáng tự nhiên dưới đáy */
-                radial-gradient(circle at 85% 90%, rgba(0, 240, 255, 0.8) 0%, transparent 60%),
-                /* Màu nền khối kính */
-                linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(0, 100, 255, 0.1) 50%, rgba(0, 50, 150, 0.2) 100%);
+                /* Pinpoint Glint */
+                radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 1) 0%, rgba(0, 255, 255, 0.8) 5%, transparent 15%),
+                /* Core Neon */
+                radial-gradient(circle at 85% 90%, rgba(0, 240, 255, 0.7) 0%, rgba(0, 100, 255, 0.1) 60%, transparent 100%),
+                /* Base Glass */
+                linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(0, 50, 150, 0.15) 100%);
             
             box-shadow: 
-                /* Highlight viền trong góc trên trái */
+                /* Highlight cong */
                 inset 1px 1px 2px rgba(255, 255, 255, 1),
                 inset 2px 2px 5px rgba(255, 255, 255, 0.3),
-                /* 3. VIỀN MÀU BÊN DƯỚI MỎNG LẠI (-1.5px thay vì -3px) */
+                /* Viền Caustic mỏng */
                 inset -1.5px -2.5px 6px rgba(0, 255, 255, 1),
-                /* Lõi tối chặn sáng tạo khối 3D */
+                /* Core Shadow */
                 inset -4px -6px 15px rgba(0, 0, 0, 0.2),
-                /* Bóng đen vật lý xô chéo 135 độ */
-                10px 15px 25px rgba(0, 0, 0, 0.85),
-                /* 5. TĂNG CƯỜNG ĐỘ BÓNG TỤ QUANG XUỐNG NỀN */
-                12px 18px 30px -2px rgba(0, 240, 255, 1);
+                /* Drop Shadow */
+                8px 12px 16px rgba(0, 0, 0, 0.7),
+                /* Caustic Drop */
+                12px 16px 25px -2px rgba(0, 240, 255, 1);
                 
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
         
         .btn-cyan:hover { 
             background: 
-                radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 1) 0%, rgba(0, 255, 255, 1) 6%, transparent 15%),
-                radial-gradient(circle at 85% 90%, rgba(0, 255, 255, 1) 0%, transparent 65%),
-                linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(0, 120, 255, 0.2) 50%, rgba(0, 50, 150, 0.3) 100%);
+                radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 1) 0%, rgba(0, 255, 255, 1) 6%, transparent 20%),
+                radial-gradient(circle at 85% 90%, rgba(0, 255, 255, 0.9) 0%, rgba(0, 150, 255, 0.2) 65%, transparent 100%),
+                linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(0, 50, 150, 0.25) 100%);
             box-shadow: 
                 inset 1px 1px 3px rgba(255, 255, 255, 1),
                 inset 3px 3px 8px rgba(255, 255, 255, 0.5),
-                inset -2px -3px 8px rgba(0, 255, 255, 1),
+                inset -1.5px -3px 8px rgba(0, 255, 255, 1),
                 inset -4px -6px 15px rgba(0, 0, 0, 0.1),
-                12px 18px 28px rgba(0, 0, 0, 0.9),
-                14px 22px 35px -1px rgba(0, 255, 255, 1);
+                10px 14px 20px rgba(0, 0, 0, 0.8),
+                14px 20px 30px -2px rgba(0, 255, 255, 1);
             transform: translateY(-2px);
         }
 
@@ -550,52 +544,47 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT XUẤT FILE (MAGENTA) - TỤ QUANG VÀ GLINT LẤP LÁNH      */
+        /* NÚT MAGENTA (V132 OPTIMIZED)                              */
         /* --------------------------------------------------------- */
         .btn-magenta {
             flex: 1; 
             font-size: 12px;
             
             background: 
-                /* 4. ĐIỂM TỤ QUANG LẤP LÁNH (PINPOINT GLINT) Ở GÓC DƯỚI PHẢI */
-                radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 1) 0%, rgba(255, 50, 150, 0.8) 4%, transparent 12%),
-                /* Lõi màu Neon */
-                radial-gradient(circle at 85% 90%, rgba(255, 0, 100, 0.8) 0%, transparent 60%),
-                /* Khối lượng kính */
-                linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(150, 0, 255, 0.1) 50%, rgba(50, 0, 100, 0.2) 100%);
+                /* Pinpoint Glint */
+                radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 0, 100, 0.8) 5%, transparent 15%),
+                /* Core Neon */
+                radial-gradient(circle at 85% 90%, rgba(255, 0, 100, 0.7) 0%, rgba(150, 0, 255, 0.1) 60%, transparent 100%),
+                /* Base Glass */
+                linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(50, 0, 100, 0.15) 100%);
             
             box-shadow: 
-                /* Highlight viền trong góc trên trái */
                 inset 1px 1px 2px rgba(255, 255, 255, 1),
                 inset 2px 2px 5px rgba(255, 255, 255, 0.3),
-                /* 3. VIỀN MÀU BÊN DƯỚI MỎNG LẠI */
                 inset -1.5px -2.5px 6px rgba(255, 50, 150, 1),
-                /* Lõi tối chặn sáng */
                 inset -4px -6px 15px rgba(0, 0, 0, 0.2),
-                /* Bóng đen vật lý */
-                10px 15px 25px rgba(0, 0, 0, 0.85),
-                /* 5. TĂNG CƯỜNG ĐỘ BÓNG TỤ QUANG XUỐNG NỀN */
-                12px 18px 30px -2px rgba(255, 50, 150, 1);
+                8px 12px 16px rgba(0, 0, 0, 0.7),
+                12px 16px 25px -2px rgba(255, 50, 150, 1);
 
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         .btn-magenta:hover { 
             background: 
-                radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 1) 0%, rgba(255, 50, 150, 1) 6%, transparent 15%),
-                radial-gradient(circle at 85% 90%, rgba(255, 50, 150, 1) 0%, transparent 65%),
-                linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(150, 0, 255, 0.2) 50%, rgba(50, 0, 100, 0.3) 100%);
+                radial-gradient(circle at 92% 88%, rgba(255, 255, 255, 1) 0%, rgba(255, 50, 150, 1) 6%, transparent 20%),
+                radial-gradient(circle at 85% 90%, rgba(255, 50, 150, 0.9) 0%, rgba(180, 0, 255, 0.2) 65%, transparent 100%),
+                linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(50, 0, 100, 0.25) 100%);
             box-shadow: 
                 inset 1px 1px 3px rgba(255, 255, 255, 1),
                 inset 3px 3px 8px rgba(255, 255, 255, 0.5),
-                inset -2px -3px 8px rgba(255, 50, 150, 1),
+                inset -1.5px -3px 8px rgba(255, 50, 150, 1),
                 inset -4px -6px 15px rgba(0, 0, 0, 0.1),
-                12px 18px 28px rgba(0, 0, 0, 0.9),
-                14px 22px 35px -1px rgba(255, 50, 150, 1);
+                10px 14px 20px rgba(0, 0, 0, 0.8),
+                14px 20px 30px -2px rgba(255, 50, 150, 1);
             transform: translateY(-2px);
         }
 
-        /* PROGRESS LOADER - GIỮ NGUYÊN */
+        /* PROGRESS LOADER */
         .prog-container { 
             margin-top: 25px; 
             text-align: center;
@@ -643,7 +632,7 @@
             letter-spacing: 2px; 
         }
 
-        /* HUD TỌA ĐỘ - GIỮ NGUYÊN */
+        /* HUD TỌA ĐỘ */
         .hud-bottom { 
             position: absolute; 
             bottom: 30px; 
@@ -663,9 +652,15 @@
             z-index: 1000;
         }
 
+        body.theme-light .hud-bottom { 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+            border-top: 1px solid #fff;
+        }
+
         .hud-val { 
             color: var(--text-main); 
             font-weight: 800; 
+            transition: 0.5s;
         }
 
         .core-badge { 
@@ -678,6 +673,7 @@
             background: rgba(0, 255, 255, 0.1); 
             padding: 4px 10px; 
             border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
         }
 
         .pulse-dot { 
@@ -685,6 +681,7 @@
             height: 6px; 
             background: var(--light-cyan); 
             border-radius: 50%; 
+            box-shadow: 0 0 10px var(--light-cyan); 
             animation: pulse 2s infinite; 
         }
 
@@ -709,7 +706,7 @@
             
             <div class="brand-header">
                 <h1>NAM ARCH</h1>
-                <span class="tagline">V132 • THE PERFECT GLASS</span>
+                <span class="tagline">V133 • THE ULTIMATE CODEBASE</span>
             </div>
 
             <div class="panel-card">
@@ -730,7 +727,7 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#ff0066;"></span> Tòa Nhà</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#ff0066; box-shadow: 0 0 8px #ff0066;"></span> Tòa Nhà</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')">
@@ -740,17 +737,17 @@
                     <label class="layer-item">
                         <input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#ff8800;"></span> Vỉa Hè</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#ff8800; box-shadow: 0 0 8px #ff8800;"></span> Vỉa Hè</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#00ffff;"></span> Sông Hồ</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#00ffff; box-shadow: 0 0 8px #00ffff;"></span> Sông Hồ</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showCay" checked onchange="toggleLayer('cayxanh')">
                         <div class="toggle-switch"></div>
-                        <div class="layer-left"><span class="color-dot" style="background:#00ff88;"></span> Cây Xanh</div>
+                        <div class="layer-left"><span class="color-dot" style="background:#00ff88; box-shadow: 0 0 8px #00ff88;"></span> Cây Xanh</div>
                     </label>
                     <label class="layer-item">
                         <input type="checkbox" id="showDat" checked onchange="toggleLayer('dattrong')">
@@ -768,11 +765,14 @@
 
             <button class="btn-liquid btn-cyan" onclick="startMegaScan()">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
-                XUẤT BÁO CÁO V82
+                QUÉT ĐỊA HÌNH V82
             </button>
 
             <div class="btn-group">
                 <button class="btn-liquid btn-magenta" onclick="resetScan()">LÀM MỚI</button>
+            </div>
+            
+            <div class="btn-group">
                 <button class="btn-liquid btn-magenta" onclick="export2DDXF()">2D CAD</button>
                 <button class="btn-liquid btn-magenta" onclick="export3DDAE()">3D DAE</button>
             </div>
@@ -895,24 +895,31 @@
     async function searchLocation() {
         const input = document.getElementById('searchInput');
         const query = input.value.trim();
-        if(!query) return;
+        
+        if(!query) {
+            return;
+        }
+        
         try {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data = await res.json();
+            
             if(data && data.length > 0) {
                 map.flyTo([data[0].lat, data[0].lon], 16, { duration: 2 });
             }
-        } catch(e) { 
-            console.error("Lỗi tìm kiếm: ", e); 
+        } catch(e) {
+            console.error("Lỗi tìm kiếm: ", e);
         }
     }
 
     function updateHUD() {
         let z = map.getZoom(); 
         let center = map.getCenter();
+        
         document.getElementById('zoomSlider').value = z; 
         document.getElementById('z-val').innerText = z.toFixed(1);
         document.getElementById('hud-coord').innerText = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+        
         let alt = Math.round(40000000 / Math.pow(2, z));
         document.getElementById('hud-alt').innerText = alt >= 1000 ? (alt/1000).toFixed(1) + 'km' : alt + 'm';
     }
@@ -971,6 +978,7 @@
     function updateProgress(percent, text, isActive = true) {
         const pBar = document.getElementById('progress'); 
         const stt = document.getElementById('stt');
+        
         pBar.style.width = percent + '%'; 
         stt.innerText = text;
         stt.style.color = (percent >= 100) ? "var(--light-cyan)" : "var(--vibrant-pink)";
@@ -985,12 +993,20 @@
     const yieldCPU = () => new Promise((resolve) => setTimeout(resolve, 0));
 
     async function chunkedUnion(polygons, type) {
-        if (!polygons || polygons.length === 0) return null;
-        if (polygons.length === 1) return polygons[0];
+        if (!polygons || polygons.length === 0) {
+            return null;
+        }
+        
+        if (polygons.length === 1) {
+            return polygons[0];
+        }
         
         let current = polygons.map((p) => { 
-            try { return turf.cleanCoords(p); } 
-            catch(e) { return p; } 
+            try { 
+                return turf.cleanCoords(p); 
+            } catch(e) { 
+                return p; 
+            } 
         });
         
         let step = 0;
@@ -998,10 +1014,16 @@
         while (current.length > 1) {
             let next = [];
             for (let i = 0; i < current.length; i += 2) {
-                if (i % 2 === 0) await yieldCPU(); 
+                if (i % 2 === 0) {
+                    await yieldCPU(); 
+                }
+                
                 if (i + 1 < current.length) { 
-                    try { next.push(turf.union(current[i], current[i+1])); } 
-                    catch(e) { next.push(current[i]); } 
+                    try { 
+                        next.push(turf.union(current[i], current[i+1])); 
+                    } catch(e) { 
+                        next.push(current[i]); 
+                    } 
                 } else {
                     next.push(current[i]);
                 }
@@ -1010,16 +1032,21 @@
             step++;
             document.getElementById('stt').innerText = `GỘP MẶT PHẲNG ${type}: BƯỚC ${step}`;
         }
+        
         return current[0];
     }
 
     function calculateBuildingHeight(tags) {
-        if(tags['building:levels']) return parseFloat(tags['building:levels']) * 3.5;
+        if(tags['building:levels']) {
+            return parseFloat(tags['building:levels']) * 3.5;
+        }
         return 9 + Math.random() * 15;
     }
 
     async function startMegaScan() {
-        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("Hệ thống Core đang khởi động, vui lòng đợi vài giây!");
+        if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') {
+            return alert("Hệ thống Core đang khởi động, vui lòng đợi vài giây!");
+        }
         
         resetScan(); 
         updateProgress(10, "KẾT NỐI VỆ TINH OVERPASS...", true);
@@ -1041,8 +1068,15 @@
             const geojson = osmtogeojson(data); 
             const features = geojson.features;
             
-            if(features.length === 0) return updateProgress(0, "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!", false);
-            if(features.length > 8000) { if(!confirm(`Khu vực này có hơn ${features.length} đối tượng. Bạn có muốn tiếp tục?`)) return updateProgress(0, "ĐÃ HỦY QUÉT.", false); }
+            if(features.length === 0) {
+                return updateProgress(0, "KHÔNG CÓ DỮ LIỆU Ở KHU VỰC NÀY!", false);
+            }
+            
+            if(features.length > 8000) { 
+                if(!confirm(`Khu vực này có hơn ${features.length} đối tượng. Bạn có muốn tiếp tục?`)) {
+                    return updateProgress(0, "ĐÃ HỦY QUÉT.", false); 
+                }
+            }
             
             let rBufs = [], sBufs = [], rawNuoc = [];
             
@@ -1052,14 +1086,15 @@
                     await yieldCPU(); 
                 }
                 
-                const f = features[i]; 
-                const geom = f.geometry; 
-                const tags = f.properties; 
-                if (!geom) continue;
+                const feature = features[i]; 
+                const geometry = feature.geometry; 
+                const tags = feature.properties; 
                 
-                if (geom.type === 'LineString' || geom.type === 'MultiLineString') {
+                if (!geometry) continue;
+                
+                if (geometry.type === 'LineString' || geometry.type === 'MultiLineString') {
                     if (tags.highway) {
-                        const lines = geom.type === 'LineString' ? [geom.coordinates] : geom.coordinates;
+                        const lines = geometry.type === 'LineString' ? [geometry.coordinates] : geometry.coordinates;
                         lines.forEach((coords) => {
                             const line = turf.lineString(coords); 
                             const wDuong = (tags.highway === 'primary' || tags.highway === 'secondary') ? 12 : 6; 
@@ -1070,15 +1105,22 @@
                             } catch(e){}
                         });
                     }
-                } else if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
-                    let poly = null; try { poly = turf.bboxClip(f, screenBox); } catch(e){} if (!poly || poly.geometry.coordinates.length === 0) continue;
+                } else if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
+                    let poly = null; 
+                    try { 
+                        poly = turf.bboxClip(feature, screenBox); 
+                    } catch(e){} 
+                    
+                    if (!poly || poly.geometry.coordinates.length === 0) continue;
                     
                     if (tags.building) { 
                         poly.height = calculateBuildingHeight(tags); 
                         geoData.nha.push(poly); 
                         L.geoJSON(poly, { style: getLayerStyle('nha') }).addTo(layers.nha); 
                     }
-                    else if (tags.natural === 'water' || tags.waterway) { rawNuoc.push(poly); }
+                    else if (tags.natural === 'water' || tags.waterway) { 
+                        rawNuoc.push(poly); 
+                    }
                     else if (tags.leisure || tags.natural === 'wood' || tags.natural === 'scrub' || tags.landuse === 'grass' || tags.landuse === 'forest') { 
                         geoData.cayxanh.push(poly); 
                         L.geoJSON(poly, { style: getLayerStyle('cayxanh') }).addTo(layers.cayxanh); 
@@ -1094,24 +1136,49 @@
             if (rBufs.length > 0) {
                 updateProgress(80, "ĐANG GỘP MẶT LÒNG ĐƯỜNG...", true); 
                 mR = await chunkedUnion(rBufs, "LÒNG ĐƯỜNG"); 
-                if (mR) { geoData.duong.push(mR); L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); }
+                if (mR) { 
+                    geoData.duong.push(mR); 
+                    L.geoJSON(mR, { style: getLayerStyle('duong') }).addTo(layers.duong); 
+                }
             }
             
             updateProgress(85, "ĐANG KHOANH VÙNG Ô PHỐ TỪ KHOẢNG TRỐNG...", true);
             let baseCanvas = turf.bboxPolygon(screenBox); 
             let mOpho = null;
-            if (mR) try { mOpho = turf.difference(baseCanvas, turf.cleanCoords(mR)); } catch(e){}
-            if (!mOpho) mOpho = baseCanvas;
             
+            if (mR) {
+                try { 
+                    mOpho = turf.difference(baseCanvas, turf.cleanCoords(mR)); 
+                } catch(e){}
+            }
+            
+            if (!mOpho) {
+                mOpho = baseCanvas;
+            }
+
             updateProgress(88, "ĐANG ĐỤC LỖ MẶT NƯỚC...", true);
             let mNuoc = await chunkedUnion(rawNuoc, "MẶT NƯỚC"); 
+            
             if (mNuoc) { 
-                geoData.nuoc.push(mNuoc); L.geoJSON(mNuoc, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc); 
-                try { let diff = turf.difference(mOpho, turf.cleanCoords(mNuoc)); if(diff) mOpho = diff; } catch(e) {}
+                geoData.nuoc.push(mNuoc); 
+                L.geoJSON(mNuoc, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc); 
+                try { 
+                    let diff = turf.difference(mOpho, turf.cleanCoords(mNuoc)); 
+                    if(diff) {
+                        mOpho = diff; 
+                    }
+                } catch(e) {}
             } else {
                 for(let i=0; i<rawNuoc.length; i++) { 
-                    if (i % 10 === 0) await yieldCPU(); 
-                    try { let diff = turf.difference(mOpho, turf.cleanCoords(rawNuoc[i])); if(diff) mOpho = diff; } catch(e) {} 
+                    if (i % 10 === 0) {
+                        await yieldCPU(); 
+                    }
+                    try { 
+                        let diff = turf.difference(mOpho, turf.cleanCoords(rawNuoc[i])); 
+                        if(diff) {
+                            mOpho = diff; 
+                        }
+                    } catch(e) {} 
                 }
                 geoData.nuoc = rawNuoc; 
                 rawNuoc.forEach((n) => L.geoJSON(n, { style: getLayerStyle('nuoc') }).addTo(layers.nuoc));
@@ -1129,23 +1196,40 @@
                 let mS = await chunkedUnion(sBufs, "VỈA HÈ");
                 try { 
                     let viahe = turf.difference(mS, mR); 
-                    if(viahe) { geoData.viahe.push(viahe); L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); } 
+                    if(viahe) { 
+                        geoData.viahe.push(viahe); 
+                        L.geoJSON(viahe, { style: getLayerStyle('viahe') }).addTo(layers.viahe); 
+                    } 
                 } 
                 catch(e) { 
-                    if (mS) { geoData.viahe.push(mS); L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); } 
+                    if (mS) { 
+                        geoData.viahe.push(mS); 
+                        L.geoJSON(mS, { style: getLayerStyle('viahe') }).addTo(layers.viahe); 
+                    } 
                 }
             }
+            
             updateProgress(100, "QUÉT XONG! SẴN SÀNG XUẤT FILE.", false);
-        } catch (err) { updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); }
+        } catch (err) { 
+            updateProgress(0, "LỖI MẠNG HOẶC DỮ LIỆU LỚN!", false); 
+        }
     }
 
     async function export3DDAE() {
         updateProgress(10, "ĐANG BIÊN DỊCH SA BÀN 3D...", true);
-        const center = map.getCenter(); const sy = 111319.9; const sx = sy * Math.cos(center.lat * Math.PI / 180);
+        
+        const center = map.getCenter(); 
+        const sy = 111319.9; 
+        const sx = sy * Math.cos(center.lat * Math.PI / 180);
+        
         const tx = (pt) => ((pt[0] - center.lng) * sx); 
         const ty = (pt) => ((pt[1] - center.lat) * sy);
         
-        let positions = []; let indices = []; let vIdx = 0; let hasData = false;
+        let positions = []; 
+        let indices = []; 
+        let vIdx = 0; 
+        let hasData = false;
+        
         const addVertex = (x, y, z) => { 
             positions.push(`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`); 
             indices.push(vIdx++); 
@@ -1153,87 +1237,186 @@
         
         function getCCWTriangle(p1, p2, p3) { 
             let cross = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0]); 
-            if (cross < 0) return [p1, p3, p2]; return [p1, p2, p3]; 
+            if (cross < 0) {
+                return [p1, p3, p2]; 
+            }
+            return [p1, p2, p3]; 
         }
 
         const writeTriangles = (coords, zVal, reverseNormal = false) => {
             try {
-                let poly = turf.rewind(turf.polygon(coords), {reverse: false}); 
-                let clean = turf.cleanCoords(poly); 
-                let tess = turf.tesselate(clean);
-                tess.features.forEach((tri) => {
-                    let pts = tri.geometry.coordinates[0]; 
+                let polygon = turf.rewind(turf.polygon(coords), {reverse: false}); 
+                let clean = turf.cleanCoords(polygon); 
+                let tessellation = turf.tesselate(clean);
+                
+                tessellation.features.forEach((triangle) => {
+                    let pts = triangle.geometry.coordinates[0]; 
                     if (pts.length < 3) return;
+                    
                     let [p1, p2, p3] = getCCWTriangle(pts[0], pts[1], pts[2]); 
-                    if (reverseNormal) [p1, p2, p3] = [p1, p3, p2];
-                    addVertex(tx(p1), ty(p1), zVal); addVertex(tx(p2), ty(p2), zVal); addVertex(tx(p3), ty(p3), zVal);
+                    
+                    if (reverseNormal) {
+                        [p1, p2, p3] = [p1, p3, p2];
+                    }
+                    
+                    addVertex(tx(p1), ty(p1), zVal); 
+                    addVertex(tx(p2), ty(p2), zVal); 
+                    addVertex(tx(p3), ty(p3), zVal);
                 });
             } catch(e){}
         };
 
         const writeWalls = (ring, zBottom, zTop) => {
-            let pts = ring; if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts = [...pts, pts[0]];
+            let pts = ring; 
+            if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) {
+                pts = [...pts, pts[0]];
+            }
             for(let i=0; i<pts.length-1; i++) {
-                let p1 = pts[i]; let p2 = pts[i+1];
-                addVertex(tx(p1), ty(p1), zBottom); addVertex(tx(p2), ty(p2), zBottom); addVertex(tx(p2), ty(p2), zTop);
-                addVertex(tx(p1), ty(p1), zBottom); addVertex(tx(p2), ty(p2), zTop); addVertex(tx(p1), ty(p1), zTop);
+                let p1 = pts[i]; 
+                let p2 = pts[i+1];
+                
+                addVertex(tx(p1), ty(p1), zBottom); 
+                addVertex(tx(p2), ty(p2), zBottom); 
+                addVertex(tx(p2), ty(p2), zTop);
+                
+                addVertex(tx(p1), ty(p1), zBottom); 
+                addVertex(tx(p2), ty(p2), zTop); 
+                addVertex(tx(p1), ty(p1), zTop);
             }
         };
         
         const processLayer = async (dataArray, layerName, baseZ, isBuilding, curbBottomZ = null) => {
-            if(dataArray.length === 0) return; hasData = true;
+            if(dataArray.length === 0) return; 
+            
+            hasData = true;
+            
             for (let i = 0; i < dataArray.length; i++) {
                 if (i % 20 === 0) { 
                     updateProgress(10 + (i / dataArray.length) * 80, `DỰNG KHỐI [${layerName}]: ${i}/${dataArray.length}`, true); 
                     await yieldCPU(); 
                 }
-                const item = dataArray[i]; const geom = item.geometry || item; const h = item.height || 0; 
-                let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-                polys.forEach((coords) => {
-                    let topZ = isBuilding && h > 0 ? baseZ + h : baseZ; writeTriangles(coords, topZ, false);
-                    if (isBuilding && h > 0) { 
+                
+                const item = dataArray[i]; 
+                const geometry = item.geometry || item; 
+                const height = item.height || 0; 
+                let polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
+                
+                polygons.forEach((coords) => {
+                    let topZ = isBuilding && height > 0 ? baseZ + height : baseZ; 
+                    writeTriangles(coords, topZ, false);
+                    
+                    if (isBuilding && height > 0) { 
                         writeTriangles(coords, baseZ, true); 
-                        let poly = turf.rewind(turf.polygon(coords), {reverse: false}); 
-                        poly.geometry.coordinates.forEach((ring) => writeWalls(ring, baseZ, topZ)); 
+                        let polygon = turf.rewind(turf.polygon(coords), {reverse: false}); 
+                        polygon.geometry.coordinates.forEach((ring) => writeWalls(ring, baseZ, topZ)); 
                     } 
                     else if (curbBottomZ !== null) { 
-                        let poly = turf.rewind(turf.polygon(coords), {reverse: false}); 
-                        poly.geometry.coordinates.forEach((ring) => writeWalls(ring, Math.min(baseZ, curbBottomZ), Math.max(baseZ, curbBottomZ))); 
+                        let polygon = turf.rewind(turf.polygon(coords), {reverse: false}); 
+                        polygon.geometry.coordinates.forEach((ring) => writeWalls(ring, Math.min(baseZ, curbBottomZ), Math.max(baseZ, curbBottomZ))); 
                     }
                 });
             }
         };
         
-        if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "NUOC", -0.5, false, 0.0);
+        if(document.getElementById('showNuoc').checked) {
+            await processLayer(geoData.nuoc, "NUOC", -0.5, false, 0.0);
+        }
+        
         if(document.getElementById('showDat').checked) { 
             await processLayer(geoData.o_pho, "O_PHO", 0.0, false, null); 
             await processLayer(geoData.dattrong, "DATTRONG_OSM", 0.05, false, 0.0); 
         }
-        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.0, false, null); 
-        if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, "CAYXANH", 0.1, false, 0.0); 
-        if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "VIAHE", 0.15, false, 0.0); 
-        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.15, true, null); 
         
-        if(!hasData) return updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
-        updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true); await yieldCPU();
+        if(document.getElementById('showDuong').checked) {
+            await processLayer(geoData.duong, "DUONG", 0.0, false, null); 
+        }
+        
+        if(document.getElementById('showCay').checked) {
+            await processLayer(geoData.cayxanh, "CAYXANH", 0.1, false, 0.0); 
+        }
+        
+        if(document.getElementById('showViahe').checked) {
+            await processLayer(geoData.viahe, "VIAHE", 0.15, false, 0.0); 
+        }
+        
+        if(document.getElementById('showNha').checked) {
+            await processLayer(geoData.nha, "NHA", 0.15, true, null); 
+        }
+        
+        if(!hasData) {
+            return updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
+        }
+        
+        updateProgress(95, "ĐANG ĐÓNG GÓI FILE DAE...", true); 
+        await yieldCPU();
 
-        const daeXML = `<?xml version="1.0" encoding="utf-8"?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"><asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset><library_geometries><geometry id="geom-0" name="CityMesh"><mesh><source id="geom-0-positions"><float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array><technique_common><accessor source="#geom-0-positions-array" count="${positions.length}" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source><vertices id="geom-0-vertices"><input semantic="POSITION" source="#geom-0-positions"/></vertices><triangles count="${indices.length / 3}"><input semantic="VERTEX" source="#geom-0-vertices" offset="0"/><p>${indices.join(' ')}</p></triangles></mesh></geometry></library_geometries><library_visual_scenes><visual_scene id="Scene" name="Scene"><node id="CityNode" name="CityNode"><instance_geometry url="#geom-0"/></node></visual_scene></library_visual_scenes><scene><instance_visual_scene url="#Scene"/></scene></COLLADA>`;
+        const daeXML = `<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>
+  <library_geometries>
+    <geometry id="geom-0" name="CityMesh">
+      <mesh>
+        <source id="geom-0-positions">
+          <float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array>
+          <technique_common>
+            <accessor source="#geom-0-positions-array" count="${positions.length}" stride="3">
+              <param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-0-vertices">
+          <input semantic="POSITION" source="#geom-0-positions"/>
+        </vertices>
+        <triangles count="${indices.length / 3}">
+          <input semantic="VERTEX" source="#geom-0-vertices" offset="0"/>
+          <p>${indices.join(' ')}</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="CityNode" name="CityNode">
+        <instance_geometry url="#geom-0"/>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>`;
+
         const anchor = document.createElement('a'); 
         anchor.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); 
-        anchor.download = "NAM_ARCH_3D_V132.dae"; anchor.click(); 
+        anchor.download = "NAM_ARCH_3D_V133.dae"; 
+        anchor.click(); 
+        
         updateProgress(100, "XUẤT MÔ HÌNH 3D THÀNH CÔNG!", false);
     }
 
     async function export2DDXF() {
-        let hasData = false; updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
-        const center = map.getCenter(); const sy = 111319.9; const sx = sy * Math.cos(center.lat * Math.PI / 180);
+        let hasData = false; 
+        updateProgress(50, "ĐANG GHI FILE CAD 2D...", true);
+        
+        const center = map.getCenter(); 
+        const sy = 111319.9; 
+        const sx = sy * Math.cos(center.lat * Math.PI / 180);
+        
         let dxf = "0\nSECTION\n2\nENTITIES\n";
+        
         const writeLines = async (dataArray, layerName) => {
-            if(dataArray.length === 0) return; hasData = true;
+            if(dataArray.length === 0) return; 
+            
+            hasData = true;
+            
             for (let i = 0; i < dataArray.length; i++) {
-                if (i % 50 === 0) await yieldCPU();
+                if (i % 50 === 0) {
+                    await yieldCPU();
+                }
+                
                 const geometry = dataArray[i].geometry || dataArray[i]; 
                 let polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
+                
                 polygons.forEach((coords) => { 
                     coords.forEach((ring) => {
                         dxf += `0\nPOLYLINE\n8\n${layerName}\n66\n1\n70\n1\n`;
@@ -1245,15 +1428,43 @@
                 });
             }
         };
-        if(document.getElementById('showNuoc').checked) await writeLines(geoData.nuoc, "V21_NUOC");
-        if(document.getElementById('showDat').checked) { await writeLines(geoData.o_pho, "V21_O_PHO"); await writeLines(geoData.dattrong, "V21_DATTRONG_OSM"); }
-        if(document.getElementById('showCay').checked) await writeLines(geoData.cayxanh, "V21_CAYXANH");
-        if(document.getElementById('showDuong').checked) await writeLines(geoData.duong, "V21_DUONG");
-        if(document.getElementById('showViahe').checked) await writeLines(geoData.viahe, "V21_VIAHE");
-        if(document.getElementById('showNha').checked) await writeLines(geoData.nha, "V21_NHA");
-        if(!hasData) return updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
+        
+        if(document.getElementById('showNuoc').checked) {
+            await writeLines(geoData.nuoc, "V21_NUOC");
+        }
+        
+        if(document.getElementById('showDat').checked) { 
+            await writeLines(geoData.o_pho, "V21_O_PHO"); 
+            await writeLines(geoData.dattrong, "V21_DATTRONG_OSM"); 
+        }
+        
+        if(document.getElementById('showCay').checked) {
+            await writeLines(geoData.cayxanh, "V21_CAYXANH");
+        }
+        
+        if(document.getElementById('showDuong').checked) {
+            await writeLines(geoData.duong, "V21_DUONG");
+        }
+        
+        if(document.getElementById('showViahe').checked) {
+            await writeLines(geoData.viahe, "V21_VIAHE");
+        }
+        
+        if(document.getElementById('showNha').checked) {
+            await writeLines(geoData.nha, "V21_NHA");
+        }
+
+        if(!hasData) {
+            return updateProgress(0, "CHƯA CHỌN LAYER HOẶC KHÔNG CÓ DỮ LIỆU!", false);
+        }
+        
         dxf += "0\nENDSEC\n0\nEOF";
-        const anchor = document.createElement('a'); anchor.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'})); anchor.download = "NAM_ARCH_2D_PLAN.dxf"; anchor.click(); 
+        
+        const anchor = document.createElement('a'); 
+        anchor.href = URL.createObjectURL(new Blob([dxf], {type: 'application/dxf'})); 
+        anchor.download = "NAM_ARCH_2D_PLAN.dxf"; 
+        anchor.click(); 
+        
         updateProgress(100, "XUẤT BẢN VẼ 2D THÀNH CÔNG!", false);
     }
 </script>
