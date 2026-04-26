@@ -2,11 +2,11 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán Icon Mobile - Sandbox V3</title>
+    <title>Thuật Toán 3D Glass Icon - Sandbox V4</title>
     <style>
-        /* Nền sáng để test độ trong vắt và bóng đổ của thuỷ tinh màu */
+        /* Nền sáng để tôn lên quầng sáng màu của thuỷ tinh */
         body {
-            background-color: #f0f4f8;
+            background-color: #f2f5f9;
             height: 100vh;
             display: flex;
             align-items: center;
@@ -15,77 +15,87 @@
             margin: 0;
         }
 
-        /* KHỐI KÍNH (Base Volume) */
+        /* KHỐI KÍNH CHÍNH (The Glass Body) */
         .glass-icon {
-            width: 240px;
-            height: 240px;
-            border-radius: 60px; /* Bo góc kiểu Squircle của iOS */
+            width: 250px;
+            height: 250px;
+            border-radius: 55px; /* Squircle form */
             position: relative;
             cursor: pointer;
             
-            /* Dải màu lõi: Tím -> Hồng -> Cam */
-            background: linear-gradient(135deg, #4a148c 0%, #e91e63 50%, #ff5722 100%);
+            /* Dải màu gốc: Tím than -> Hồng Magenta -> Cam rực */
+            background: linear-gradient(135deg, #3b0a70 0%, #d81b60 50%, #ff7043 100%);
             
-            /* LỚP BÓNG TẠO ĐỘ DÀY (Thickness) VÀ TỤ QUANG (Caustics) */
+            /* BÍ QUYẾT TẠO CHIỀU SÂU VÀ ĐỘ DÀY CHO KÍNH (Volume & Refraction) */
             box-shadow: 
-                /* Viền sáng cực gắt ở góc Trên-Trái */
-                inset 2px 3px 8px rgba(255, 255, 255, 0.9),
-                inset 1px 1px 2px rgba(255, 255, 255, 1),
-                
-                /* Viền tối ở góc Dưới-Phải tạo chiều sâu cho khối */
-                inset -5px -5px 15px rgba(0, 0, 0, 0.5),
-                
-                /* Viền đọng màu rực rỡ ở đáy (Refraction) */
-                inset -2px -8px 20px rgba(255, 200, 0, 0.7),
-                
-                /* Bóng đen vật lý ghim nút xuống sàn */
-                10px 20px 30px rgba(0, 0, 0, 0.2),
-                
-                /* Ánh sáng xuyên thấu (Caustic Drop) hắt màu đỏ/cam xuống nền trắng */
-                5px 25px 40px rgba(233, 30, 99, 0.5);
-                
+                /* Lớp 1: Highlight viền Trên-Trái sắc lẹm (Bề mặt kính) */
+                inset 2px 2px 4px rgba(255, 255, 255, 0.8),
+                inset 4px 4px 8px rgba(255, 255, 255, 0.4),
+
+                /* Lớp 2: Viền lõi tối (Tạo cảm giác nhìn xuyên qua lớp kính dày) */
+                inset 12px 12px 25px rgba(0, 0, 0, 0.5),
+
+                /* Lớp 3: Viền tối chặn đáy (Bottom-Right edge) */
+                inset -3px -3px 8px rgba(0, 0, 0, 0.6),
+
+                /* Lớp 4: Lõi phát sáng rực rỡ ở đáy (Caustic Refraction) */
+                inset -10px -20px 40px rgba(255, 200, 50, 0.9),
+
+                /* Lớp 5: Bóng đen vật lý (Ghim khối kính xuống bàn) */
+                15px 25px 40px rgba(0, 0, 0, 0.2),
+
+                /* Lớp 6: Bóng màu tụ quang hắt ra ngoài (Xuyên thấu) */
+                0px 20px 50px rgba(255, 20, 100, 0.5);
+            
+            /* Viền vật lý ngoài cùng bắt sáng */
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top-color: rgba(255, 255, 255, 0.6);
+            border-left-color: rgba(255, 255, 255, 0.4);
+            
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* LỚP PHỦ MẶT KÍNH BÓNG BẨY (Glossy Overlay - Điểm mấu chốt của bức ảnh) */
+        /* HIỆU ỨNG LÓA GƯƠNG (The Hard-Stop Glossy Overlay) */
+        /* Đây là lớp tạo ra độ bóng bẩy nhẵn thín của mặt kính */
         .glass-icon::before {
             content: '';
             position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            /* Cắt chéo cực sắc lẹm ở vị trí 45% */
+            /* Lùi vào 2px để không đè lên viền border */
+            inset: 2px; 
+            border-radius: 52px; 
+            
+            /* Vệt sáng cắt chéo siêu gắt (Hard-stop ở 45%) */
             background: linear-gradient(
                 135deg, 
-                rgba(255, 255, 255, 0.4) 0%, 
-                rgba(255, 255, 255, 0.1) 45%, 
-                transparent 45.1%, 
-                transparent 100%
+                rgba(255, 255, 255, 0.6) 0%, 
+                rgba(255, 255, 255, 0.15) 45%, 
+                rgba(255, 255, 255, 0) 45.1%, 
+                rgba(255, 255, 255, 0) 100%
             );
             pointer-events: none;
         }
         
-        /* VIỀN QUANG HỌC BÊN NGOÀI (Outer Rim Light) */
+        /* HIỆU ỨNG PHẢN QUANG CẠNH (Edge Glare) */
+        /* Tạo một quầng sáng mỏng hắt lên ở cạnh dưới trái để khối tròn trịa hơn */
         .glass-icon::after {
             content: '';
             position: absolute;
-            inset: -1.5px; /* Lớn hơn nút một chút để tạo viền */
-            border-radius: 62px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, transparent 50%, rgba(255, 100, 0, 0.6) 100%);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: destination-out;
-            mask-composite: exclude;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(circle at 10% 90%, rgba(255,255,255,0.2) 0%, transparent 40%);
             pointer-events: none;
-            z-index: -1;
         }
 
+        /* Hiệu ứng khi bấm vào */
         .glass-icon:active {
-            transform: scale(0.95);
+            transform: scale(0.96) translateY(5px);
             box-shadow: 
-                inset 2px 3px 8px rgba(255, 255, 255, 0.9),
-                inset -5px -5px 15px rgba(0, 0, 0, 0.6),
-                inset -2px -8px 20px rgba(255, 200, 0, 0.8),
-                5px 10px 15px rgba(0, 0, 0, 0.2),
-                2px 15px 25px rgba(233, 30, 99, 0.5);
+                inset 2px 2px 6px rgba(255, 255, 255, 0.9),
+                inset 15px 15px 30px rgba(0, 0, 0, 0.6),
+                inset -3px -3px 8px rgba(0, 0, 0, 0.7),
+                inset -10px -20px 40px rgba(255, 200, 50, 1),
+                8px 15px 20px rgba(0, 0, 0, 0.15),
+                0px 10px 30px rgba(255, 20, 100, 0.4);
         }
 
     </style>
