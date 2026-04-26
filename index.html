@@ -2,101 +2,134 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thuật Toán Kính Nguyên Bản - Sandbox V15</title>
+    <title>Thuật Toán 3D Crystal Icon - Sandbox V16</title>
     <style>
-        /* Nền sáng để kiểm tra độ xuyên sáng của kính */
+        /* Nền trắng/xám nhạt để tôn lên sự tương phản và bóng đổ y hệt ảnh gốc */
         body {
-            background-color: #eef2f7;
+            background-color: #f2f5f9;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: sans-serif;
             margin: 0;
-            /* Thêm caro mờ để thấy rõ sự xuyên thấu và làm nhòe (blur) của kính */
-            background-image: radial-gradient(#d1d5db 1.5px, transparent 1.5px);
-            background-size: 20px 20px;
         }
 
-        .glass-icon {
+        /* 1. LỚP VỎ BAO BỌC (THE OUTER BEZEL) */
+        /* Tạo khung viền ngoài cùng, màu tối ở góc trên, sáng rực ở đáy */
+        .outer-bezel {
+            position: relative;
             width: 250px;
             height: 250px;
-            border-radius: 60px; /* Bo góc Squircle */
-            position: relative;
+            border-radius: 64px; /* Bo góc Squircle chuẩn */
+            padding: 4px; /* Độ dày của vách viền */
             cursor: pointer;
             
-            /* ========================================= */
-            /* 1. ĐỘ XUYÊN SÁNG & MÀU SẮC (Transmittance)*/
-            /* ========================================= */
-            /* Dùng RGBA để màu sắc hòa quyện với nền, tạo độ trong trẻo */
-            background: linear-gradient(135deg, 
-                rgba(74, 20, 140, 0.65) 0%,   /* Tím */
-                rgba(233, 30, 99, 0.55) 50%,  /* Hồng */
-                rgba(255, 87, 34, 0.75) 100%  /* Cam */
-            );
+            /* Gradient của vỏ: Tím đen -> Tím đỏ -> Cam vàng */
+            background: linear-gradient(135deg, #1c0836 0%, #820b45 40%, #ff8800 100%);
             
-            /* Hiệu ứng kính lúp làm nhòe nền đằng sau */
-            backdrop-filter: blur(15px) saturate(120%);
-            -webkit-backdrop-filter: blur(15px) saturate(120%);
-
-            /* ========================================= */
-            /* 2. ĐỘ BÓNG & ĐỘ DÀY (Gloss & Volume)      */
-            /* ========================================= */
+            /* BÓNG ĐỔ HẮT RA NGOÀI MÔI TRƯỜNG */
             box-shadow: 
-                /* Mặt trên đón sáng: Viền highlight trắng mượt mà */
-                inset 3px 3px 8px rgba(255, 255, 255, 0.7),
-                inset 1px 1px 2px rgba(255, 255, 255, 1),
+                /* Quầng màu xuyên thấu hắt xuống nền (Caustic Drop) */
+                0 25px 45px -10px rgba(233, 30, 99, 0.6),
+                /* Bóng đen vật lý tạo khối bám mặt bàn */
+                0 15px 25px -5px rgba(0, 0, 0, 0.35),
+                /* Highlight mảnh bọc mép viền ngoài */
+                inset 1px 1px 2px rgba(255, 255, 255, 0.3);
                 
-                /* Vách kính (Độ dày): Bóng tối ôm sát tạo chiều sâu cho lõi kính */
-                inset -10px -10px 25px rgba(0, 0, 0, 0.4),
-                inset 10px 10px 25px rgba(0, 0, 0, 0.15),
-                
-                /* Tụ quang đáy (Refraction): Ánh sáng đọng lại ở mép kính dưới */
-                inset -3px -6px 15px rgba(255, 200, 50, 0.85),
-                inset -1px -2px 4px rgba(255, 255, 255, 0.5),
-                
-                /* Bóng đổ vật lý ngoài cùng */
-                10px 20px 30px rgba(0, 0, 0, 0.15),
-                
-                /* Ánh sáng xuyên thấu hắt màu của kính xuống mặt bàn */
-                0px 25px 40px -5px rgba(233, 30, 99, 0.4);
-                
-            /* Viền ngoài cùng mượt mà bọc lấy khối kính */
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-top-color: rgba(255, 255, 255, 0.5);
-            border-left-color: rgba(255, 255, 255, 0.3);
-            
             transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
+        
+        .outer-bezel:active {
+            transform: scale(0.95);
+        }
 
-        /* ========================================= */
-        /* 3. LỚP BÓNG BỀ MẶT (Smooth Surface Gloss) */
-        /* ========================================= */
-        /* ĐÃ XÓA BỎ VỆT CẮT LỖI. Chỉ để lại độ bóng mượt mà lan tỏa */
-        .glass-icon::before {
+        /* 2. LÕI KÍNH 3D (THE INNER GLASS CORE) */
+        .inner-core {
+            width: 100%;
+            height: 100%;
+            border-radius: 60px; /* Ôm khít vách viền */
+            position: relative;
+            overflow: hidden;
+            
+            /* MÀU GỐC CỰC BÃO HÒA (Solid Saturation) - Không dùng rgba loãng */
+            background: linear-gradient(135deg, #48148c 0%, #e91e63 50%, #ff5722 100%);
+            
+            /* KIẾN TẠO CHIỀU SÂU VÀ KHÚC XẠ BÊN TRONG (Volumetric Shading) */
+            box-shadow: 
+                /* Viền sáng cực gắt ở mặt đón sáng Top-Left */
+                inset 2px 2px 4px rgba(255, 255, 255, 0.8),
+                inset 1px 1px 1px rgba(255, 255, 255, 1),
+                
+                /* KHOÉT SÂU LÕI KÍNH: Bóng đen chìm tạo độ sâu thăm thẳm */
+                inset 15px 15px 35px rgba(0, 0, 0, 0.4),
+                inset -15px -15px 35px rgba(0, 0, 0, 0.3),
+                
+                /* TỤ QUANG ĐÁY: Mép kính Dưới-Phải phản quang rực rỡ */
+                inset -3px -6px 15px rgba(255, 200, 50, 0.9);
+        }
+
+        /* 3. VẾT CẮT BÓNG GƯƠNG (THE HARD-STOP GLOSS) */
+        /* Tạo bề mặt phẳng, nhẵn thín như pha lê được đánh bóng */
+        .inner-core::before {
             content: '';
             position: absolute;
-            inset: 0;
+            inset: 1px; /* Bo thụt vào 1px để không đè viền sáng */
             border-radius: 59px;
-            /* Phủ một lớp sáng lan tỏa dịu mắt từ góc trên trái xuống */
+            
+            /* Vết cắt chéo tuyệt đối sắc lẹm tại 46% */
             background: linear-gradient(
                 135deg, 
-                rgba(255, 255, 255, 0.45) 0%, 
-                rgba(255, 255, 255, 0.05) 45%, 
-                transparent 70%
+                rgba(255, 255, 255, 0.5) 0%,    /* Sáng chói góc trên */
+                rgba(255, 255, 255, 0.05) 46%,  /* Trải đều xuống giữa */
+                transparent 46.2%,              /* CẮT ĐỨT ĐOẠN */
+                transparent 100%
             );
             pointer-events: none;
         }
 
-        .glass-icon:active {
-            transform: scale(0.96);
+        /* 4. ĐIỂM SÁNG RỰC CHÁY Ở ĐÁY (THE CAUSTIC HOTSPOT) */
+        /* Đây là điểm hội tụ ánh sáng xuyên thấu qua khối kính */
+        .hotspot {
+            position: absolute;
+            bottom: -4px; 
+            left: 20%;
+            right: 20%;
+            height: 10px;
+            /* Tâm trắng lóa, tỏa ra màu cam/vàng bão hòa */
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(255, 180, 0, 0.9) 40%, transparent 70%);
+            filter: blur(2px);
+            z-index: 10;
+            pointer-events: none;
         }
+
+        /* 5. MICRO DETAILS: BỤI SÁNG PHẢN QUANG (Sparkles) */
+        .sparkles { position: absolute; inset: 0; pointer-events: none; }
+        .sparkle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.6);
+        }
+        /* Tọa độ y hệt ảnh mẫu */
+        .s1 { width: 3px; height: 3px; top: 32%; left: 16%; }
+        .s2 { width: 1.5px; height: 1.5px; top: 43%; left: 24%; }
+        .s3 { width: 1.5px; height: 1.5px; bottom: 24%; right: 26%; }
 
     </style>
 </head>
 <body>
 
-    <div class="glass-icon"></div>
+    <div class="outer-bezel">
+        <div class="inner-core">
+            <div class="sparkles">
+                <div class="sparkle s1"></div>
+                <div class="sparkle s2"></div>
+                <div class="sparkle s3"></div>
+            </div>
+        </div>
+        <div class="hotspot"></div>
+    </div>
 
 </body>
 </html>
