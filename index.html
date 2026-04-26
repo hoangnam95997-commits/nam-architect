@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NAM ARCH PRO v135 - The Unified Gradient Fix</title>
+    <title>NAM ARCH PRO v136 - The Ultimate Harmony</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -211,7 +211,7 @@
             padding: 18px; 
             border-radius: 20px; 
             border: 1px solid rgba(255,255,255,0.02); 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); 
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); 
         }
 
         body.theme-light .panel-card { 
@@ -248,7 +248,7 @@
             border-radius: 4px; 
             outline: none; 
             margin-top: 6px; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
         }
 
         body.theme-light .zoom-slider { 
@@ -435,10 +435,12 @@
         .theme-toggle.light-mode .t-light { color: #f59e0b; }
 
         /* ========================================================================= */
-        /* TUYỆT TÁC QUANG HỌC V135: THE UNIFIED GRADIENT FIX (ACTION 1 & 2)         */
-        /* 1. HIGHLIGHT: Mask-composite cắt vát siêu bén, mờ dần mượt mà.            */
-        /* 2. UNIFIED GRADIENT (MỚI): Xóa điểm lóa, màu sáng dần về ĐÁY PHẢI (100%). */
-        /* 3. CAUSTICS: Vệt màu tụ quang thanh mảnh, rực rỡ hắt xuống đáy.           */
+        /* TUYỆT TÁC QUANG HỌC V136: THE ULTIMATE HARMONY                            */
+        /* 1. HIGHLIGHT BỀ MẶT: Form V118, Giữ nguyên.                               */
+        /* 2. CHUẨN HOÁ TRỤC SÁNG - TỐI: Nguồn sáng chính TRÁI, Bóng đổ PHẢI.        */
+        /* 3. HOÀ SÁC PBR (PHYSICALLY BASED RENDERING):                              */
+        /* - Vùng Sáng (Trái): Chói rực rỡ + Nhạt màu dần (White/Desaturated).    */
+        /* - Vùng Tối (Phải): Tăng độ bão hoà (Saturated) tạo lõi kính trong vắt. */
         /* ========================================================================= */
         
         .btn-liquid {
@@ -462,11 +464,10 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             z-index: 1;
             
-            /* Tăng độ trong suốt, đẩy sáng nhẹ lòng kính để kính bắt sáng tự nhiên */
+            /* Blur và Brightness nền tạo độ trong cho thuỷ tinh */
             backdrop-filter: blur(6px) saturate(200%) brightness(1.15); 
             -webkit-backdrop-filter: blur(6px) saturate(200%) brightness(1.15);
             
-            /* Lớp viền base tàng hình */
             border: 1px solid transparent;
             background: rgba(255, 255, 255, 0.02);
         }
@@ -497,41 +498,45 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT CYAN (V135 - UNIFIED GRADIENT)                       */
+        /* NÚT CYAN (HOÀ SẮC CHUẨN PBR)                              */
         /* --------------------------------------------------------- */
         .btn-cyan {
-            /* YÊU CẦU 1&2: XÓA ĐIỂM SÁNG, MÀU SÁNG DẦN VỀ GÓC ĐÁY PHẢI (100% 100%) */
-            background: 
-                /* Chuyển sắc Cyan sáng dần về đáy phải (Unified Gradient) */
-                radial-gradient(circle at 100% 100%, rgba(0, 255, 255, 0.8) 0%, rgba(0, 120, 255, 0.3) 60%, rgba(255, 255, 255, 0.1) 100%);
+            /* MANG NGUỒN SÁNG VỀ TRÁI (0% 0%): Nhạt màu (Sáng trắng) ở vùng sáng, Đậm màu ở vùng tối */
+            background: radial-gradient(circle at 0% 0%, 
+                rgba(180, 255, 255, 0.95) 0%,   /* Trái: Chói loá, nhạt màu (Desaturated) */
+                rgba(0, 180, 255, 0.4) 50%,     /* Giữa: Thân thuỷ tinh */
+                rgba(0, 40, 150, 0.2) 100%      /* Phải (Vùng tối): Tăng sắc độ, tối màu (Saturated) */
+            );
             
             box-shadow: 
-                /* Highlight viền trong */
+                /* Highlight viền trong góc Trái */
                 inset 1px 1px 2px rgba(255, 255, 255, 1),
                 inset 2px 2px 5px rgba(255, 255, 255, 0.3),
-                /* Viền Caustic mỏng bên dưới */
-                inset -1.5px -2.5px 6px rgba(0, 255, 255, 1),
-                /* Core Shadow 3D */
-                inset -4px -6px 15px rgba(0, 0, 0, 0.2),
-                /* Drop Shadow vật lý */
+                /* Khúc xạ viền mỏng ở góc Phải */
+                inset -1.5px -2.5px 6px rgba(0, 120, 255, 0.6),
+                /* Lõi tối chặn sáng tạo khối 3D ở góc Phải */
+                inset -4px -6px 15px rgba(0, 0, 0, 0.3),
+                /* Bóng đổ vật lý hợp lý góc Phải */
                 8px 12px 16px rgba(0, 0, 0, 0.7),
-                /* Caustic Glow rực rỡ hắt xuống nền */
-                12px 16px 25px -2px rgba(0, 240, 255, 1);
+                /* Caustic Glow màu chiếu xuống nền góc Phải */
+                12px 16px 25px -2px rgba(0, 200, 255, 0.8);
                 
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
         
         .btn-cyan:hover { 
-            /* Sáng rực rỡ hơn khi hover, vẫn tập trung ở đáy phải */
-            background: 
-                radial-gradient(circle at 100% 100%, rgba(0, 255, 255, 1) 0%, rgba(0, 150, 255, 0.4) 70%, rgba(255, 255, 255, 0.2) 100%);
+            background: radial-gradient(circle at 0% 0%, 
+                rgba(220, 255, 255, 1) 0%, 
+                rgba(0, 200, 255, 0.5) 50%, 
+                rgba(0, 50, 200, 0.25) 100%
+            );
             box-shadow: 
                 inset 1px 1px 3px rgba(255, 255, 255, 1),
                 inset 3px 3px 8px rgba(255, 255, 255, 0.5),
-                inset -1.5px -3px 8px rgba(0, 255, 255, 1),
-                inset -4px -6px 15px rgba(0, 0, 0, 0.1),
+                inset -1.5px -3px 8px rgba(0, 150, 255, 0.8),
+                inset -4px -6px 15px rgba(0, 0, 0, 0.2),
                 10px 14px 20px rgba(0, 0, 0, 0.8),
-                14px 20px 30px -2px rgba(0, 255, 255, 1);
+                14px 20px 30px -2px rgba(0, 220, 255, 1);
             transform: translateY(-2px);
         }
 
@@ -542,39 +547,43 @@
         }
 
         /* --------------------------------------------------------- */
-        /* NÚT MAGENTA (V135 - UNIFIED GRADIENT)                    */
+        /* NÚT MAGENTA (HOÀ SẮC CHUẨN PBR)                           */
         /* --------------------------------------------------------- */
         .btn-magenta {
             flex: 1; 
             font-size: 12px;
             
-            /* YÊU CẦU 1&2: XÓA ĐIỂM SÁNG, MÀU SÁNG DẦN VỀ GÓC ĐÁY PHẢI (100% 100%) */
-            background: 
-                /* Chuyển sắc Magenta sáng dần về đáy phải (Unified Gradient) */
-                radial-gradient(circle at 100% 100%, rgba(255, 0, 255, 0.8) 0%, rgba(150, 0, 255, 0.3) 60%, rgba(255, 255, 255, 0.1) 100%);
+            /* MANG NGUỒN SÁNG VỀ TRÁI (0% 0%): Nhạt màu ở vùng sáng, Đậm màu ở vùng tối */
+            background: radial-gradient(circle at 0% 0%, 
+                rgba(255, 200, 255, 0.95) 0%,   /* Trái: Chói loá, nhạt màu (Desaturated) */
+                rgba(255, 0, 150, 0.4) 50%,     /* Giữa: Thân thuỷ tinh */
+                rgba(100, 0, 80, 0.2) 100%      /* Phải (Vùng tối): Tăng sắc độ, tối màu (Saturated) */
+            );
             
             box-shadow: 
                 inset 1px 1px 2px rgba(255, 255, 255, 1),
                 inset 2px 2px 5px rgba(255, 255, 255, 0.3),
-                inset -1.5px -2.5px 6px rgba(255, 50, 150, 1),
-                inset -4px -6px 15px rgba(0, 0, 0, 0.2),
+                inset -1.5px -2.5px 6px rgba(200, 0, 100, 0.6),
+                inset -4px -6px 15px rgba(0, 0, 0, 0.3),
                 8px 12px 16px rgba(0, 0, 0, 0.7),
-                12px 16px 25px -2px rgba(255, 50, 150, 1);
+                12px 16px 25px -2px rgba(255, 0, 150, 0.8);
 
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         .btn-magenta:hover { 
-            /* Sáng rực rỡ hơn khi hover */
-            background: 
-                radial-gradient(circle at 100% 100%, rgba(255, 0, 255, 1) 0%, rgba(180, 0, 255, 0.4) 70%, rgba(255, 255, 255, 0.2) 100%);
+            background: radial-gradient(circle at 0% 0%, 
+                rgba(255, 220, 255, 1) 0%, 
+                rgba(255, 50, 180, 0.5) 50%, 
+                rgba(150, 0, 100, 0.25) 100%
+            );
             box-shadow: 
                 inset 1px 1px 3px rgba(255, 255, 255, 1),
                 inset 3px 3px 8px rgba(255, 255, 255, 0.5),
-                inset -1.5px -3px 8px rgba(255, 50, 150, 1),
-                inset -4px -6px 15px rgba(0, 0, 0, 0.1),
+                inset -1.5px -3px 8px rgba(255, 0, 150, 0.8),
+                inset -4px -6px 15px rgba(0, 0, 0, 0.2),
                 10px 14px 20px rgba(0, 0, 0, 0.8),
-                14px 20px 30px -2px rgba(255, 50, 150, 1);
+                14px 20px 30px -2px rgba(255, 50, 180, 1);
             transform: translateY(-2px);
         }
 
@@ -700,7 +709,7 @@
             
             <div class="brand-header">
                 <h1>NAM ARCH</h1>
-                <span class="tagline">V135 • UNIFIED GRADIENT FIX</span>
+                <span class="tagline">V136 • THE ULTIMATE HARMONY</span>
             </div>
 
             <div class="panel-card">
@@ -1076,7 +1085,7 @@
             
             for (let i = 0; i < features.length; i++) {
                 if (i % 50 === 0) { 
-                    updateProgress(40 + (i / features.length) * 40, `PHÂN LỚP QUY HOẠCH: ${featureCount}/${features.length}`, true); 
+                    updateProgress(40 + (i / features.length) * 40, `PHÂN LỚP QUY HOẠCH: ${i}/${features.length}`, true); 
                     await yieldCPU(); 
                 }
                 
@@ -1382,7 +1391,7 @@
 
         const anchor = document.createElement('a'); 
         anchor.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'})); 
-        anchor.download = "NAM_ARCH_3D_V135.dae"; 
+        anchor.download = "NAM_ARCH_3D_V136.dae"; 
         anchor.click(); 
         
         updateProgress(100, "XUẤT MÔ HÌNH 3D THÀNH CÔNG!", false);
