@@ -40,13 +40,16 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); overflow: hidden; }
         #map { height: 100vh; width: 100vw; background: #1e2026; }
         
-        /* THANH TÌM KIẾM NEUMORPHISM - ĐÃ XÓA BÓNG ĐỔ NGOÀI */
-        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--bg-main); border-radius: var(--radius-md); overflow: hidden; transition: all 0.3s ease; }
-        .search-box input { background: transparent; border: none; padding: 14px 18px; width: 280px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
+        /* THANH TÌM KIẾM NEUMORPHISM - HIỆU ỨNG RÃNH SÂU GIỐNG ẢNH YÊU CẦU */
+        .search-box { position: absolute; top: 24px; right: 24px; z-index: 1000; display: flex; background: var(--bg-main); border-radius: 50px; padding: 6px; box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); transition: all 0.3s ease; }
+        .light-theme .search-box { background: #e8eaed; box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px #ffffff; } 
+        .search-box input { background: transparent; border: none; padding: 10px 16px; width: 250px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; }
         .search-box input::placeholder { color: var(--text-secondary); }
-        .search-box button { background: transparent; border: none; border-left: 2px solid rgba(0,0,0,0.1); padding: 0 20px; cursor: pointer; color: var(--text-primary); font-weight: 600; font-size: 14px; transition: 0.2s; box-shadow: inset 2px 0 5px rgba(0,0,0,0.1); }
+        .search-box button { background: var(--bg-main); border: none; border-radius: 50px; padding: 0 24px; cursor: pointer; color: var(--text-primary); font-weight: 600; font-size: 14px; transition: 0.2s; box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); }
+        .light-theme .search-box button { background: #ffffff; box-shadow: 3px 3px 6px rgba(0,0,0,0.1), -3px -3px 6px #ffffff; border: 1px solid rgba(0,0,0,0.02); }
         .search-box button:hover { color: #FFB608; } 
-        .search-box button:active { box-shadow: inset 4px 0 8px rgba(0,0,0,0.2); }
+        .search-box button:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
+        .light-theme .search-box button:active { box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1), inset -2px -2px 5px #ffffff; }
 
         /* BẢNG ĐIỀU KHIỂN CHÍNH - ĐÃ XÓA BÓNG ĐỔ NGOÀI */
         .sidebar-container { position: absolute; top: 24px; left: 24px; z-index: 1000; display: flex; gap: 16px; align-items: flex-start; }
