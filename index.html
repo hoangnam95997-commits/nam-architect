@@ -145,8 +145,7 @@
         .auth-divider { border-top: 1px dashed rgba(139, 149, 165, 0.2); padding-top: 20px; margin-top: 10px; }
         .device-id-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--success); letter-spacing: 2px;}
         
-        /* CSS Bảng Admin Ẩn */
-        #admin-panel { display: none; }
+        /* CSS Bảng Admin Mới */
         .admin-key-result { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; margin-bottom: 16px; word-break: break-all;}
     </style>
 </head>
@@ -171,26 +170,6 @@
         
         <p id="authError" style="color:#FF2553; font-size:12px; margin-top:16px; display:none; font-weight:600;">❌ Mã kích hoạt không chính xác!</p>
     </div>
-
-    <div class="auth-box" id="admin-panel">
-        <div class="brand-header" style="margin-bottom: 16px;">
-            <h1>ADMIN <span>CONTROL</span></h1>
-            <span class="tagline" style="color: #10b981; text-shadow: 0 0 8px rgba(16,185,129,0.5);">BẢNG CÔNG CỤ TẠO MÃ KÍCH HOẠT</span>
-        </div>
-        <p style="color:var(--text-secondary); font-size:13px; margin-bottom:20px;">Dán Mã Thiết Bị của khách vào đây để tạo Chìa Khóa.</p>
-        
-        <input type="text" id="clientDeviceId" class="auth-input" placeholder="Ví dụ: A8X9P">
-        <button class="auth-btn" onclick="adminGenerateKey()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">⚙️ TẠO CHÌA KHÓA</button>
-        
-        <div id="adminKeyOutput" style="display:none; margin-top: 16px;">
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Copy mã này gửi cho khách:</p>
-            <div class="admin-key-result" id="generatedKeyResult">...</div>
-        </div>
-
-        <div class="auth-divider">
-            <button class="req-btn" onclick="adminBypass()" style="margin-bottom: 0;">🚀 BỎ QUA - VÀO THẲNG APP</button>
-        </div>
-    </div>
 </div>
 <div class="search-box">
     <input type="text" id="searchInput" placeholder="Tìm kiếm địa điểm, tọa độ..." onkeypress="if(event.key === 'Enter') searchLocation()">
@@ -202,7 +181,7 @@
         
         <div class="brand-header">
             <h1>NAM ARCH <span>PRO</span></h1>
-            <span class="tagline">V85 • BOOLEAN TOPOLOGY ENGINE</span>
+            <span class="tagline">V85 • BOOLEAN TOPOLOGY ENG<span onclick="unlockAdmin()" style="cursor: inherit; color: inherit;">I</span>NE</span>
         </div>
 
         <div class="panel-card">
@@ -283,6 +262,19 @@
                 <div id="stt">Đang chờ lệnh...</div>
             </div>
         </div>
+
+        <div class="panel-card" id="adminZone" style="display: none; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); margin-top: 18px; padding-bottom: 12px;">
+            <div class="panel-header" style="margin-bottom: 12px; justify-content: center;">
+                <span class="panel-title" style="color: #10b981; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);">🔑 TẠO MÃ KÍCH HOẠT (ADMIN)</span>
+            </div>
+            <input type="text" id="clientDeviceId" class="auth-input" placeholder="Dán mã máy khách..." style="width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 8px; font-size: 13px;">
+            <button class="btn-main" onclick="adminGenerateKey()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); padding: 12px; margin-bottom: 0;">⚙️ TẠO CHÌA KHÓA</button>
+            
+            <div id="adminKeyOutput" style="display:none; margin-top: 12px;">
+                <div class="admin-key-result" id="generatedKeyResult" style="margin-bottom: 0; padding: 10px; font-size: 16px; text-align: center; letter-spacing: 2px;">...</div>
+            </div>
+        </div>
+
     </div>
     
     <button class="toggle-btn" onclick="toggleSidebar()"><span id="toggle-icon">◀</span></button>
@@ -302,7 +294,7 @@
     // HỆ THỐNG BẢO MẬT & SINH MÃ (KEYGEN)
     // =========================================================================
     const ADMIN_EMAIL = "hoangnam95997@gmail.com";
-    const MASTER_ADMIN_CODE = "e_KyXa+Zy2$I9 W8S"; // <- Thần chú mở Bảng Admin của bạn
+    const MASTER_ADMIN_CODE = "e_KyXa+Zy2$I9 W8S"; // Mật khẩu mới của bạn
     const SECRET_SUFFIX = "1256"; // Đuôi tính toán ngầm
 
     // 1. Khởi tạo mã thiết bị
@@ -313,16 +305,18 @@
     }
     document.getElementById('displayDeviceId').innerText = currentDeviceId;
 
-    // 2. Tự động vào map nếu máy đã có dấu mộc VIP
-    window.onload = function() {
-        if (localStorage.getItem("namArchAuth") === "approved") {
-            document.getElementById('auth-overlay').style.display = 'none';
-        }
-    };
+    // 2. Tự động vào map nếu máy đã có dấu mộc VIP (Không cần chờ load trang)
+    if (localStorage.getItem("namArchAuth") === "approved") {
+        document.getElementById('auth-overlay').style.display = 'none';
+    }
+    
+    // Tự động mở bảng Admin trong Sidebar nếu máy này là máy Sếp
+    if (localStorage.getItem("namAdminVIP") === "true") {
+        document.getElementById('adminZone').style.display = 'block';
+    }
 
     // 3. Thuật toán trộn mã: Biến [Mã Máy + 1256] thành một chuỗi mới tinh
     function hashDeviceKey(deviceId) {
-        // Dùng btoa (Base64) để trộn chuỗi, lấy 6 ký tự đầu viết hoa làm mã kích hoạt
         const rawString = deviceId.trim() + SECRET_SUFFIX;
         return btoa(rawString).replace(/[^a-zA-Z0-9]/g, '').substring(0, 6).toUpperCase();
     }
@@ -331,10 +325,13 @@
     function checkAuth() {
         const input = document.getElementById('authCode').value.trim();
         
-        // KIỂM TRA 1: Nếu gõ đúng Thần chú Admin -> Mở Bảng điều khiển ẩn
+        // KIỂM TRA 1: Nếu Admin nhập mật mã ngay ở màn hình khóa (khi qua máy mới)
         if (input === MASTER_ADMIN_CODE) {
-            document.getElementById('guest-panel').style.display = 'none';
-            document.getElementById('admin-panel').style.display = 'block';
+            localStorage.setItem("namArchAuth", "approved"); // Cho phép vô app
+            localStorage.setItem("namAdminVIP", "true");     // Nhớ mặt Admin
+            document.getElementById('auth-overlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('auth-overlay').style.display = 'none'; }, 500);
+            document.getElementById('adminZone').style.display = 'block'; // Hiện bảng tạo mã trong Sidebar
             return;
         }
 
@@ -342,7 +339,7 @@
         const expectedPin = hashDeviceKey(currentDeviceId); 
 
         if (input.toUpperCase() === expectedPin) {
-            localStorage.setItem("namArchAuth", "approved"); // Đóng mộc
+            localStorage.setItem("namArchAuth", "approved"); 
             document.getElementById('auth-overlay').style.opacity = '0';
             setTimeout(() => { document.getElementById('auth-overlay').style.display = 'none'; }, 500);
         } else {
@@ -359,9 +356,27 @@
         window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
     }
 
-    // --- CÁC HÀM CỦA BẢNG ADMIN ---
+    // --- CÁC HÀM CỦA BẢNG ADMIN TRONG SIDEBAR ---
+
+    // Hàm gọi Bảng Tạo Mã (Khi click vào Easter Egg)
+    function unlockAdmin() {
+        if(localStorage.getItem("namAdminVIP") === "true") {
+            // Nếu bảng đang mở, click lại để giấu nó đi
+            localStorage.removeItem("namAdminVIP");
+            document.getElementById('adminZone').style.display = 'none';
+            return;
+        }
+        
+        let pass = prompt("🔐 Nhập Thần Chú Admin để hiển thị Bảng Tạo Mã:");
+        if(pass === MASTER_ADMIN_CODE) {
+            localStorage.setItem("namAdminVIP", "true");
+            document.getElementById('adminZone').style.display = 'block';
+        } else if (pass !== null) {
+            alert("❌ Sai Thần Chú! Bảng tạo mã vẫn bị khóa.");
+        }
+    }
     
-    // Nút "Tạo Chìa Khóa" trong bảng Admin
+    // Nút "Tạo Chìa Khóa"
     function adminGenerateKey() {
         const clientDevice = document.getElementById('clientDeviceId').value;
         if (clientDevice.length > 0) {
@@ -369,13 +384,6 @@
             document.getElementById('generatedKeyResult').innerText = newKey;
             document.getElementById('adminKeyOutput').style.display = 'block';
         }
-    }
-
-    // Nút "Vào thẳng App" cho chính máy tính của Admin
-    function adminBypass() {
-        localStorage.setItem("namArchAuth", "approved"); // Tự cấp quyền cho máy mình
-        document.getElementById('auth-overlay').style.opacity = '0';
-        setTimeout(() => { document.getElementById('auth-overlay').style.display = 'none'; }, 500);
     }
 
     document.getElementById('authCode').addEventListener('keypress', function (e) {
