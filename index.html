@@ -152,13 +152,54 @@
         
         body.light-theme .theme-label-text { color: #A6C1EE; }
 
-        /* NÚT BẤM NEUMORPHISM */
-        .btn-main { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); background: var(--gradient-brand); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(255, 37, 83, 0.3); margin-bottom: 16px; }
-        .btn-main:hover { filter: brightness(1.1); }
-        .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 5px rgba(255, 37, 83, 0.3); }
-        .light-theme .btn-main { background: var(--gradient-brand); box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); }
-        .light-theme .btn-main:active { background: var(--gradient-brand); filter: brightness(1.0); }
+        /* NÚT BẤM CHÍNH (Đã thêm viền, hiệu ứng khối 3D cứng cáp và bóng đổ đậm) */
+        .btn-main { 
+            width: 100%; 
+            padding: 16px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Thêm viền sắc nét */
+            border-radius: var(--radius-md); 
+            background: var(--gradient-brand); 
+            color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            font-weight: 700; 
+            font-size: 13px; 
+            letter-spacing: 0.5px; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            /* Hiệu ứng khối nổi và bóng đổ đậm phía dưới */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.2); 
+            margin-bottom: 16px; 
+        }
+        .btn-main:hover { 
+            filter: brightness(1.1); 
+            transform: translateY(-2px); 
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.3); 
+        }
+        .btn-main:active { 
+            transform: translateY(2px); 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); 
+        }
         
+        /* Chỉnh lại bóng đổ cho Chế độ Sáng */
+        .light-theme .btn-main { 
+            background: var(--gradient-brand); 
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .light-theme .btn-main:hover {
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+        }
+        .light-theme .btn-main:active { 
+            background: var(--gradient-brand); 
+            filter: brightness(1.0); 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* NÚT BẤM PHỤ */
         .btn-outline { padding: 12px; background: var(--bg-main); color: var(--night-text-color); text-shadow: var(--night-text-glow); border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); }
         .btn-outline:hover { color: var(--text-primary); text-shadow: none; }
         .btn-outline:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
@@ -302,10 +343,6 @@
 <div id="map"></div>
 
 <script>
-    // =========================================================================
-    // LÕI THUẬT TOÁN V82 GIỮ NGUYÊN 100% - KHÔNG CHỈNH SỬA ĐỂ ĐẢM BẢO ỔN ĐỊNH
-    // =========================================================================
-    
     let sidebarOpen = true;
     function toggleSidebar() {
         const sb = document.getElementById('sidebar');
@@ -334,7 +371,6 @@
 
     let currentMapTheme = 'dark';
     
-    /* CẬP NHẬT MÀU SẮC MAP ĐỂ KHỚP BẢNG MÀU CHUẨN QUY HOẠCH KHI GẠT THEME */
     function toggleMapThemeSwitch(isLight) {
         currentMapTheme = isLight ? 'light' : 'dark';
         const statusText = document.getElementById('themeStatusText');
@@ -400,7 +436,6 @@
         else map.removeLayer(layers[type]);
     }
 
-    /* CẬP NHẬT MÀU SẮC TRONG HÀM STYLE CỦA MAP */
     function getLayerStyle(type) {
         const config = currentMapTheme === 'light' ? {
             nha: { color: '#f59e0b', weight: 2, fillOpacity: 0.15 },
