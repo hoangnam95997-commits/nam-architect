@@ -245,7 +245,7 @@
     <div class="custom-prompt-box" id="customPromptBox">
         <div class="prompt-title">🔐 Nhập Thần Chú Admin:</div>
         <input type="password" id="promptInput" class="prompt-input" placeholder="Mật khẩu...">
-        <div id="promptError" style="color:#FF2553; font-size:12px; font-weight:600; display:none;">❌ Sai Thần Chú!</div>
+        <div id="promptError" style="color:#FF2553; font-size:12px; font-weight:600; display:none; margin-top: 8px;">❌ Sai Thần Chú!</div>
         <div class="prompt-actions">
             <button class="prompt-btn prompt-btn-cancel" onclick="closeCustomPrompt()">Hủy</button>
             <button class="prompt-btn prompt-btn-confirm" onclick="submitCustomPrompt()">Xác Nhận</button>
@@ -426,10 +426,19 @@
         }
     }
 
+    // --- HÀM MỚI SỬA LỖI: TỰ ĐỘNG COPY MÃ MÁY ĐỂ CHỐNG LỖI MỞ MAILTO CỦA CHROME ---
     function requestAccess() {
         const subject = encodeURIComponent("Yêu cầu cấp quyền truy cập NAM ARCH PRO V85");
         const body = encodeURIComponent(`Chào Admin,\n\nTôi muốn xin quyền truy cập vào hệ thống bản đồ NAM ARCH PRO.\n\nMã Thiết Bị của tôi là: [ ${currentDeviceId} ]\n\nVui lòng cung cấp cho tôi Mã Kích Hoạt.\nXin cảm ơn!`);
-        window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
+        
+        // Cố gắng copy mã vào khay nhớ tạm của khách trước khi mở mail
+        navigator.clipboard.writeText(currentDeviceId).then(function() {
+            alert(`Hệ thống đã COPY Mã Thiết Bị [ ${currentDeviceId} ] của bạn!\n\nNếu máy tính không tự động mở ứng dụng gửi Mail, vui lòng tự mở Gmail và gửi mã vừa copy đến địa chỉ:\n👉 hoangnam95997@gmail.com`);
+            window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
+        }).catch(function(err) {
+            // Nếu trình duyệt chặn copy, vẫn cố mở mail bình thường
+            window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
+        });
     }
 
     // --- HÀM MỚI: XỬ LÝ BẢNG TÙY CHỈNH THAY CHO PROMPT MẶC ĐỊNH ---
