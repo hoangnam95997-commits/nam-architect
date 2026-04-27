@@ -25,6 +25,12 @@
             --radius-md: 12px;
             --night-text-color: #fcebb6; 
             --night-text-glow: 0 0 8px rgba(252, 235, 182, 0.5);
+            
+            /* Biến CSS cho Bảng Admin (Màu Vàng Ấm Áp cho Dark Mode) */
+            --admin-border: rgba(255, 182, 8, 0.3);
+            --admin-bg: rgba(255, 182, 8, 0.05);
+            --admin-text: #FFB608;
+            --admin-glow: 0 0 8px rgba(255, 182, 8, 0.5);
         }
 
         body.light-theme {
@@ -37,6 +43,12 @@
             --night-text-glow: none;     
             --gradient-brand: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%);
             --success: #34A853; 
+            
+            /* Biến CSS cho Bảng Admin (Màu Xám Tối cho Light Mode) */
+            --admin-border: rgba(99, 110, 114, 0.3);
+            --admin-bg: rgba(99, 110, 114, 0.05);
+            --admin-text: var(--text-secondary);
+            --admin-glow: none;
         }
 
         * { box-sizing: border-box; }
@@ -145,15 +157,38 @@
         .auth-divider { border-top: 1px dashed rgba(139, 149, 165, 0.2); padding-top: 20px; margin-top: 10px; }
         .device-id-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--success); letter-spacing: 2px;}
         
-        /* CSS Bảng Admin Mới */
-        .admin-key-result { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; margin-bottom: 16px; word-break: break-all;}
+        /* CSS Bảng Admin Mới Thay Đổi Màu Sắc Theo Yêu Cầu */
+        .panel-card#adminZone {
+            border: 1px solid var(--admin-border);
+            background: var(--admin-bg);
+            margin-top: 18px;
+            padding-bottom: 16px;
+        }
         
-        /* STYLE NÚT ADMIN ĐỒNG BỘ 3D */
-        .btn-admin-3d { width: 100%; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.2); margin-bottom: 12px; }
-        .btn-admin-3d:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3); }
-        .btn-admin-3d:active { transform: translateY(2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+        #adminZone .panel-title {
+            color: var(--admin-text);
+            text-shadow: var(--admin-glow);
+        }
         
-        .btn-close-admin { width: 100%; padding: 10px; background: transparent; color: var(--text-secondary); border: none; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 8px; opacity: 0.7; }
+        #clientDeviceId::placeholder {
+            color: var(--admin-text);
+            opacity: 0.6;
+        }
+
+        .admin-key-result { background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; margin-bottom: 16px; word-break: break-all;}
+        
+        /* STYLE NÚT ADMIN ĐỒNG BỘ 3D VỚI THEME TỐI (Màu Hoàng Hôn) */
+        .btn-admin-3d { width: 100%; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; background: linear-gradient(135deg, #FFB608 0%, #FF2553 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 15px rgba(255, 37, 83, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.2); margin-bottom: 12px; }
+        .btn-admin-3d:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255, 37, 83, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3); }
+        .btn-admin-3d:active { transform: translateY(2px); box-shadow: 0 4px 8px rgba(255, 37, 83, 0.3); }
+        
+        /* STYLE NÚT ADMIN ĐỒNG BỘ 3D VỚI THEME SÁNG (Pastel Xanh-Hồng) */
+        body.light-theme .btn-admin-3d { background: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.4); border: 1px solid rgba(255, 255, 255, 0.4); }
+        body.light-theme .btn-admin-3d:hover { box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.5); }
+        body.light-theme .btn-admin-3d:active { background: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%); filter: brightness(1.0); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        
+        /* Nút đóng bảng Admin */
+        .btn-close-admin { width: 100%; padding: 10px; background: transparent; color: var(--admin-text); border: none; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 8px; opacity: 0.8; }
         .btn-close-admin:hover { color: #FF2553; opacity: 1; }
     </style>
 </head>
@@ -271,16 +306,16 @@
             </div>
         </div>
 
-        <div class="panel-card" id="adminZone" style="display: none; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); margin-top: 18px; padding-bottom: 16px;">
+        <div class="panel-card" id="adminZone" style="display: none;">
             <div class="panel-header" style="margin-bottom: 12px; justify-content: center;">
-                <span class="panel-title" style="color: #10b981; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);">🔑 QUẢN TRỊ VIÊN</span>
+                <span class="panel-title">🔑 QUẢN TRỊ VIÊN</span>
             </div>
             <input type="text" id="clientDeviceId" class="auth-input" placeholder="Dán mã máy khách..." style="width: 100%; padding: 12px; margin-bottom: 16px; border-radius: 8px; font-size: 13px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); border:none; outline:none; background: transparent; color: var(--night-text-color);">
             
             <button class="btn-admin-3d" onclick="adminGenerateKey()">⚙️ TẠO CHÌA KHÓA</button>
             
             <div id="adminKeyOutput" style="display:none; margin-top: 12px;">
-                <div class="admin-key-result" id="generatedKeyResult" style="margin-bottom: 0; padding: 10px; font-size: 16px; text-align: center; letter-spacing: 2px;">...</div>
+                <div class="admin-key-result" id="generatedKeyResult">...</div>
             </div>
 
             <button class="btn-close-admin" onclick="closeAdminPanel()">✖ Đóng Bảng Quản Trị</button>
@@ -377,9 +412,9 @@
     }
     
     function adminGenerateKey() {
-        const clientDevice = document.getElementById('clientDeviceId').value;
-        if (clientDevice.length > 0) {
-            const newKey = hashDeviceKey(clientDevice);
+        const clientDeviceIdValue = document.getElementById('clientDeviceId').value;
+        if (clientDeviceIdValue.length > 0) {
+            const newKey = hashDeviceKey(clientDeviceIdValue);
             document.getElementById('generatedKeyResult').innerText = newKey;
             document.getElementById('adminKeyOutput').style.display = 'block';
         }
