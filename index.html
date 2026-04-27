@@ -25,6 +25,12 @@
             --radius-md: 12px;
             --night-text-color: #fcebb6; 
             --night-text-glow: 0 0 8px rgba(252, 235, 182, 0.5);
+            
+            /* Biến CSS cho Bảng Admin (Màu Vàng Ấm Áp cho Dark Mode) */
+            --admin-border: rgba(255, 182, 8, 0.3);
+            --admin-bg: rgba(255, 182, 8, 0.05);
+            --admin-text: #FFB608;
+            --admin-glow: 0 0 8px rgba(255, 182, 8, 0.5);
         }
 
         body.light-theme {
@@ -37,6 +43,12 @@
             --night-text-glow: none;     
             --gradient-brand: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%);
             --success: #34A853; 
+            
+            /* Biến CSS cho Bảng Admin (Màu Xám Tối cho Light Mode) */
+            --admin-border: rgba(99, 110, 114, 0.3);
+            --admin-bg: rgba(99, 110, 114, 0.05);
+            --admin-text: var(--text-secondary);
+            --admin-glow: none;
         }
 
         * { box-sizing: border-box; }
@@ -188,6 +200,23 @@
         /* Nút đóng bảng Admin khớp màu "quản lý phân lớp" */
         .btn-close-admin { width: 100%; padding: 10px; background: transparent; color: var(--night-text-color); text-shadow: var(--night-text-glow); border: none; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 8px; opacity: 0.8; }
         .btn-close-admin:hover { color: #FF2553; opacity: 1; text-shadow: none;}
+
+        /* --- CSS MỚI: BẢNG NHẬP MẬT KHẨU TÙY CHỈNH THAY THẾ PROMPT MẶC ĐỊNH --- */
+        #custom-prompt-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 9999999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s; }
+        .custom-prompt-box { background: var(--bg-main); padding: 32px; border-radius: var(--radius-lg); box-shadow: 5px 5px 15px var(--shadow-dark), -5px -5px 15px var(--shadow-light); text-align: center; width: 340px; transform: translateY(-20px); transition: transform 0.3s; }
+        .custom-prompt-box.show { transform: translateY(0); }
+        .prompt-title { color: var(--night-text-color); text-shadow: var(--night-text-glow); font-size: 15px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Inter', sans-serif; }
+        .prompt-input { width: 100%; padding: 14px; margin-bottom: 12px; border: none; border-radius: 10px; background: transparent; color: var(--night-text-color); box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); outline: none; font-family: 'JetBrains Mono', monospace; font-size: 14px; text-align: center; }
+        .prompt-input::placeholder { color: var(--text-secondary); opacity: 0.6; }
+        .prompt-actions { display: flex; gap: 12px; margin-top: 20px;}
+        .prompt-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px; font-family: 'Inter', sans-serif;}
+        .prompt-btn-cancel { background: transparent; color: var(--text-secondary); box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light); }
+        .prompt-btn-cancel:hover { color: var(--text-primary); }
+        .prompt-btn-cancel:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
+        .prompt-btn-confirm { background: var(--gradient-brand); color: #fff; box-shadow: 0 4px 10px rgba(255, 37, 83, 0.3); }
+        .light-theme .prompt-btn-confirm { background: var(--gradient-brand); box-shadow: 0 4px 10px rgba(166, 193, 238, 0.4); }
+        .prompt-btn-confirm:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .prompt-btn-confirm:active { transform: translateY(2px); box-shadow: none; }
     </style>
 </head>
 <body>
@@ -210,6 +239,17 @@
         </div>
         
         <p id="authError" style="color:#FF2553; font-size:12px; margin-top:16px; display:none; font-weight:600;">❌ Mã kích hoạt không chính xác!</p>
+    </div>
+</div>
+<div id="custom-prompt-overlay">
+    <div class="custom-prompt-box" id="customPromptBox">
+        <div class="prompt-title">🔐 Nhập Thần Chú Admin:</div>
+        <input type="password" id="promptInput" class="prompt-input" placeholder="Mật khẩu...">
+        <div id="promptError" style="color:#FF2553; font-size:12px; font-weight:600; display:none;">❌ Sai Thần Chú!</div>
+        <div class="prompt-actions">
+            <button class="prompt-btn prompt-btn-cancel" onclick="closeCustomPrompt()">Hủy</button>
+            <button class="prompt-btn prompt-btn-confirm" onclick="submitCustomPrompt()">Xác Nhận</button>
+        </div>
     </div>
 </div>
 <div class="search-box">
@@ -392,15 +432,59 @@
         window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
     }
 
+    // --- HÀM MỚI: XỬ LÝ BẢNG TÙY CHỈNH THAY CHO PROMPT MẶC ĐỊNH ---
     function unlockAdmin() {
-        let pass = prompt("🔐 Nhập Thần Chú Admin để hiển thị Bảng Tạo Mã:");
+        if(localStorage.getItem("namAdminVIP") === "true") {
+            // Đóng bảng admin đang mở
+            localStorage.removeItem("namAdminVIP");
+            document.getElementById('adminZone').style.display = 'none';
+            return;
+        }
+        
+        // Hiển thị bảng nhập mật khẩu tùy chỉnh
+        const overlay = document.getElementById('custom-prompt-overlay');
+        const box = document.getElementById('customPromptBox');
+        const input = document.getElementById('promptInput');
+        
+        overlay.style.display = 'flex';
+        // Hiệu ứng Fade in nhẹ nhàng
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            box.classList.add('show');
+            input.value = '';
+            input.focus(); // Tự động trỏ chuột vào ô nhập
+        }, 10);
+    }
+
+    function closeCustomPrompt() {
+        const overlay = document.getElementById('custom-prompt-overlay');
+        const box = document.getElementById('customPromptBox');
+        document.getElementById('promptError').style.display = 'none';
+        
+        overlay.style.opacity = '0';
+        box.classList.remove('show');
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+    }
+
+    function submitCustomPrompt() {
+        const pass = document.getElementById('promptInput').value;
         if(pass === MASTER_ADMIN_CODE) {
             localStorage.setItem("namAdminVIP", "true");
             document.getElementById('adminZone').style.display = 'block';
-        } else if (pass !== null) {
-            alert("❌ Sai Thần Chú! Bảng tạo mã vẫn bị khóa.");
+            closeCustomPrompt();
+        } else {
+            // Báo lỗi sai thần chú
+            const err = document.getElementById('promptError');
+            err.style.display = 'block';
+            setTimeout(() => { err.style.display = 'none'; }, 3000);
         }
     }
+
+    // Bấm Enter để xác nhận mã Admin
+    document.getElementById('promptInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') submitCustomPrompt();
+    });
+    // ---------------------------------------------------------------
 
     function closeAdminPanel() {
         localStorage.removeItem("namAdminVIP");
