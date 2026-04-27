@@ -26,11 +26,12 @@
             --night-text-color: #fcebb6; 
             --night-text-glow: 0 0 8px rgba(252, 235, 182, 0.5);
             
-            /* Biến CSS cho Bảng Admin (Màu Vàng Ấm Áp cho Dark Mode) */
-            --admin-border: rgba(255, 182, 8, 0.3);
-            --admin-bg: rgba(255, 182, 8, 0.05);
-            --admin-text: #FFB608;
-            --admin-glow: 0 0 8px rgba(255, 182, 8, 0.5);
+            /* Biến CSS cho Bảng Admin (Coral cho Dark) */
+            --sunset-coral: #ff7f50;
+            --admin-border: var(--sunset-coral);
+            --admin-bg: rgba(255, 127, 80, 0.05);
+            --admin-text: var(--sunset-coral);
+            --admin-glow: 0 0 8px rgba(255, 127, 80, 0.5);
         }
 
         body.light-theme {
@@ -44,7 +45,7 @@
             --gradient-brand: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%);
             --success: #34A853; 
             
-            /* Biến CSS cho Bảng Admin (Màu Xám Tối cho Light Mode) */
+            /* Biến CSS cho Bảng Admin (Pastel cho Light) */
             --admin-border: rgba(99, 110, 114, 0.3);
             --admin-bg: rgba(99, 110, 114, 0.05);
             --admin-text: var(--text-secondary);
@@ -159,34 +160,30 @@
         
         /* CSS Bảng Admin Mới Thay Đổi Màu Sắc Theo Yêu Cầu */
         .panel-card#adminZone {
+            border: 1px solid var(--admin-border);
+            background: var(--admin-bg);
             margin-top: 18px;
             padding-bottom: 16px;
         }
         
-        #adminZone .panel-title {
-            color: var(--admin-text);
-            text-shadow: var(--admin-glow);
-        }
-        
         #clientDeviceId::placeholder {
-            color: var(--admin-text);
+            color: var(--night-text-color);
             opacity: 0.6;
         }
 
         .admin-key-result { background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; margin-bottom: 16px; word-break: break-all;}
         
-        /* STYLE NÚT ADMIN ĐỒNG BỘ 3D VỚI THEME TỐI (Màu Hoàng Hôn) */
-        .btn-admin-3d { width: 100%; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; background: linear-gradient(135deg, #FFB608 0%, #FF2553 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 15px rgba(255, 37, 83, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.2); margin-bottom: 12px; }
-        .btn-admin-3d:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255, 37, 83, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3); }
-        .btn-admin-3d:active { transform: translateY(2px); box-shadow: 0 4px 8px rgba(255, 37, 83, 0.3); }
+        /* STYLE NÚT ADMIN ĐỒNG BỘ 3D VỚI THEME TỐI */
+        .btn-admin-3d { width: 100%; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.2); margin-bottom: 12px; }
+        .btn-admin-3d:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3); }
+        .btn-admin-3d:active { transform: translateY(2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
         
-        /* STYLE NÚT ADMIN ĐỒNG BỘ 3D VỚI THEME SÁNG (Pastel Xanh-Hồng) */
-        body.light-theme .btn-admin-3d { background: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.4); border: 1px solid rgba(255, 255, 255, 0.4); }
+        /* STYLE NÚT ADMIN ĐỒNG BỘ 3D VỚI THEME SÁNG */
+        body.light-theme .btn-admin-3d { background: var(--gradient-brand); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.4); border: 1px solid rgba(255, 255, 255, 0.4); }
         body.light-theme .btn-admin-3d:hover { box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.5); }
-        body.light-theme .btn-admin-3d:active { background: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%); filter: brightness(1.0); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        body.light-theme .btn-admin-3d:active { background: var(--gradient-brand); filter: brightness(1.0); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
         
-        /* Nút đóng bảng Admin */
-        .btn-close-admin { width: 100%; padding: 10px; background: transparent; color: var(--admin-text); border: none; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 8px; opacity: 0.8; }
+        .btn-close-admin { width: 100%; padding: 10px; background: transparent; color: var(--night-text-color); border: none; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 8px; opacity: 0.7; }
         .btn-close-admin:hover { color: #FF2553; opacity: 1; }
     </style>
 </head>
