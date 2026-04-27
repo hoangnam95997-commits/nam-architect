@@ -147,6 +147,14 @@
         
         /* CSS Bảng Admin Mới */
         .admin-key-result { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; margin-bottom: 16px; word-break: break-all;}
+        
+        /* STYLE NÚT ADMIN ĐỒNG BỘ 3D */
+        .btn-admin-3d { width: 100%; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.2); margin-bottom: 12px; }
+        .btn-admin-3d:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3); }
+        .btn-admin-3d:active { transform: translateY(2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+        
+        .btn-close-admin { width: 100%; padding: 10px; background: transparent; color: var(--text-secondary); border: none; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 8px; opacity: 0.7; }
+        .btn-close-admin:hover { color: #FF2553; opacity: 1; }
     </style>
 </head>
 <body>
@@ -263,16 +271,19 @@
             </div>
         </div>
 
-        <div class="panel-card" id="adminZone" style="display: none; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); margin-top: 18px; padding-bottom: 12px;">
+        <div class="panel-card" id="adminZone" style="display: none; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); margin-top: 18px; padding-bottom: 16px;">
             <div class="panel-header" style="margin-bottom: 12px; justify-content: center;">
-                <span class="panel-title" style="color: #10b981; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);">🔑 TẠO MÃ KÍCH HOẠT (ADMIN)</span>
+                <span class="panel-title" style="color: #10b981; text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);">🔑 QUẢN TRỊ VIÊN</span>
             </div>
-            <input type="text" id="clientDeviceId" class="auth-input" placeholder="Dán mã máy khách..." style="width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 8px; font-size: 13px;">
-            <button class="btn-main" onclick="adminGenerateKey()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); padding: 12px; margin-bottom: 0;">⚙️ TẠO CHÌA KHÓA</button>
+            <input type="text" id="clientDeviceId" class="auth-input" placeholder="Dán mã máy khách..." style="width: 100%; padding: 12px; margin-bottom: 16px; border-radius: 8px; font-size: 13px; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); border:none; outline:none; background: transparent; color: var(--night-text-color);">
+            
+            <button class="btn-admin-3d" onclick="adminGenerateKey()">⚙️ TẠO CHÌA KHÓA</button>
             
             <div id="adminKeyOutput" style="display:none; margin-top: 12px;">
                 <div class="admin-key-result" id="generatedKeyResult" style="margin-bottom: 0; padding: 10px; font-size: 16px; text-align: center; letter-spacing: 2px;">...</div>
             </div>
+
+            <button class="btn-close-admin" onclick="closeAdminPanel()">✖ Đóng Bảng Quản Trị</button>
         </div>
 
     </div>
@@ -294,10 +305,9 @@
     // HỆ THỐNG BẢO MẬT & SINH MÃ (KEYGEN)
     // =========================================================================
     const ADMIN_EMAIL = "hoangnam95997@gmail.com";
-    const MASTER_ADMIN_CODE = "e_KyXa+Zy2$I9 W8S"; // Mật khẩu mới của bạn
-    const SECRET_SUFFIX = "1256"; // Đuôi tính toán ngầm
+    const MASTER_ADMIN_CODE = "e_KyXa+Zy2$I9 W8S";
+    const SECRET_SUFFIX = "1256";
 
-    // 1. Khởi tạo mã thiết bị
     let currentDeviceId = localStorage.getItem("namArchDeviceID");
     if (!currentDeviceId) {
         currentDeviceId = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -305,37 +315,31 @@
     }
     document.getElementById('displayDeviceId').innerText = currentDeviceId;
 
-    // 2. Tự động vào map nếu máy đã có dấu mộc VIP (Không cần chờ load trang)
     if (localStorage.getItem("namArchAuth") === "approved") {
         document.getElementById('auth-overlay').style.display = 'none';
     }
     
-    // Tự động mở bảng Admin trong Sidebar nếu máy này là máy Sếp
     if (localStorage.getItem("namAdminVIP") === "true") {
         document.getElementById('adminZone').style.display = 'block';
     }
 
-    // 3. Thuật toán trộn mã: Biến [Mã Máy + 1256] thành một chuỗi mới tinh
     function hashDeviceKey(deviceId) {
         const rawString = deviceId.trim() + SECRET_SUFFIX;
         return btoa(rawString).replace(/[^a-zA-Z0-9]/g, '').substring(0, 6).toUpperCase();
     }
 
-    // 4. Kiểm tra cửa Khách
     function checkAuth() {
         const input = document.getElementById('authCode').value.trim();
         
-        // KIỂM TRA 1: Nếu Admin nhập mật mã ngay ở màn hình khóa (khi qua máy mới)
         if (input === MASTER_ADMIN_CODE) {
-            localStorage.setItem("namArchAuth", "approved"); // Cho phép vô app
-            localStorage.setItem("namAdminVIP", "true");     // Nhớ mặt Admin
+            localStorage.setItem("namArchAuth", "approved");
+            localStorage.setItem("namAdminVIP", "true");
             document.getElementById('auth-overlay').style.opacity = '0';
             setTimeout(() => { document.getElementById('auth-overlay').style.display = 'none'; }, 500);
-            document.getElementById('adminZone').style.display = 'block'; // Hiện bảng tạo mã trong Sidebar
+            document.getElementById('adminZone').style.display = 'block';
             return;
         }
 
-        // KIỂM TRA 2: Nếu là khách gõ mã kích hoạt
         const expectedPin = hashDeviceKey(currentDeviceId); 
 
         if (input.toUpperCase() === expectedPin) {
@@ -349,24 +353,13 @@
         }
     }
 
-    // 5. Nút Gửi Email của Khách
     function requestAccess() {
         const subject = encodeURIComponent("Yêu cầu cấp quyền truy cập NAM ARCH PRO V85");
         const body = encodeURIComponent(`Chào Admin,\n\nTôi muốn xin quyền truy cập vào hệ thống bản đồ NAM ARCH PRO.\n\nMã Thiết Bị của tôi là: [ ${currentDeviceId} ]\n\nVui lòng cung cấp cho tôi Mã Kích Hoạt.\nXin cảm ơn!`);
         window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
     }
 
-    // --- CÁC HÀM CỦA BẢNG ADMIN TRONG SIDEBAR ---
-
-    // Hàm gọi Bảng Tạo Mã (Khi click vào Easter Egg)
     function unlockAdmin() {
-        if(localStorage.getItem("namAdminVIP") === "true") {
-            // Nếu bảng đang mở, click lại để giấu nó đi
-            localStorage.removeItem("namAdminVIP");
-            document.getElementById('adminZone').style.display = 'none';
-            return;
-        }
-        
         let pass = prompt("🔐 Nhập Thần Chú Admin để hiển thị Bảng Tạo Mã:");
         if(pass === MASTER_ADMIN_CODE) {
             localStorage.setItem("namAdminVIP", "true");
@@ -375,8 +368,14 @@
             alert("❌ Sai Thần Chú! Bảng tạo mã vẫn bị khóa.");
         }
     }
+
+    function closeAdminPanel() {
+        localStorage.removeItem("namAdminVIP");
+        document.getElementById('adminZone').style.display = 'none';
+        document.getElementById('adminKeyOutput').style.display = 'none';
+        document.getElementById('clientDeviceId').value = "";
+    }
     
-    // Nút "Tạo Chìa Khóa"
     function adminGenerateKey() {
         const clientDevice = document.getElementById('clientDeviceId').value;
         if (clientDevice.length > 0) {
@@ -389,7 +388,6 @@
     document.getElementById('authCode').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') checkAuth();
     });
-    // =========================================================================
 
     // =========================================================================
     // CODE LÕI V85 (GIỮ NGUYÊN 100%)
