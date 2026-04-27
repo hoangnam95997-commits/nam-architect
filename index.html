@@ -153,16 +153,18 @@
         body.light-theme .theme-label-text { color: #A6C1EE; }
 
         /* NÚT BẤM NEUMORPHISM */
-        .btn-main { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); background: var(--gradient-brand); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s cubic-edge; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(255, 37, 83, 0.3); margin-bottom: 16px; }
+        .btn-main { width: 100%; padding: 16px; border: none; border-radius: var(--radius-md); background: var(--gradient-brand); color: #fff; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 20px rgba(255, 37, 83, 0.3); margin-bottom: 16px; }
         .btn-main:hover { filter: brightness(1.1); }
         .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 5px rgba(255, 37, 83, 0.3); }
         .light-theme .btn-main { background: var(--gradient-brand); box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); }
+        .light-theme .btn-main:active { background: var(--gradient-brand); filter: brightness(1.0); }
         
         .btn-outline { padding: 12px; background: var(--bg-main); color: var(--night-text-color); text-shadow: var(--night-text-glow); border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); }
         .btn-outline:hover { color: var(--text-primary); text-shadow: none; }
         .btn-outline:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
         
         .btn-export-2d { flex: 1; }
+        
         .btn-export-3d { flex: 1; color: #FF2553 !important; text-shadow: 0 0 8px rgba(255, 37, 83, 0.4) !important; }
         body.light-theme .btn-export-3d { text-shadow: none !important; }
 
@@ -172,7 +174,7 @@
         #progress { width: 0%; height: 100%; background: var(--gradient-brand); transition: width 0.3s ease; box-shadow: 0 0 10px rgba(255, 37, 83, 0.5); }
         .light-theme #progress { background: var(--gradient-brand); box-shadow: none; }
         
-        /* CHỮ THÔNG BÁO TRẠNG THÁI (ĐÃ ĐỒNG BỘ VÀNG ẤM ĐÊM) */
+        /* CHỮ THÔNG BÁO TRẠNG THÁI */
         #stt { font-size: 11px; text-align: center; color: var(--success); text-shadow: var(--night-text-glow); font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 10px; line-height: 1.4; transition: 0.3s;}
 
         /* HUD ĐÁY MÀN HÌNH */
@@ -185,7 +187,7 @@
         .crosshair::after { content: ''; position: absolute; top: 0; left: 11px; width: 2px; height: 24px; background: var(--text-primary); border-radius: 2px; transition: 0.3s;}
         .leaflet-interactive { pointer-events: none; }
         
-        /* CORE BADGE TRẠNG THÁI (ĐÃ ĐỒNG BỘ VÀNG ẤM ĐÊM) */
+        /* CORE BADGE TRẠNG THÁI */
         .core-badge { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: var(--success); text-shadow: var(--night-text-glow); transition: 0.3s; }
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
         .core-badge.online .pulse-dot { box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
@@ -226,22 +228,22 @@
             <div class="layer-list">
                 <label class="layer-item">
                     <input type="checkbox" id="showNha" checked onchange="toggleLayer('nha')">
-                    <div class="layer-left"><span class="color-dot" id="dot-nha" style="background:#f43f5e;"></span> Tòa Nhà</div>
+                    <div class="layer-left"><span class="color-dot" id="dot-nha" style="background:#f59e0b;"></span> Tòa Nhà</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
                     <input type="checkbox" id="showDuong" checked onchange="toggleLayer('duong')">
-                    <div class="layer-left"><span class="color-dot" id="dot-duong" style="background:#f8fafc;"></span> Lòng Đường</div>
+                    <div class="layer-left"><span class="color-dot" id="dot-duong" style="background:#94a3b8;"></span> Lòng Đường</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
                     <input type="checkbox" id="showViahe" checked onchange="toggleLayer('viahe')">
-                    <div class="layer-left"><span class="color-dot" id="dot-viahe" style="background:#f59e0b;"></span> Vỉa Hè</div>
+                    <div class="layer-left"><span class="color-dot" id="dot-viahe" style="background:#ff8a65;"></span> Vỉa Hè</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
                     <input type="checkbox" id="showNuoc" checked onchange="toggleLayer('nuoc')">
-                    <div class="layer-left"><span class="color-dot" id="dot-nuoc" style="background:#0ea5e9;"></span> Sông Hồ</div>
+                    <div class="layer-left"><span class="color-dot" id="dot-nuoc" style="background:#3b82f6;"></span> Sông Hồ</div>
                     <div class="toggle-switch"></div>
                 </label>
                 <label class="layer-item">
@@ -331,6 +333,8 @@
     new L.GridLayer.Graticule({maxZoom: 100}).addTo(map);
 
     let currentMapTheme = 'dark';
+    
+    /* CẬP NHẬT MÀU SẮC MAP ĐỂ KHỚP BẢNG MÀU CHUẨN QUY HOẠCH KHI GẠT THEME */
     function toggleMapThemeSwitch(isLight) {
         currentMapTheme = isLight ? 'light' : 'dark';
         const statusText = document.getElementById('themeStatusText');
@@ -338,21 +342,21 @@
         if(isLight) {
             document.body.classList.add('light-theme');
             map.removeLayer(darkT); lightT.addTo(map);
-            document.getElementById('dot-nha').style.background = '#dc2626';
-            document.getElementById('dot-duong').style.background = '#1e293b';
-            document.getElementById('dot-viahe').style.background = '#ea580c';
-            document.getElementById('dot-nuoc').style.background = '#0284c7';
-            document.getElementById('dot-cay').style.background = '#16a34a';
+            document.getElementById('dot-nha').style.background = '#f59e0b';
+            document.getElementById('dot-duong').style.background = '#94a3b8';
+            document.getElementById('dot-viahe').style.background = '#ff8a65';
+            document.getElementById('dot-nuoc').style.background = '#3b82f6';
+            document.getElementById('dot-cay').style.background = '#10b981';
             document.getElementById('dot-dat').style.background = '#94a3b8';
             
             statusText.innerText = 'Chế độ Sáng';
         } else {
             document.body.classList.remove('light-theme');
             map.removeLayer(lightT); darkT.addTo(map);
-            document.getElementById('dot-nha').style.background = '#f43f5e';
-            document.getElementById('dot-duong').style.background = '#f8fafc';
-            document.getElementById('dot-viahe').style.background = '#f59e0b';
-            document.getElementById('dot-nuoc').style.background = '#0ea5e9';
+            document.getElementById('dot-nha').style.background = '#f59e0b';
+            document.getElementById('dot-duong').style.background = '#94a3b8';
+            document.getElementById('dot-viahe').style.background = '#ff8a65';
+            document.getElementById('dot-nuoc').style.background = '#3b82f6';
             document.getElementById('dot-cay').style.background = '#10b981';
             document.getElementById('dot-dat').style.background = '#64748b';
             
@@ -396,19 +400,20 @@
         else map.removeLayer(layers[type]);
     }
 
+    /* CẬP NHẬT MÀU SẮC TRONG HÀM STYLE CỦA MAP */
     function getLayerStyle(type) {
         const config = currentMapTheme === 'light' ? {
-            nha: { color: '#dc2626', weight: 2, fillOpacity: 0.15 },
-            duong: { color: '#1e293b', weight: 2, fillOpacity: 0.1 },
-            viahe: { color: '#ea580c', weight: 2, fillOpacity: 0.15 },
-            nuoc: { color: '#0284c7', weight: 2, fillOpacity: 0.15 },
-            cayxanh: { color: '#16a34a', weight: 2, fillOpacity: 0.15 },
+            nha: { color: '#f59e0b', weight: 2, fillOpacity: 0.15 },
+            duong: { color: '#94a3b8', weight: 2, fillOpacity: 0.1 },
+            viahe: { color: '#ff8a65', weight: 2, fillOpacity: 0.15 },
+            nuoc: { color: '#3b82f6', weight: 2, fillOpacity: 0.15 },
+            cayxanh: { color: '#10b981', weight: 2, fillOpacity: 0.15 },
             dattrong: { color: '#94a3b8', weight: 2, fillOpacity: 0.1 }
         } : {
-            nha: { color: '#f43f5e', weight: 2, fillOpacity: 0.15 }, 
-            duong: { color: '#f8fafc', weight: 2, fillOpacity: 0.1 }, 
-            viahe: { color: '#f59e0b', weight: 2, fillOpacity: 0.15 }, 
-            nuoc: { color: '#0ea5e9', weight: 2, fillOpacity: 0.15 },
+            nha: { color: '#f59e0b', weight: 2, fillOpacity: 0.15 }, 
+            duong: { color: '#94a3b8', weight: 2, fillOpacity: 0.1 }, 
+            viahe: { color: '#ff8a65', weight: 2, fillOpacity: 0.15 }, 
+            nuoc: { color: '#3b82f6', weight: 2, fillOpacity: 0.15 },
             cayxanh: { color: '#10b981', weight: 2, fillOpacity: 0.15 },
             dattrong: { color: '#64748b', weight: 2, fillOpacity: 0.1 }  
         };
@@ -433,7 +438,7 @@
         Object.values(layers).forEach(l => l.clearLayers());
         geoData = { nha: [], duong: [], viahe: [], nuoc: [], cayxanh: [], dattrong: [], o_pho: [] };
         updateProgress(0, "Đã dọn dẹp Cache. Sẵn sàng!", false);
-        document.getElementById('stt').style.color = "var(--success)";
+        document.getElementById('stt').style.color = "var(--night-text-color)";
     }
 
     const yieldCPU = () => new Promise(resolve => setTimeout(resolve, 0));
