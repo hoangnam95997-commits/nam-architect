@@ -904,11 +904,10 @@
             if(dataArray.length === 0) return;
             hasData = true;
             for (let i = 0; i < dataArray.length; i++) {
-                if (i % 20 === 0) {
-                    let p = 10 + (i / dataArray.length) * 80;
-                    updateProgress(p, `Dựng khối Solid [${layerName}]: ${i}/${dataArray.length}`, true);
-                    await yieldCPU(); 
-                }
+                // Bắt buộc nhả CPU (yield) ở MỖI khối để chống treo máy
+                let p = 10 + (i / dataArray.length) * 80;
+                updateProgress(p, `Dựng khối Solid [${layerName}]: ${i}/${dataArray.length}`, true);
+                await yieldCPU(); 
 
                 const item = dataArray[i];
                 const geom = item.geometry || item;
@@ -1002,7 +1001,8 @@
             if(dataArray.length === 0) return;
             hasData = true;
             for (let i = 0; i < dataArray.length; i++) {
-                if (i % 50 === 0) await yieldCPU();
+                await yieldCPU(); // Nhả CPU liên tục để chống treo
+                
                 const geom = dataArray[i].geometry || dataArray[i];
                 let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
                 polys.forEach(coords => {
