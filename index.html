@@ -690,6 +690,8 @@
     async function startMegaScan() {
         if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("Hệ thống Core đang khởi động, vui lòng đợi vài giây!");
         
+        // ĐÃ XÓA VAN AN TOÀN ZOOM < 15.5 THEO YÊU CẦU
+        
         resetScan();
         updateProgress(10, "Đang kết nối API Vệ tinh...", true);
 
@@ -843,152 +845,213 @@
         } catch (err) { updateProgress(0, "Lỗi kết nối hoặc Map quá lớn!", false); }
     }
 
+    // =========================================================================
+    // NÂNG CẤP V85 PRO: XUẤT 3D BẰNG WEB WORKER (CHỐNG TREO MÁY TUYỆT ĐỐI)
+    // =========================================================================
     async function export3DDAE() {
-        updateProgress(10, "Đang kết xuất Geometry 3D...", true);
+        updateProgress(5, "Đang khởi tạo luồng xử lý ngầm (Đa luồng)...", true);
         
         const center = map.getCenter();
-        const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
-        const tx = (pt) => ((pt[0] - center.lng) * sx);
-        const ty = (pt) => ((pt[1] - center.lat) * sy);
-
-        let positions = [];
-        let indices = [];
-        let vIdx = 0;
-        let hasData = false;
-
-        const addVertex = (x, y, z) => {
-            positions.push(`${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`);
-            indices.push(vIdx++);
+        const flags = {
+            nuoc: document.getElementById('showNuoc').checked,
+            dat: document.getElementById('showDat').checked,
+            duong: document.getElementById('showDuong').checked,
+            cay: document.getElementById('showCay').checked,
+            viahe: document.getElementById('showViahe').checked,
+            nha: document.getElementById('showNha').checked
         };
 
-        function getCCWTriangle(p1, p2, p3) {
-            let cross = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0]);
-            if (cross < 0) return [p1, p3, p2];
-            return [p1, p2, p3];
-        }
+        // Kịch bản chạy ngầm cho người nhân bản (Worker)
+        const workerCode = `
+            importScripts('https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js');
 
-        const writeTriangles = (coords, zVal, reverseNormal = false) => {
-            try {
-                let poly = turf.rewind(turf.polygon(coords), {reverse: false});
-                let clean = turf.cleanCoords(poly);
-                let tess = turf.tesselate(clean);
+            self.onmessage = function(e) {
+                const geoData = e.data.geoData;
+                const center = e.data.center;
+                const flags = e.data.flags;
                 
-                tess.features.forEach(tri => {
-                    let pts = tri.geometry.coordinates[0];
-                    if (pts.length < 3) return;
-                    let [p1, p2, p3] = getCCWTriangle(pts[0], pts[1], pts[2]);
-                    if (reverseNormal) [p1, p2, p3] = [p1, p3, p2];
+                const sy = 111319.9, sx = sy * Math.cos(center.lat * Math.PI / 180);
+                const tx = (pt) => ((pt[0] - center.lng) * sx);
+                const ty = (pt) => ((pt[1] - center.lat) * sy);
 
-                    addVertex(tx(p1), ty(p1), zVal);
-                    addVertex(tx(p2), ty(p2), zVal);
-                    addVertex(tx(p3), ty(p3), zVal);
-                });
-            } catch(e) {}
-        };
+                let positions = [];
+                let indices = [];
+                let vIdx = 0;
+                let hasData = false;
 
-        const writeWalls = (ring, zBottom, zTop) => {
-            let pts = ring;
-            if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts = [...pts, pts[0]];
-            for(let i=0; i<pts.length-1; i++) {
-                let p1 = pts[i]; let p2 = pts[i+1];
-                addVertex(tx(p1), ty(p1), zBottom);
-                addVertex(tx(p2), ty(p2), zBottom);
-                addVertex(tx(p2), ty(p2), zTop);
-                
-                addVertex(tx(p1), ty(p1), zBottom);
-                addVertex(tx(p2), ty(p2), zTop);
-                addVertex(tx(p1), ty(p1), zTop);
-            }
-        };
+                const addVertex = (x, y, z) => {
+                    positions.push(x.toFixed(3) + ' ' + y.toFixed(3) + ' ' + z.toFixed(3));
+                    indices.push(vIdx++);
+                };
 
-        const processLayer = async (dataArray, layerName, baseZ, isBuilding, curbBottomZ = null) => {
-            if(dataArray.length === 0) return;
-            hasData = true;
-            for (let i = 0; i < dataArray.length; i++) {
-                // Bắt buộc nhả CPU (yield) ở MỖI khối để chống treo máy
-                let p = 10 + (i / dataArray.length) * 80;
-                updateProgress(p, `Dựng khối Solid [${layerName}]: ${i}/${dataArray.length}`, true);
-                await yieldCPU(); 
+                function getCCWTriangle(p1, p2, p3) {
+                    let cross = (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0]);
+                    if (cross < 0) return [p1, p3, p2];
+                    return [p1, p2, p3];
+                }
 
-                const item = dataArray[i];
-                const geom = item.geometry || item;
-                const h = item.height || 0;
-                let polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-
-                polys.forEach(coords => {
-                    let topZ = isBuilding && h > 0 ? baseZ + h : baseZ;
-                    writeTriangles(coords, topZ, false);
-                    
-                    if (isBuilding && h > 0) {
-                        writeTriangles(coords, baseZ, true);
+                const writeTriangles = (coords, zVal, reverseNormal = false) => {
+                    try {
                         let poly = turf.rewind(turf.polygon(coords), {reverse: false});
-                        poly.geometry.coordinates.forEach(ring => writeWalls(ring, baseZ, topZ));
-                    } 
-                    else if (curbBottomZ !== null) {
-                        let poly = turf.rewind(turf.polygon(coords), {reverse: false});
-                        poly.geometry.coordinates.forEach(ring => writeWalls(ring, Math.min(baseZ, curbBottomZ), Math.max(baseZ, curbBottomZ)));
+                        let clean = turf.cleanCoords(poly);
+                        let simplified = turf.simplify(clean, {tolerance: 0.00001, mutates: false});
+                        let tess = turf.tesselate(simplified);
+                        
+                        tess.features.forEach(tri => {
+                            let pts = tri.geometry.coordinates[0];
+                            if (pts.length < 3) return;
+                            let [p1, p2, p3] = getCCWTriangle(pts[0], pts[1], pts[2]);
+                            if (reverseNormal) [p1, p2, p3] = [p1, p3, p2];
+
+                            addVertex(tx(p1), ty(p1), zVal);
+                            addVertex(tx(p2), ty(p2), zVal);
+                            addVertex(tx(p3), ty(p3), zVal);
+                        });
+                    } catch(e) {}
+                };
+
+                const writeWalls = (ring, zBottom, zTop) => {
+                    let pts = ring;
+                    if (pts[0][0] !== pts[pts.length-1][0] || pts[0][1] !== pts[pts.length-1][1]) pts = [...pts, pts[0]];
+                    for(let i=0; i<pts.length-1; i++) {
+                        let p1 = pts[i]; let p2 = pts[i+1];
+                        addVertex(tx(p1), ty(p1), zBottom);
+                        addVertex(tx(p2), ty(p2), zBottom);
+                        addVertex(tx(p2), ty(p2), zTop);
+                        
+                        addVertex(tx(p1), ty(p1), zBottom);
+                        addVertex(tx(p2), ty(p2), zTop);
+                        addVertex(tx(p1), ty(p1), zTop);
                     }
-                });
+                };
+
+                const processLayer = (dataArray, layerName, baseZ, isBuilding, curbBottomZ = null) => {
+                    if(!dataArray || dataArray.length === 0) return;
+                    hasData = true;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        if (i % 5 === 0) {
+                            let p = 10 + (i / dataArray.length) * 80;
+                            self.postMessage({type: 'progress', p: p, text: 'Dựng khối Solid [' + layerName + ']: ' + i + '/' + dataArray.length});
+                        }
+
+                        const item = dataArray[i];
+                        const geom = item.geometry || item;
+                        const h = item.height || 0;
+                        let polys = [];
+                        try {
+                            let simplifiedItem = turf.simplify(geom, {tolerance: 0.00001, mutates: false});
+                            polys = simplifiedItem.type === 'Polygon' ? [simplifiedItem.coordinates] : simplifiedItem.coordinates;
+                        } catch (e) {
+                            polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+                        }
+
+                        polys.forEach(coords => {
+                            let topZ = isBuilding && h > 0 ? baseZ + h : baseZ;
+                            writeTriangles(coords, topZ, false);
+                            
+                            if (isBuilding && h > 0) {
+                                writeTriangles(coords, baseZ, true);
+                                try {
+                                    let poly = turf.rewind(turf.polygon(coords), {reverse: false});
+                                    let simplified = turf.simplify(poly, {tolerance: 0.00001});
+                                    simplified.geometry.coordinates.forEach(ring => writeWalls(ring, baseZ, topZ));
+                                } catch(e) {}
+                            } 
+                            else if (curbBottomZ !== null) {
+                                try {
+                                    let poly = turf.rewind(turf.polygon(coords), {reverse: false});
+                                    let simplified = turf.simplify(poly, {tolerance: 0.00001});
+                                    simplified.geometry.coordinates.forEach(ring => writeWalls(ring, Math.min(baseZ, curbBottomZ), Math.max(baseZ, curbBottomZ)));
+                                } catch(e) {}
+                            }
+                        });
+                    }
+                };
+
+                try {
+                    if(flags.nuoc) processLayer(geoData.nuoc, "NUOC", -0.5, false, 0.0);
+                    if(flags.dat) {
+                        processLayer(geoData.o_pho, "O_PHO", 0.0, false, null); 
+                        processLayer(geoData.dattrong, "DATTRONG_OSM", 0.05, false, 0.0);
+                    }
+                    if(flags.duong) processLayer(geoData.duong, "DUONG", 0.0, false, null); 
+                    if(flags.cay) processLayer(geoData.cayxanh, "CAYXANH", 0.1, false, 0.0); 
+                    if(flags.viahe) processLayer(geoData.viahe, "VIAHE", 0.15, false, 0.0); 
+                    if(flags.nha) processLayer(geoData.nha, "NHA", 0.15, true, null); 
+
+                    if(!hasData) {
+                        self.postMessage({type: 'error', text: 'Bạn chưa chọn Layer nào để xuất!'});
+                        return;
+                    }
+
+                    self.postMessage({type: 'progress', p: 95, text: 'Đang đóng gói file DAE...'});
+
+                    const daeXML = '<?xml version="1.0" encoding="utf-8"?>\\n' +
+'<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">\\n' +
+'  <asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>\\n' +
+'  <library_geometries>\\n' +
+'    <geometry id="geom-0" name="CityMesh">\\n' +
+'      <mesh>\\n' +
+'        <source id="geom-0-positions">\\n' +
+'          <float_array id="geom-0-positions-array" count="' + (positions.length * 3) + '">' + positions.join(' ') + '</float_array>\\n' +
+'          <technique_common>\\n' +
+'            <accessor source="#geom-0-positions-array" count="' + positions.length + '" stride="3">\\n' +
+'              <param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/>\\n' +
+'            </accessor>\\n' +
+'          </technique_common>\\n' +
+'        </source>\\n' +
+'        <vertices id="geom-0-vertices"><input semantic="POSITION" source="#geom-0-positions"/></vertices>\\n' +
+'        <triangles count="' + (indices.length / 3) + '">\\n' +
+'          <input semantic="VERTEX" source="#geom-0-vertices" offset="0"/>\\n' +
+'          <p>' + indices.join(' ') + '</p>\\n' +
+'        </triangles>\\n' +
+'      </mesh>\\n' +
+'    </geometry>\\n' +
+'  </library_geometries>\\n' +
+'  <library_visual_scenes>\\n' +
+'    <visual_scene id="Scene" name="Scene">\\n' +
+'      <node id="CityNode" name="CityNode"><instance_geometry url="#geom-0"/></node>\\n' +
+'    </visual_scene>\\n' +
+'  </library_visual_scenes>\\n' +
+'  <scene><instance_visual_scene url="#Scene"/></scene>\\n' +
+'</COLLADA>';
+
+                    self.postMessage({type: 'done', data: daeXML});
+
+                } catch (globalErr) {
+                    self.postMessage({type: 'error', text: 'Lỗi thuật toán 3D: ' + globalErr.message});
+                }
+            };
+        `;
+
+        // Ép dữ liệu vào file ảo chạy ngầm
+        const blob = new Blob([workerCode], {type: 'application/javascript'});
+        const worker = new Worker(URL.createObjectURL(blob));
+
+        // Nhận tín hiệu trả về từ luồng phụ để cập nhật giao diện
+        worker.onmessage = function(e) {
+            const msg = e.data;
+            if (msg.type === 'progress') {
+                updateProgress(msg.p, msg.text, true);
+            } else if (msg.type === 'done') {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([msg.data], {type: 'application/collada+xml'}));
+                a.download = "NAM_ARCH_3D_PRO.dae"; 
+                a.click();
+                updateProgress(100, "Tải file 3D hoàn tất!", false);
+                worker.terminate();
+            } else if (msg.type === 'error') {
+                updateProgress(0, msg.text, false);
+                worker.terminate();
             }
         };
 
-        if(document.getElementById('showNuoc').checked) await processLayer(geoData.nuoc, "NUOC", -0.5, false, 0.0);
-        
-        if(document.getElementById('showDat').checked) {
-            await processLayer(geoData.o_pho, "O_PHO", 0.0, false, null); 
-            await processLayer(geoData.dattrong, "DATTRONG_OSM", 0.05, false, 0.0);
-        }
-        
-        if(document.getElementById('showDuong').checked) await processLayer(geoData.duong, "DUONG", 0.0, false, null); 
-        
-        if(document.getElementById('showCay').checked) await processLayer(geoData.cayxanh, "CAYXANH", 0.1, false, 0.0); 
-        if(document.getElementById('showViahe').checked) await processLayer(geoData.viahe, "VIAHE", 0.15, false, 0.0); 
-        if(document.getElementById('showNha').checked) await processLayer(geoData.nha, "NHA", 0.15, true, null); 
-
-        if(!hasData) {
-            updateProgress(0, "Bạn chưa chọn Layer nào để xuất!", false);
-            return;
-        }
-
-        updateProgress(95, "Đang đóng gói file DAE...", true);
-        await yieldCPU();
-
-        const daeXML = `<?xml version="1.0" encoding="utf-8"?>
-<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>
-  <library_geometries>
-    <geometry id="geom-0" name="CityMesh">
-      <mesh>
-        <source id="geom-0-positions">
-          <float_array id="geom-0-positions-array" count="${positions.length * 3}">${positions.join(' ')}</float_array>
-          <technique_common>
-            <accessor source="#geom-0-positions-array" count="${positions.length}" stride="3">
-              <param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/>
-            </accessor>
-          </technique_common>
-        </source>
-        <vertices id="geom-0-vertices"><input semantic="POSITION" source="#geom-0-positions"/></vertices>
-        <triangles count="${indices.length / 3}">
-          <input semantic="VERTEX" source="#geom-0-vertices" offset="0"/>
-          <p>${indices.join(' ')}</p>
-        </triangles>
-      </mesh>
-    </geometry>
-  </library_geometries>
-  <library_visual_scenes>
-    <visual_scene id="Scene" name="Scene">
-      <node id="CityNode" name="CityNode"><instance_geometry url="#geom-0"/></node>
-    </visual_scene>
-  </library_visual_scenes>
-  <scene><instance_visual_scene url="#Scene"/></scene>
-</COLLADA>`;
-
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([daeXML], {type: 'application/collada+xml'}));
-        a.download = "NAM_ARCH_3D_PRO.dae"; 
-        a.click();
-        
-        updateProgress(100, "Tải file 3D hoàn tất!", false);
+        // Gửi toàn bộ rổ tọa độ xuống cho luồng phụ cày
+        worker.postMessage({
+            geoData: JSON.parse(JSON.stringify(geoData)), // Phá liên kết tham chiếu để ném qua luồng
+            center: center,
+            flags: flags
+        });
     }
 
     async function export2DDXF() {
