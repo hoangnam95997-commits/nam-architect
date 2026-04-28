@@ -690,14 +690,6 @@
     async function startMegaScan() {
         if(typeof turf === 'undefined' || typeof osmtogeojson === 'undefined') return alert("Hệ thống Core đang khởi động, vui lòng đợi vài giây!");
         
-        // --- THÊM VAN AN TOÀN CHỐNG QUÁ TẢI MÁY CHỦ ---
-        if(map.getZoom() < 15.5) {
-            alert("⚠️ KHU VỰC QUÉT QUÁ RỘNG!\n\nMáy chủ vệ tinh giới hạn dữ liệu tải về để chống sập mạng. Vui lòng phóng to bản đồ (Zoom từ 15.5 trở lên) rồi chạy lại phân tích.");
-            updateProgress(0, "Lỗi: Zoom quá xa. Yêu cầu Zoom >= 15.5", false);
-            return;
-        }
-        // ----------------------------------------------
-        
         resetScan();
         updateProgress(10, "Đang kết nối API Vệ tinh...", true);
 
